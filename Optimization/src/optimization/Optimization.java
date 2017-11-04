@@ -39,14 +39,16 @@ public class Optimization {
     BufferedReader in = new BufferedReader(new FileReader("instance01.exm"));)
 {
           String line;
-          while ((line = in.readLine()) != null) {  
+          while ((line = in.readLine()) != null) { 
+             if(!line.isEmpty()){
                String[] e=line.split(" ");
                int examId=Integer.parseInt(e[0]);       
                int nStudent=Integer.parseInt(e[1]);
                Exam ex=new Exam(examId,nStudent);
                exams.put(examId, ex);
                System.out.println(ex);
-    
+             }
+          
           }
 } catch(IOException e) {System.out.println("error in reading exm file"+e.getMessage());}
    
@@ -57,15 +59,15 @@ public class Optimization {
 {
       String line;
       while ((line = in.readLine()) != null) {   
-   
+          if(!line.isEmpty()){
            String[] e=line.split(" ");
            String sId=e[0];       
            Student st=new Student(sId);
            st.addExam(exams.get(Integer.parseInt(e[1])));
            exams.get(Integer.parseInt(e[1])).addStutent(st);
            students.put(sId, st);
-      
            System.out.println(st);
+          }
       }
 } catch(IOException e) {System.out.println("error in reading stu file"+e.getMessage());}
   
