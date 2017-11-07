@@ -31,7 +31,7 @@ public class Optimizer {
         E = exams.size();
         a = new boolean[S][E];
         buildStudentListInEx();
-        //checkExamEnrollments(); DEBUG
+        //checkExamEnrollments(); //DEBUG
     }
 
     /**
@@ -79,7 +79,7 @@ public class Optimizer {
     }
 
     /**
-     * For debuggin purposes, can be later deleted: i check if the number of
+     * For debuggin purposes, can be later deleted: I check if the number of
      * "trues" in matrix a, in column corrisponding to the exam j, are equal to
      * the number of enrolled students declared in the exam file.
      */

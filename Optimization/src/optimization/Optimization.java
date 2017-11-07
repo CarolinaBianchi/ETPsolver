@@ -14,21 +14,40 @@ import java.util.logging.Logger;
  * @author Elisa
  */
 public class Optimization {
-    
+
+    /* This assigmnent has to be deleted in the future when we will launch the 
+    program only from command line (java -jar "Optimization.jar" instancename).
+    When calling the program from command line, you have to move the "files" 
+    folder in the same folder of the jar (for now, only for order purposes).
+     */
+    private static String instance = "instance01";
+
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+
+        //checkArgs(args);  this has to be uncommented when running the program from command line.
         try {
             // TODO code application logic here
-            Optimizer optimizer = new Optimizer("instance01");
+            Optimizer optimizer = new Optimizer(instance);
         } catch (IOException ex) {
             Logger.getLogger(Optimization.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-
-       
 
     }
 
+    /**
+     * Checks the format of the argument passed when running the program from
+     * command line.
+     *
+     * @param args
+     */
+    private static void checkArgs(String[] args) {
+        if (args.length != 1) {
+            System.out.println("Input argument error. You can launch the program by writing java -jar \"Optimization.jar\" instanceName");
+            System.exit(0);
+        }
+        instance = args[0];
+    }
 }
