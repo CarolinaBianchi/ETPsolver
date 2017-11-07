@@ -14,13 +14,21 @@ import java.util.List;
  */
 public class Exam {
     
-    private Integer numStudent;
-    private Integer examId;
+    private Integer numStudents;
+    private Integer id;
     private List<Student> students=new LinkedList<Student>(); 
     
-    public Exam(Integer examId,Integer numStudent){
-        this.examId=examId;
-        this.numStudent=numStudent;
+    public Exam(Integer examId,Integer numStudents){
+        this.id=examId;
+        this.numStudents=numStudents;
+    }
+    
+    public int getId(){
+        return this.id;
+    }
+    
+    public int getNumStudents(){
+        return this.numStudents;
     }
     
     public void  addStutent(Student sID){
@@ -34,7 +42,7 @@ public class Exam {
     
     @Override
     public String toString(){
-        return this.examId+" "+this.numStudent;
+        return this.id+" "+this.numStudents;
     }
     
 }

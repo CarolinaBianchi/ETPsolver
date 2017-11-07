@@ -5,6 +5,7 @@
  */
 package optimization;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -13,25 +14,38 @@ import java.util.List;
  * @author lucie
  */
 public class Student {
+
     private String sId;
-    private List<Exam> exams=new LinkedList<>();
-    
-    public Student(String sId){
-        this.sId=sId;
+    private List<Exam> exams = new LinkedList<>();
+    private List<Integer> examsIds = new ArrayList<>();
+
+    public Student(String sId) {
+        this.sId = sId;
     }
-   
-    public void  addExam(Exam sID){
+
+    public void addExam(Exam sID) {
         this.exams.add(sID);
     }
-    
-    public boolean checkExam(Exam sId){
-        return this.exams.contains(sId);
-        
+
+    public void addExamId(int id) {
+        this.examsIds.add(id);
     }
-    
+
+    public List<Integer> getExamsIds() {
+        return this.examsIds;
+    }
+
+    public boolean checkExam(Exam sId) {
+        return this.exams.contains(sId);
+    }
+
+    public boolean checkExamId(Integer id) {
+        return this.examsIds.contains(id);
+    }
+
     @Override
-     public String toString(){
+    public String toString() {
         return this.sId;
     }
-    
+
 }
