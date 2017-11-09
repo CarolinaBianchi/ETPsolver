@@ -59,17 +59,20 @@ public class FileManager {
         try (BufferedReader in = new BufferedReader(new FileReader(FILES_PATH+instance+STUDENT_SUFFIX))) {
             String line;
             String[] tokens;
-            Student st;
+            Student st= new Student("");
             while ((line = in.readLine()) != null) {
                 if (!line.isEmpty()) {
                     tokens = line.split(" ");
-                    st = new Student(tokens[0]);
+                    if(!st.getId().equals(tokens[0])){
+                        students.add(st);
+                        st = new Student(tokens[0]);
+                    }
                     st.addExamId(Integer.parseInt(tokens[1]));
-                    students.add(st);
-                    //System.out.println(st);
+                    students.add(st);;
                 }
             }
         }
+        students.remove(0); // DIRTY FIX, CAN BE IMPROVED!
         return students;
     }
 
