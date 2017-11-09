@@ -42,6 +42,10 @@ public class Student {
     public boolean checkExamId(Integer id) {
         return this.examsIds.contains(id);
     }
+    
+    public List<Exam> getExams(){
+        return this.exams;
+    }
 
     @Override
     public String toString() {

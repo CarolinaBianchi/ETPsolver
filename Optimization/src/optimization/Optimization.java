@@ -31,6 +31,7 @@ public class Optimization {
         try {
             // TODO code application logic here
             Optimizer optimizer = new Optimizer(instance);
+            optimizer.run();
         } catch (IOException ex) {
             Logger.getLogger(Optimization.class.getName()).log(Level.SEVERE, null, ex);
         }

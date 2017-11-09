@@ -5,18 +5,23 @@
  */
 package optimization;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
  * @author lucie
  */
-public class Exam {
+public class Exam implements Comparable<Exam>{
     
     private Integer numStudents;
     private Integer id;
-    private List<Student> students=new LinkedList<Student>(); 
+    private List<Student> students=new LinkedList<>(); 
+    private Set<Exam> conflictingExams = new HashSet<>();
+    boolean placed;
+    
     
     public Exam(Integer examId,Integer numStudents){
         this.id=examId;
@@ -40,9 +45,30 @@ public class Exam {
         
     }
     
+    public void addConflictingExam(Exam e){
+        this.conflictingExams.add(e);
+    }
+    
+    public Set<Exam> getConflictingExams(){
+        return this.conflictingExams;
+    }
+    
+    public void setPlaced(boolean placed){
+        this.placed = placed;
+    }
+    
+    public boolean isPlaced(){
+        return this.placed;
+    }
+    
     @Override
     public String toString(){
-        return this.id+" "+this.numStudents;
+        return "Ex"+this.id+" ";
+    }
+
+    @Override
+    public int compareTo(Exam o) {
+        return this.conflictingExams.size()-o.getConflictingExams().size();
     }
     
 }
