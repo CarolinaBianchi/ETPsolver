@@ -22,6 +22,10 @@ public class Student {
     public Student(String sId) {
         this.sId = sId;
     }
+    
+    public String getId(){
+        return this.sId;
+    }
 
     public void addExam(Exam sID) {
         this.exams.add(sID);
