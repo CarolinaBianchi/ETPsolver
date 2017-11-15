@@ -25,7 +25,6 @@ public abstract class AbstractInitializer extends Thread {
         this.exams = exams;
         this.schedules = schedules;
         this.mySchedule = new Schedule(tmax);
-
     }
 
     @Override

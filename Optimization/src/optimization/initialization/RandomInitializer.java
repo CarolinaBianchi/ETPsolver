@@ -5,7 +5,6 @@
  */
 package optimization.initialization;
 
-import optimization.initialization.AbstractInitializer;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -23,16 +22,16 @@ import optimization.Timeslot;
 public class RandomInitializer extends AbstractInitializer {
 
     private static int PLACING_TRIES; // to be defined
-    private static int SWAP_TRIES ; //..
-    private static int MOVE_TRIES ; //..
+    private static int SWAP_TRIES; //..
+    private static int MOVE_TRIES; //..
     private int alreadyPlaced; // number of exams already placed in the schedule
 
     public RandomInitializer(List<Exam> exams, List<Schedule> schedules, int tmax) {
         super(exams, schedules, tmax);
         this.alreadyPlaced = 0;
-        RandomInitializer.PLACING_TRIES = (int)1.5*tmax;
-        RandomInitializer.SWAP_TRIES = 2*tmax;
-        RandomInitializer.MOVE_TRIES = 2*tmax;
+        RandomInitializer.PLACING_TRIES = (int) 1.5 * tmax;
+        RandomInitializer.SWAP_TRIES = 2 * tmax;
+        RandomInitializer.MOVE_TRIES = 2 * tmax;
     }
 
     @Override
@@ -40,8 +39,6 @@ public class RandomInitializer extends AbstractInitializer {
         Collections.sort(exams);
         computeRandomSchedule();
         while (mySchedule.getNExams() != exams.size()) {
-            System.out.printf("%.3f", getPercPlaced());
-            System.out.println("\n");
             if (this.getPercPlaced() < 0.98) {
                 computeRandomSchedule();
             } else {
@@ -53,7 +50,6 @@ public class RandomInitializer extends AbstractInitializer {
             }
         }
         writeSolution();
-
         return mySchedule;
     }
 
@@ -102,10 +98,10 @@ public class RandomInitializer extends AbstractInitializer {
         }
         return false;
     }
-    
-    private boolean tryOrderedPlacement(Exam toBePlaced){
-        for(Timeslot destination: mySchedule.getTimeslots()){
-            if(destination.isCompatible(toBePlaced)){
+
+    private boolean tryOrderedPlacement(Exam toBePlaced) {
+        for (Timeslot destination : mySchedule.getTimeslots()) {
+            if (destination.isCompatible(toBePlaced)) {
                 destination.addExam(toBePlaced);
                 alreadyPlaced++;
                 return true;
@@ -123,7 +119,7 @@ public class RandomInitializer extends AbstractInitializer {
     protected boolean randomSwap() {
         Exam ex1, ex2;
         Timeslot tj, tk;
-        boolean swapped=false;
+        boolean swapped = false;
         for (int i = 0; i < SWAP_TRIES; i++) {
             tj = mySchedule.getRandomTimeslot();
             tk = mySchedule.getRandomTimeslot();
@@ -152,7 +148,7 @@ public class RandomInitializer extends AbstractInitializer {
             ex = tj.getRandomExam();
             if (tk.isCompatible(ex)) {
                 move(ex, tj, tk);
-                moved= true;
+                moved = true;
             }
         }
         return moved;

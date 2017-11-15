@@ -39,9 +39,9 @@ public class Optimizer {
         E = exams.size();
         a = new boolean[S][E];
         initialSchedules = new ArrayList<>();
-        initInitializers();
         buildStudentListInEx();
         buildConflictingExamsLists();
+        initInitializers();
     }
 
     /**
@@ -59,13 +59,17 @@ public class Optimizer {
 
     private void initInitializers() {
 
-        AbstractInitializer randomInit = new RandomInitializer(exams, initialSchedules, tmax);
-        //AbstractInitializer someOther = new SomeOtherInitializer(exams.clone(), schedules, tmax);
+        AbstractInitializer randomInit = new RandomInitializer(cloneExams(), initialSchedules, tmax),
+                randomInit2 = new RandomInitializer(cloneExams(), initialSchedules, tmax);
+        
+        //AbstractInitializer someOther = new SomeOtherInitializer(cloneExams(), schedules, tmax);
         initializers = new ArrayList<>(2);
         initializers.add(randomInit);
+        initializers.add(randomInit2);
         //initializers.add(someOther)
         try {
             ((Thread)randomInit).join();
+            ((Thread)randomInit2).join();
             //((Thread)someOther).join();
         } catch (InterruptedException ex) {
             
@@ -123,11 +127,19 @@ public class Optimizer {
     public void run() {
         try {
             for (AbstractInitializer in : this.initializers) {
-                in.run();
+                in.start();
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+    
+    public List<Exam> cloneExams(){
+        List<Exam> clone = new ArrayList<>(exams.size());
+        for(Exam e : exams){
+            clone.add(e.clone());
+        }
+        return clone;
     }
 
 }

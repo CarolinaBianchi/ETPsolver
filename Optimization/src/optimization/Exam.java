@@ -15,26 +15,15 @@ import java.util.Set;
  *
  * @author lucie
  */
-public class Exam implements Comparable<Exam> {
+public class Exam extends ProxyExam implements Comparable<Exam>, Cloneable {
 
-    private final Integer numStudents;
-    private final Integer id;
-    private final List<Student> students = new ArrayList<>();
+    private List<Student> students = new ArrayList<>();
     // 2 exams are "conflicting" if at least one student is enrolled in both of 
     // them.(-> can't be placed in the same timeslot)
-    private final Set<Exam> conflictingExams = new HashSet<>();
+    private final Set<ProxyExam> conflictingExams = new HashSet<>();
 
-    public Exam(Integer examId, Integer numStudents) {
-        this.id = examId;
-        this.numStudents = numStudents;
-    }
-
-    public int getId() {
-        return this.id;
-    }
-
-    public int getNumStudents() {
-        return this.numStudents;
+    public Exam(int id, int numStudents) {
+        super(id, numStudents);
     }
 
     public void addStutent(Student sID) {
@@ -45,11 +34,15 @@ public class Exam implements Comparable<Exam> {
         return this.students.contains(sId);
     }
 
-    public void addConflictingExam(Exam e) {
+    public void addConflictingExam(ProxyExam e) {
         this.conflictingExams.add(e);
     }
 
-    public Set<Exam> getConflictingExams() {
+    public void setStudents(List<Student> students) {
+        this.students = students;
+    }
+
+    public Set<ProxyExam> getConflictingExams() {
         return this.conflictingExams;
     }
 
@@ -60,8 +53,19 @@ public class Exam implements Comparable<Exam> {
      * @param e2
      * @return true if the two exams are not conflicting, false otherwise.
      */
-    public boolean isCompatible(Exam e2) {
+    public boolean isCompatible(ProxyExam e2) {
         return !this.conflictingExams.contains(e2);
+    }
+
+    @Override
+    public Exam clone() {
+        Exam clone = new Exam(id, numStudents);
+        for (ProxyExam e : this.conflictingExams) {
+            clone.addConflictingExam(new ProxyExam(e));
+        }
+        // Since it's useless for now... if we had to read it a method to clone students should be provided.
+        clone.setStudents(this.students);
+        return clone;
     }
 
     @Override

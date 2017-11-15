@@ -20,7 +20,7 @@ import optimization.Timeslot;
 public class SolutionWriter extends Thread {
 
     private final Schedule schedule;
-
+    
     public SolutionWriter(Schedule schedule) {
         this.schedule = schedule;
     }
@@ -36,7 +36,7 @@ public class SolutionWriter extends Thread {
      */
     private void writeSolution() {
 
-        try (PrintWriter writer = new PrintWriter(new FileWriter("files/" + Optimization.instance + ".sol"))) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter("files/" + Optimization.instance +".sol"))) {
             Timeslot[] timeslots = schedule.getTimeslots();
             for (int i = 1; i < timeslots.length + 1; i++) {
                 Timeslot t = timeslots[i - 1];
