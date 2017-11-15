@@ -7,6 +7,7 @@ package optimization;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  *
@@ -16,11 +17,21 @@ public class Timeslot {
 
     List<Exam> exams;
 
-    public Timeslot(){
+    public Timeslot() {
         this.exams = new ArrayList<>();
     }
+
     public List<Exam> getExams() {
         return this.exams;
+    }
+
+    public Exam getExam(int i) {
+        return this.exams.get(i);
+    }
+
+    public Exam getRandomExam() {
+        Random random = new Random();
+        return this.exams.get(random.nextInt(exams.size()));
     }
 
     public void addExam(Exam e) {
@@ -30,14 +41,33 @@ public class Timeslot {
     public void removeExam(Exam e) {
         this.exams.remove(e);
     }
-    
-    public String toString(){
-        String s="";
-        
-        for(Exam e: this.exams){
-            s+=e.toString()+"\t";
+
+    /**
+     * Tells if the timeslot is compatible with Exam e. i.e. if none of
+     * <code>e</code>'s conflicting exams is contained in the timeslot.
+     *
+     * @param e
+     * @return
+     */
+    public boolean isCompatible(Exam e) {
+        boolean compatible = true;
+        for (Exam alreadyIn : exams) {
+            compatible &= !e.getConflictingExams().contains(alreadyIn);
+            if (!compatible) {
+                return compatible;
+            }
         }
-        
+        return true;
+    }
+    
+    @Override
+    public String toString() {
+        String s = "";
+
+        for (Exam e : this.exams) {
+            s += e.toString() + "\t";
+        }
+
         return s;
     }
 

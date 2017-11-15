@@ -5,70 +5,67 @@
  */
 package optimization;
 
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 /**
- *
+ * Represents an exam.
  * @author lucie
  */
-public class Exam implements Comparable<Exam>{
-    
+public class Exam implements Comparable<Exam> {
+
     private Integer numStudents;
     private Integer id;
-    private List<Student> students=new LinkedList<>(); 
+    private final List<Student> students = new ArrayList<>();
     private Set<Exam> conflictingExams = new HashSet<>();
-    boolean placed;
-    
-    
-    public Exam(Integer examId,Integer numStudents){
-        this.id=examId;
-        this.numStudents=numStudents;
+
+    public Exam(Integer examId, Integer numStudents) {
+        this.id = examId;
+        this.numStudents = numStudents;
     }
-    
-    public int getId(){
+
+    public int getId() {
         return this.id;
     }
-    
-    public int getNumStudents(){
+
+    public int getNumStudents() {
         return this.numStudents;
     }
-    
-    public void  addStutent(Student sID){
+
+    public void addStutent(Student sID) {
         this.students.add(sID);
     }
-    
-    public boolean checkStudent(Student sId){
+
+    public boolean checkStudent(Student sId) {
         return this.students.contains(sId);
-        
     }
-    
-    public void addConflictingExam(Exam e){
+
+    public void addConflictingExam(Exam e) {
         this.conflictingExams.add(e);
     }
-    
-    public Set<Exam> getConflictingExams(){
+
+    public Set<Exam> getConflictingExams() {
         return this.conflictingExams;
     }
-    
-    public void setPlaced(boolean placed){
-        this.placed = placed;
+
+    /**
+     * @param e2
+     * @return 
+     */
+    public boolean isCompatible(Exam e2) {
+        return !this.conflictingExams.contains(e2);
     }
-    
-    public boolean isPlaced(){
-        return this.placed;
-    }
-    
+
     @Override
-    public String toString(){
-        return "Ex"+this.id+" ";
+    public String toString() {
+        return "Ex" + this.id + " ";
     }
 
     @Override
     public int compareTo(Exam o) {
-        return this.conflictingExams.size()-o.getConflictingExams().size();
+        return this.conflictingExams.size() - o.getConflictingExams().size();
     }
-    
+
 }

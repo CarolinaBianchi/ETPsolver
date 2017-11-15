@@ -6,7 +6,6 @@
 package optimization;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -15,9 +14,9 @@ import java.util.List;
  */
 public class Student {
 
-    private String sId;
-    private List<Exam> exams = new LinkedList<>();
-    private List<Integer> examsIds = new ArrayList<>();
+    private final String sId;
+    private final List<Exam> exams = new ArrayList<>();
+    private final List<Integer> examsIds = new ArrayList<>();
 
     public Student(String sId) {
         this.sId = sId;

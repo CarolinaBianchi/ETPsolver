@@ -6,11 +6,10 @@
 package optimization;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Class that manages the program logic, exploiting other classes functions.
@@ -22,22 +21,23 @@ public class Optimizer {
     private List<Exam> exams;
     private List<Student> students;
     private Map<Integer, Exam> eIdExam;
-    private Schedule schedule;
-    private Initializer initializer;
+    // In case we want to implement a multistart algorithm.
+    private List<Schedule> initialSchedules; 
+    private List<AbstractInitializer> initializers;
     private int tmax;
+    // (I'm not sure any of these last 3 attributes is useful)
     private final int S; // number of students
     private final int E; // number of exams
-    private boolean[][] a; // a matrix: a[i][j] is true if student i is enrolled in exam j.
+    private boolean[][] a; // a matrix: a[i][j] is true if student i is enrolled in exam j. 
 
     public Optimizer(String instanceName) throws IOException {
         init(instanceName);
         S = students.size();
         E = exams.size();
         a = new boolean[S][E];
-        initializer = new Initializer();
-        schedule = new Schedule(tmax);
+        initialSchedules = new ArrayList<>();
+        initInitializers();
         buildStudentListInEx();
-        //checkExamEnrollments(); //DEBUG
         buildConflictingExamsLists();
     }
 
@@ -54,8 +54,24 @@ public class Optimizer {
         this.tmax = FileManager.readTimeslots(instanceName);
     }
 
+    private void initInitializers() {
+
+        AbstractInitializer randomInit = new RandomInitializer(exams, initialSchedules, tmax);
+        //AbstractInitializer someOther = new SomeOtherInitializer(exams.clone(), schedules, tmax);
+        initializers = new ArrayList<>(2);
+        initializers.add(randomInit);
+        //initializers.add(someOther)
+        try {
+            ((Thread)randomInit).join();
+            //((Thread)someOther).join();
+        } catch (InterruptedException ex) {
+            
+        }
+
+    }
+
     /**
-     * Adds the students to the exams in which they're enrolled and ; builds the
+     * Adds the students to the exams in which they're enrolled and builds the
      * matrix <code>a</code> accordingly.
      */
     private void buildStudentListInEx() {
@@ -80,7 +96,6 @@ public class Optimizer {
         Exam e1, e2;
         for (Student s : students) {
             sExams = s.getExams();
-            //System.out.println(s.getExams().size());
             for (int i = 0; i < sExams.size(); i++) {
                 e1 = sExams.get(i);
                 for (int j = i + 1; j < sExams.size(); j++) {
@@ -88,7 +103,6 @@ public class Optimizer {
                     e2.addConflictingExam(e2);
                     e2.addConflictingExam(e1);
                 }
-                //System.out.println(e1.getConflictingExams().size());
             }
         }
     }
@@ -103,38 +117,13 @@ public class Optimizer {
         }
     }
 
-    /**
-     * For debuggin purposes, can be later deleted: I check if the number of
-     * "trues" in matrix a, in column corrisponding to the exam j, are equal to
-     * the number of enrolled students declared in the exam file.
-     */
-    private void checkExamEnrollments() {
-        int counter;
-        boolean equal = true;
-        for (int j = 0; j < a[0].length; j++) { // I cycle externally on exams
-            counter = 0;
-            for (int i = 0; i < a.length; i++) { // I sum the number of enrollments in that exam
-                counter = (a[i][j]) ? counter + 1 : counter;
-            }
-            equal &= (counter == exams.get(j).getNumStudents());
-        }
-        System.out.println(equal);
-    }
-    
-    public void run(){
+    public void run() {
         try {
-            initializer.run(exams, schedule);
-        } catch (Exception ex) {
-            // hehe
-        }
-    }
-    
-    private void printA(){
-        for(int i = 0; i< a.length; i++){
-            System.out.println("");
-            for(int j=0; j<a[0].length; j++){
-                System.out.print(a[i][j]?1:0+" ");
+            for (AbstractInitializer in : this.initializers) {
+                in.run();
             }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 
