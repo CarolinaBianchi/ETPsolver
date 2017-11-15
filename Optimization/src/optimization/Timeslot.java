@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
+ * Class that represents a Timeslot.
  *
  * @author Carolina Bianchi
  */
@@ -43,8 +44,8 @@ public class Timeslot {
     }
 
     /**
-     * Tells if the timeslot is compatible with Exam e. i.e. if none of
-     * <code>e</code>'s conflicting exams is contained in the timeslot.
+     * Tells if the timeslot is compatible with Exam <code>e</code>. i.e. if it
+     * doesn't contain any of e's conflicting exams.
      *
      * @param e
      * @return
@@ -52,22 +53,20 @@ public class Timeslot {
     public boolean isCompatible(Exam e) {
         boolean compatible = true;
         for (Exam alreadyIn : exams) {
-            compatible &= !e.getConflictingExams().contains(alreadyIn);
+            compatible &= e.isCompatible(alreadyIn);
             if (!compatible) {
                 return compatible;
             }
         }
         return true;
     }
-    
+
     @Override
     public String toString() {
         String s = "";
-
         for (Exam e : this.exams) {
             s += e.toString() + "\t";
         }
-
         return s;
     }
 

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Class that represents a student.
  * @author lucie
  */
 public class Student {

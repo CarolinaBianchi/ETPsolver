@@ -3,10 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package optimization;
+package fileutils;
 
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import optimization.Exam;
+import optimization.Optimization;
+import optimization.Schedule;
+import optimization.Timeslot;
 
 /**
  * Writes the solution found on a new thread.

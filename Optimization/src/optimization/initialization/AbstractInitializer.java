@@ -3,9 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package optimization;
+package optimization.initialization;
 
 import java.util.List;
+import optimization.Exam;
+import optimization.Schedule;
 
 /**
  * Defines the general structure of an initializer. This class extends the class

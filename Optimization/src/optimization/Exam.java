@@ -12,14 +12,17 @@ import java.util.Set;
 
 /**
  * Represents an exam.
+ *
  * @author lucie
  */
 public class Exam implements Comparable<Exam> {
 
-    private Integer numStudents;
-    private Integer id;
+    private final Integer numStudents;
+    private final Integer id;
     private final List<Student> students = new ArrayList<>();
-    private Set<Exam> conflictingExams = new HashSet<>();
+    // 2 exams are "conflicting" if at least one student is enrolled in both of 
+    // them.(-> can't be placed in the same timeslot)
+    private final Set<Exam> conflictingExams = new HashSet<>();
 
     public Exam(Integer examId, Integer numStudents) {
         this.id = examId;
@@ -51,21 +54,24 @@ public class Exam implements Comparable<Exam> {
     }
 
     /**
+     * Tells if this exam is compatible (i.e. not conflicting) with Exam
+     * <code> ex2</code>.
+     *
      * @param e2
-     * @return 
+     * @return true if the two exams are not conflicting, false otherwise.
      */
     public boolean isCompatible(Exam e2) {
         return !this.conflictingExams.contains(e2);
     }
 
     @Override
-    public String toString() {
-        return "Ex" + this.id + " ";
+    public int compareTo(Exam o) {
+        return this.conflictingExams.size() - o.getConflictingExams().size();
     }
 
     @Override
-    public int compareTo(Exam o) {
-        return this.conflictingExams.size() - o.getConflictingExams().size();
+    public String toString() {
+        return "Ex" + this.id + " ";
     }
 
 }

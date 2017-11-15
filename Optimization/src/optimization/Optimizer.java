@@ -5,6 +5,9 @@
  */
 package optimization;
 
+import fileutils.FileManager;
+import optimization.initialization.RandomInitializer;
+import optimization.initialization.AbstractInitializer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
