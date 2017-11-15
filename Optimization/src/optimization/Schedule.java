@@ -8,7 +8,7 @@ package optimization;
 import java.util.Random;
 
 /**
- *
+ * Class that represents a Schedule.
  * @author Carolina Bianchi
  */
 public class Schedule {

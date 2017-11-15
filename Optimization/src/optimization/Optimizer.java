@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class that manages the program logic, exploiting other classes functions.
@@ -25,7 +27,7 @@ public class Optimizer {
     private List<Student> students;
     private Map<Integer, Exam> eIdExam;
     // In case we want to implement a multistart algorithm.
-    private List<Schedule> initialSchedules; 
+    private List<Schedule> initialSchedules;
     private List<AbstractInitializer> initializers;
     private int tmax;
     // (I'm not sure any of these last 3 attributes is useful)
@@ -61,18 +63,18 @@ public class Optimizer {
 
         AbstractInitializer randomInit = new RandomInitializer(cloneExams(), initialSchedules, tmax),
                 randomInit2 = new RandomInitializer(cloneExams(), initialSchedules, tmax);
-        
+
         //AbstractInitializer someOther = new SomeOtherInitializer(cloneExams(), schedules, tmax);
-        initializers = new ArrayList<>(2);
+        initializers = new ArrayList<>();
         initializers.add(randomInit);
         initializers.add(randomInit2);
-        //initializers.add(someOther)
+        //inizializers.add(someOther);
         try {
-            ((Thread)randomInit).join();
-            ((Thread)randomInit2).join();
+            ((Thread) randomInit).join();
+            ((Thread) randomInit2).join();
             //((Thread)someOther).join();
         } catch (InterruptedException ex) {
-            
+            Logger.getLogger(Optimizer.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
@@ -95,9 +97,11 @@ public class Optimizer {
                 a[i][exams.indexOf(exam)] = true;
             }
         }
-        //printA();
     }
 
+    /**
+     * Builds the list of conflicting exams in each exam.
+     */
     private void buildConflictingExamsLists() {
         List<Exam> sExams;
         Exam e1, e2;
@@ -123,7 +127,22 @@ public class Optimizer {
             eIdExam.put(e.getId(), e);
         }
     }
+    
+    /**
+     * Clones the list of exam, so that it can be used from different threads.
+     * @return 
+     */
+    public List<Exam> cloneExams() {
+        List<Exam> clone = new ArrayList<>(exams.size());
+        for (Exam e : exams) {
+            clone.add(e.clone());
+        }
+        return clone;
+    }
 
+    /**
+     * Strarts the initializers' threads.
+     */
     public void run() {
         try {
             for (AbstractInitializer in : this.initializers) {
@@ -132,14 +151,6 @@ public class Optimizer {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-    }
-    
-    public List<Exam> cloneExams(){
-        List<Exam> clone = new ArrayList<>(exams.size());
-        for(Exam e : exams){
-            clone.add(e.clone());
-        }
-        return clone;
     }
 
 }

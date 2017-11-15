@@ -8,7 +8,7 @@ package optimization;
 import java.util.Objects;
 
 /**
- *
+ * Class that contains only the informations useful to identify an exam.
  * @author Carolina Bianchi
  */
 public class ProxyExam {
