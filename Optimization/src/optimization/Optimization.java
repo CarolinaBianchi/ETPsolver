@@ -18,9 +18,9 @@ public class Optimization {
     /* This assigmnent has to be deleted in the future when we will launch the 
     program only from command line (java -jar "Optimization.jar" instancename).
     When calling the program from command line, you have to move the "files" 
-    folder in the same folder of the jar (for now, only for order purposes).
+    folder in the same folder of the jar.
      */
-    private static String instance = "instance01";
+    public static String instance = "instance04";
 
     /**
      * @param args the command line arguments
@@ -31,6 +31,7 @@ public class Optimization {
         try {
             // TODO code application logic here
             Optimizer optimizer = new Optimizer(instance);
+            optimizer.run();
         } catch (IOException ex) {
             Logger.getLogger(Optimization.class.getName()).log(Level.SEVERE, null, ex);
         }
