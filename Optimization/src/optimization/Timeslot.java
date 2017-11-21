@@ -53,7 +53,7 @@ public class Timeslot {
     public boolean isCompatible(Exam e) {
         boolean compatible = true;
         for (Exam alreadyIn : exams) {
-            compatible &= e.isCompatible(alreadyIn);
+            compatible &= e.isCompatible(alreadyIn.getId());
             if (!compatible) {
                 return compatible;
             }

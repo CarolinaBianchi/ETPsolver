@@ -60,7 +60,7 @@ public class Optimizer {
     }
 
     private void initInitializers() {
-
+        
         AbstractInitializer randomInit = new RandomInitializer(cloneExams(), initialSchedules, tmax),
                 randomInit2 = new RandomInitializer(cloneExams(), initialSchedules, tmax);
 
@@ -111,8 +111,8 @@ public class Optimizer {
                 e1 = sExams.get(i);
                 for (int j = i + 1; j < sExams.size(); j++) {
                     e2 = sExams.get(j);
-                    e2.addConflictingExam(e2);
-                    e2.addConflictingExam(e1);
+                    e1.addConflictingExam(e2.getId());
+                    e2.addConflictingExam(e1.getId());
                 }
             }
         }
@@ -141,7 +141,7 @@ public class Optimizer {
     }
 
     /**
-     * Strarts the initializers' threads.
+     * Starts the initializers' threads.
      */
     public void run() {
         try {
