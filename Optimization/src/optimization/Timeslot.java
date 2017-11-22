@@ -60,6 +60,15 @@ public class Timeslot {
         }
         return true;
     }
+    
+    /**
+     * Tell if there are exams currently scheduled in this time slot
+     *
+     * @return TRUE - If the time slot is still free / FALSE - Otherwise.
+     */
+    public boolean isFree() {
+        return exams.isEmpty();
+    }
 
     @Override
     public String toString() {

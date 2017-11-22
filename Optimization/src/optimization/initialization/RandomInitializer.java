@@ -37,7 +37,11 @@ public class RandomInitializer extends AbstractInitializer {
     @Override
     public Schedule initialize() {
         Collections.sort(exams);
+            
         computeRandomSchedule();
+        
+        //System.out.println("First trial: " + this.getPercPlaced());
+        
         while (mySchedule.getNExams() != exams.size()) {
             if (this.getPercPlaced() < 0.98) {
                 computeRandomSchedule();
@@ -48,11 +52,17 @@ public class RandomInitializer extends AbstractInitializer {
             while (!randomSwap() && !randomMove()) {
                 // HORRIBLE CODE
             }
+            
+            //System.out.println("New trial: " + this.getPercPlaced());
+            //System.out.println("Available time slots: " + mySchedule.freeTimeslotAvailability());
         }
         writeSolution();
         return mySchedule;
     }
 
+    /**
+     * Try to generate a schedule by means of random computation.
+     */
     protected void computeRandomSchedule() {
         Exam toBePlaced;
         // I iterate on the exams that still have to be placed
@@ -66,6 +76,9 @@ public class RandomInitializer extends AbstractInitializer {
         }
     }
 
+    /**
+     * Try to generate a schedule by means of ordered computation.
+     */
     private void computeOrderedSchedule() {
         Exam toBePlaced;
         // I iterate on the exams that still have to be placed
@@ -86,15 +99,13 @@ public class RandomInitializer extends AbstractInitializer {
      * @return true if the exam was placed, false otherwise.
      */
     private boolean tryRandomPlacement(Exam toBePlaced) {
-        Timeslot destination;
         for (int k = 0; k < PLACING_TRIES; k++) {
-            destination = mySchedule.getRandomTimeslot();
-            if (destination.isCompatible(toBePlaced)) {
-                destination.addExam(toBePlaced);
-                //toBePlaced.setPlaced(true);
+            
+            if (mySchedule.randomPlacement(toBePlaced)) {
                 alreadyPlaced++;
                 return true;
             }
+            
         }
         return false;
     }
@@ -108,16 +119,22 @@ public class RandomInitializer extends AbstractInitializer {
             }
         }
         return false;
+        
+        
     }
 
     /**
      * Performs a random swap between 2 exams. (It tries at maximum SWAP_TIMES
      * times to do it).
-     *
+     * 
+     * EDIT (Flavio) :  The program tried SWAP_TRIES swaps and then it returned 
+     *                  the swapped boolean. I think it makes more sense if it stops
+     *                  as soon as it finds a feasible swap.
+     * 
      * @return true if the swapping attempt succeeded, false otherwise.
      */
     protected boolean randomSwap() {
-        Exam ex1, ex2;
+        /*Exam ex1, ex2;
         Timeslot tj, tk;
         boolean swapped = false;
         for (int i = 0; i < SWAP_TRIES; i++) {
@@ -130,16 +147,29 @@ public class RandomInitializer extends AbstractInitializer {
                 swapped = true;
             }
         }
-        return swapped;
+        return swapped;*/
+        
+        // It tries for SWAP_TRIES times to randomly swap two exams within the schedule. 
+        // If a swap results in a feasible placement, it returns true.
+        for (int i = 0; i < SWAP_TRIES; i++) {
+            if( mySchedule.randomSwap() ) return true;
+        }
+        
+        return false;
     }
 
     /**
      * Tries to move 1 exam from a timeslot to another one.
-     *
+     * 
+     * EDIT (Flavio) :  The program tried MOVE_TRIES moves and then it returned 
+     *                  the moved boolean. I think it makes more sense if it stops
+     *                  as soon as it finds a feasible move.
+     * 
      * @return true if the exam was moved, false otherwise.
+     * 
      */
     private boolean randomMove() {
-        Timeslot tj, tk;
+        /*Timeslot tj, tk;
         Exam ex;
         boolean moved = false;
         for (int i = 0; i < MOVE_TRIES; i++) {
@@ -151,8 +181,15 @@ public class RandomInitializer extends AbstractInitializer {
                 moved = true;
             }
         }
-        return moved;
-
+        return moved;*/
+        
+        // It tries for MOVE_TRIES times to randomly move an exam within the schedule. 
+        // If a move results in a feasible placement, it returns true.
+        for (int i = 0; i < MOVE_TRIES; i++) {
+            if( mySchedule.randomMove() ) return true;
+        }
+        
+        return false;
     }
 
     /**
@@ -161,7 +198,7 @@ public class RandomInitializer extends AbstractInitializer {
      * @param ex
      * @param source
      * @param dest
-     */
+     
     private void move(Exam ex, Timeslot source, Timeslot dest) {
         source.removeExam(ex);
         dest.addExam(ex);
@@ -176,7 +213,7 @@ public class RandomInitializer extends AbstractInitializer {
      * @param t2
      * @param ex2
      * @return
-     */
+     
     private boolean checkFeasibleSwap(Timeslot t1, Exam ex1, Timeslot t2, Exam ex2) {
         return checkSwap(t1, ex1, ex2) && checkSwap(t2, ex2, ex1);
     }
@@ -189,7 +226,7 @@ public class RandomInitializer extends AbstractInitializer {
      * @param ex1
      * @param ex2
      * @return
-     */
+     
     private boolean checkSwap(Timeslot t1, Exam ex1, Exam ex2) {
         t1.removeExam(ex1);
         boolean compatible = t1.isCompatible(ex2);
@@ -204,11 +241,11 @@ public class RandomInitializer extends AbstractInitializer {
      * @param ex1
      * @param t2 source timeslot of exam ex2
      * @param ex2
-     */
+     
     private void swap(Timeslot t1, Exam ex1, Timeslot t2, Exam ex2) {
         move(ex1, t1, t2);
         move(ex2, t2, t1);
-    }
+    }*/
 
     private void writeSolution() {
 
