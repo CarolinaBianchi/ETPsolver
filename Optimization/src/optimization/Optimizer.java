@@ -92,7 +92,7 @@ public class Optimizer {
             examsIds = student.getExamsIds();
             for (int eId : examsIds) {
                 exam = eIdExam.get(eId);
-                exam.addStutent(student);    //In the future one of this two lines may be useless
+                //exam.addStudent(student);    //In the future one of this two lines may be useless
                 student.addExam(exam);
                 a[i][exams.indexOf(exam)] = true;
             }

@@ -18,7 +18,7 @@ import java.util.Set;
  */
 public class Exam implements Comparable<Exam>, Cloneable {
 
-    private List<Student> students = new ArrayList<>();
+    //private List<Student> students = new ArrayList<>();
     // 2 exams are "conflicting" if at least one student is enrolled in both of 
     // them.(-> can't be placed in the same timeslot)
     private final Set<Integer> conflictingExams = new HashSet<>();
@@ -38,21 +38,21 @@ public class Exam implements Comparable<Exam>, Cloneable {
         return this.id;
     }
 
-    public void addStutent(Student sID) {
+    /*public void addStudent(Student sID) {
         this.students.add(sID);
     }
 
     public boolean checkStudent(Student sId) {
         return this.students.contains(sId);
-    }
+    }*/
 
     public void addConflictingExam(int eId) {
         this.conflictingExams.add(eId);
     }
 
-    public void setStudents(List<Student> students) {
+    /*public void setStudents(List<Student> students) {
         this.students = students;
-    }
+    }*/
 
     public Set<Integer> getConflictingExams() {
         return this.conflictingExams;
@@ -76,7 +76,7 @@ public class Exam implements Comparable<Exam>, Cloneable {
             clone.addConflictingExam(eId);
         }
         // Since it's useless for now... if we had to read it a method to clone students should be provided.
-        clone.setStudents(this.students);
+        //clone.setStudents(this.students);
         return clone;
     }
 
