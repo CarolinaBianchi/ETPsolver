@@ -113,6 +113,10 @@ public class Optimizer {
                     e2 = sExams.get(j);
                     e1.addConflictingExam(e2.getId());
                     e2.addConflictingExam(e1.getId());
+                    
+                    // Used for adding the conflicts to the exam conflict map.
+                    e1.addConflictingExam2(e2.getId());
+                    e2.addConflictingExam2(e1.getId());
                 }
             }
         }

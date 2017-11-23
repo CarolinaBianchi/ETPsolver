@@ -6,8 +6,10 @@
 package optimization;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -22,6 +24,7 @@ public class Exam implements Comparable<Exam>, Cloneable {
     // 2 exams are "conflicting" if at least one student is enrolled in both of 
     // them.(-> can't be placed in the same timeslot)
     private final Set<Integer> conflictingExams = new HashSet<>();
+    private final Map<Integer, Integer> conflictingExams2 = new HashMap<>();
     private final Integer numStudents;
     private final Integer id;
 
@@ -49,6 +52,27 @@ public class Exam implements Comparable<Exam>, Cloneable {
     public void addConflictingExam(int eId) {
         this.conflictingExams.add(eId);
     }
+    
+    /**
+     * Add a new exam to the exam collisions map.
+     * If there wasn't any previous collision between this exam and eId, then create a 
+     * new row inside the map and set the number of students involved in the collision 
+     * to one. Otherwise, increase the old value by one.
+     * @param eId The id of the exam we want to add to the conflicting exams map
+     */
+    public void addConflictingExam2(int eId ) {
+        int numStudentsInvolved = 1;
+        
+        if( conflictingExams2.containsKey(eId)) {
+            numStudentsInvolved += this.conflictingExams2.get(eId);
+        }
+        
+        this.conflictingExams2.put(eId, numStudentsInvolved);
+    }
+    
+    public void addConflictingExam(int eId, int numStudents) {
+        this.conflictingExams2.put(eId, numStudents);
+    }
 
     /*public void setStudents(List<Student> students) {
         this.students = students;
@@ -56,6 +80,20 @@ public class Exam implements Comparable<Exam>, Cloneable {
 
     public Set<Integer> getConflictingExams() {
         return this.conflictingExams;
+    }
+    
+    public Map<Integer, Integer> getConflictingExams2() {
+        return this.conflictingExams2;
+    }
+    
+    /**
+     * Get the number of students that are enrolled in both this exam and exam eId.
+     * @param eId The exam we want to check the collision for.
+     * @return The number of students involved in the collision. If there isn't any
+     *         collision, it returns 0;
+     */
+    public int studentsInvolvedInCollision (int eId) {
+        return (this.conflictingExams2.containsKey(eId)) ? this.conflictingExams2.get(eId) : 0;
     }
 
     /**
@@ -69,11 +107,16 @@ public class Exam implements Comparable<Exam>, Cloneable {
         return !this.conflictingExams.contains(eId);
     }
 
+    public boolean isCompatible2(int eId) {
+        return !this.conflictingExams2.containsKey(eId);
+    }
+    
     @Override
     public Exam clone() {
         Exam clone = new Exam(id, numStudents);
         for (int eId : this.conflictingExams) {
             clone.addConflictingExam(eId);
+            clone.addConflictingExam(eId, this.conflictingExams2.get(eId));
         }
         // Since it's useless for now... if we had to read it a method to clone students should be provided.
         //clone.setStudents(this.students);

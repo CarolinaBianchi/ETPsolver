@@ -39,14 +39,16 @@ public class RandomInitializer extends AbstractInitializer {
         Collections.sort(exams);
             
         computeRandomSchedule();
+        int numtries = 1;
         
-        //System.out.println("First trial: " + this.getPercPlaced());
+        System.out.println("First trial: " + this.getPercPlaced());
         
         while (mySchedule.getNExams() != exams.size()) {
             if (this.getPercPlaced() < 0.98) {
                 computeRandomSchedule();
             } else {
-                computeOrderedSchedule();
+                forceRandomSchedule();
+                //computeOrderedSchedule();
             }
 
             while (!randomSwap() && !randomMove()) {
@@ -55,8 +57,13 @@ public class RandomInitializer extends AbstractInitializer {
             
             //System.out.println("New trial: " + this.getPercPlaced());
             //System.out.println("Available time slots: " + mySchedule.freeTimeslotAvailability());
+            
+            numtries++;
         }
-        writeSolution();
+        //writeSolution();
+        System.out.println("Number of tries: " + numtries);
+        System.out.println("Number of collisions: " + mySchedule.getTotalCollisions());
+
         return mySchedule;
     }
 
@@ -87,6 +94,25 @@ public class RandomInitializer extends AbstractInitializer {
             // If i didn't manage to place the exam in the available number of tries, I pass to the swap/move phase
             if (!tryOrderedPlacement(toBePlaced)) {
                 break;
+            }
+
+        }
+    }
+    
+    /**
+     * Force the generation of a random schedule, even if it creates some collisions.
+     */
+    protected void forceRandomSchedule() {
+        Exam toBePlaced;
+        // I iterate on the exams that still have to be placed
+        while (alreadyPlaced != exams.size()) {
+            toBePlaced = exams.get(alreadyPlaced);
+            // If i didn't manage to place the exam in the available number of tries, I pass to the swap/move phase
+            if (!tryRandomPlacement(toBePlaced)) {
+                mySchedule.forceRandomPlacement(toBePlaced);
+                alreadyPlaced++;
+                
+                System.out.println("Placed: " + this.getPercPlaced());
             }
 
         }
@@ -127,69 +153,47 @@ public class RandomInitializer extends AbstractInitializer {
      * Performs a random swap between 2 exams. (It tries at maximum SWAP_TIMES
      * times to do it).
      * 
-     * EDIT (Flavio) :  The program tried SWAP_TRIES swaps and then it returned 
-     *                  the swapped boolean. I think it makes more sense if it stops
-     *                  as soon as it finds a feasible swap.
-     * 
      * @return true if the swapping attempt succeeded, false otherwise.
      */
     protected boolean randomSwap() {
-        /*Exam ex1, ex2;
-        Timeslot tj, tk;
+        
         boolean swapped = false;
         for (int i = 0; i < SWAP_TRIES; i++) {
-            tj = mySchedule.getRandomTimeslot();
-            tk = mySchedule.getRandomTimeslot();
-            ex1 = tj.getRandomExam();
-            ex2 = tk.getRandomExam();
-            if (checkFeasibleSwap(tj, ex1, tk, ex2)) {
-                swap(tj, ex1, tk, ex2);
-                swapped = true;
-            }
+            if( mySchedule.randomSwap() ) swapped = true;
         }
-        return swapped;*/
+        return swapped;
         
         // It tries for SWAP_TRIES times to randomly swap two exams within the schedule. 
         // If a swap results in a feasible placement, it returns true.
-        for (int i = 0; i < SWAP_TRIES; i++) {
+        /*for (int i = 0; i < SWAP_TRIES; i++) {
             if( mySchedule.randomSwap() ) return true;
         }
         
-        return false;
+        return false;*/
     }
 
     /**
      * Tries to move 1 exam from a timeslot to another one.
      * 
-     * EDIT (Flavio) :  The program tried MOVE_TRIES moves and then it returned 
-     *                  the moved boolean. I think it makes more sense if it stops
-     *                  as soon as it finds a feasible move.
-     * 
      * @return true if the exam was moved, false otherwise.
      * 
      */
     private boolean randomMove() {
-        /*Timeslot tj, tk;
+        Timeslot tj, tk;
         Exam ex;
         boolean moved = false;
         for (int i = 0; i < MOVE_TRIES; i++) {
-            tj = mySchedule.getRandomTimeslot();
-            tk = mySchedule.getRandomTimeslot();
-            ex = tj.getRandomExam();
-            if (tk.isCompatible(ex)) {
-                move(ex, tj, tk);
-                moved = true;
-            }
+            if( mySchedule.randomMove() ) moved = true;
         }
-        return moved;*/
+        return moved;
         
         // It tries for MOVE_TRIES times to randomly move an exam within the schedule. 
         // If a move results in a feasible placement, it returns true.
-        for (int i = 0; i < MOVE_TRIES; i++) {
+        /*for (int i = 0; i < MOVE_TRIES; i++) {
             if( mySchedule.randomMove() ) return true;
         }
         
-        return false;
+        return false;*/
     }
 
     /**

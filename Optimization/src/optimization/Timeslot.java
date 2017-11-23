@@ -17,6 +17,7 @@ import java.util.Random;
 public class Timeslot {
 
     List<Exam> exams;
+    private int numCollisions; 
 
     public Timeslot() {
         this.exams = new ArrayList<>();
@@ -24,6 +25,10 @@ public class Timeslot {
 
     public List<Exam> getExams() {
         return this.exams;
+    }
+    
+    public int getCollisions() {
+        return this.numCollisions;
     }
 
     public Exam getExam(int i) {
@@ -41,6 +46,21 @@ public class Timeslot {
 
     public void removeExam(Exam e) {
         this.exams.remove(e);
+    }
+
+    /**
+     * Force an exam to be scheduled in this time slot;
+     * @param toBePlaced The exam we want to force in this time slot.
+     */
+    public void forceExam(Exam toBePlaced) {
+        int collisionsGenerated = 0;
+        
+        for( Exam e : this.exams ) {
+            collisionsGenerated += toBePlaced.studentsInvolvedInCollision(e.getId());
+        }
+        
+        this.exams.add(toBePlaced);
+        this.numCollisions += collisionsGenerated;
     }
 
     /**

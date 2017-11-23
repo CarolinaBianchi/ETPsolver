@@ -34,6 +34,15 @@ public class Schedule {
     public int getTmax() {
         return this.timeslots.length;
     }
+    
+    public int getTotalCollisions() {
+        int tot = 0;
+        for( Timeslot t : timeslots ) {
+            tot += t.getCollisions();
+        }
+        
+        return tot;
+    }
 
     public Timeslot getTimeslot(int i) {
         return timeslots[i];
@@ -145,6 +154,14 @@ public class Schedule {
     }
     
     /**
+     * Force an exam to be placed in a random schedule, even if it generates a collision.
+     * @param toBePlaced The exam we want to schedule.
+     */
+    public void forceRandomPlacement(Exam toBePlaced) {
+        getRandomTimeslot().forceExam(toBePlaced);
+    }
+    
+    /**
      * Tries to move 1 exam from a Timeslot to another one.
      * 
      * @return true if the exam was successfully moved, false otherwise.
@@ -226,4 +243,5 @@ public class Schedule {
         
         return count;
     }
+
 }
