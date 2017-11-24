@@ -47,8 +47,8 @@ public class RandomInitializer extends AbstractInitializer {
             if (this.getPercPlaced() < 0.98) {
                 computeRandomSchedule();
             } else {
-                forceRandomSchedule();
-                //computeOrderedSchedule();
+                //forceRandomSchedule();
+                computeOrderedSchedule();
             }
 
             while (!randomSwap() && !randomMove()) {

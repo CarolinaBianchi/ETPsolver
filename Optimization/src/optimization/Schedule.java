@@ -9,6 +9,7 @@ import java.util.Random;
 
 /**
  * Class that represents a Schedule.
+ *
  * @author Carolina Bianchi
  */
 public class Schedule {
@@ -34,13 +35,13 @@ public class Schedule {
     public int getTmax() {
         return this.timeslots.length;
     }
-    
+
     public int getTotalCollisions() {
         int tot = 0;
-        for( Timeslot t : timeslots ) {
+        for (Timeslot t : timeslots) {
             tot += t.getCollisions();
         }
-        
+
         return tot;
     }
 
@@ -52,10 +53,20 @@ public class Schedule {
         Random rnd = new Random();
         return timeslots[rnd.nextInt(timeslots.length)];
     }
-    
+
+    public Timeslot getTimeslotWithExams() {
+        Random rnd = new Random();
+        Timeslot t;
+        do {
+            t = timeslots[rnd.nextInt(timeslots.length)];
+        } while (t.isFree());
+        return t;
+    }
+
     /**
      * Returns the number of timeslots currently in this schedule.
-     * @return 
+     *
+     * @return
      */
     public int getNExams() {
         int counter = 0;
@@ -68,8 +79,6 @@ public class Schedule {
     void clear() {
         initTimeslots();
     }
-    
-    
 
     /**
      * Moves an exam from a source timeslot to a destination.
@@ -143,7 +152,7 @@ public class Schedule {
      */
     public boolean randomPlacement(Exam toBePlaced) {
         Timeslot destination;
-        
+
         destination = getRandomTimeslot();
         if (destination.isCompatible(toBePlaced)) {
             destination.addExam(toBePlaced);
@@ -152,26 +161,28 @@ public class Schedule {
         }
         return false;
     }
-    
+
     /**
-     * Force an exam to be placed in a random schedule, even if it generates a collision.
+     * Force an exam to be placed in a random schedule, even if it generates a
+     * collision.
+     *
      * @param toBePlaced The exam we want to schedule.
      */
     public void forceRandomPlacement(Exam toBePlaced) {
         getRandomTimeslot().forceExam(toBePlaced);
     }
-    
+
     /**
      * Tries to move 1 exam from a Timeslot to another one.
-     * 
+     *
      * @return true if the exam was successfully moved, false otherwise.
-     * 
+     *
      */
     public boolean randomMove() {
         Timeslot tj, tk;
         Exam ex;
-        
-        tj = getRandomTimeslot();
+
+        tj = getTimeslotWithExams();
         tk = getRandomTimeslot();
         ex = tj.getRandomExam();
         if (tk.isCompatible(ex)) {
@@ -179,22 +190,23 @@ public class Schedule {
             move(ex, tj, tk);
             return true;
         }
-        
+
         return false;
     }
 
     /**
      * Performs a random swap between 2 exams.
-     * 
+     *
      * @return true if the swapping attempt succeeded, false otherwise.
-     * 
-    **/
+     *
+     *
+     */
     public boolean randomSwap() {
         Timeslot tj, tk;
         Exam ex1, ex2;
-        
-        tj = getRandomTimeslot();
-        tk = getRandomTimeslot();
+
+        tj = getTimeslotWithExams();
+        tk = getTimeslotWithExams();
         ex1 = tj.getRandomExam();
         ex2 = tk.getRandomExam();
         if (checkFeasibleSwap(tj, ex1, tk, ex2)) {
@@ -202,7 +214,7 @@ public class Schedule {
             swap(tj, ex1, tk, ex2);
             return true;
         }
-        
+
         return false;
     }
 
@@ -213,34 +225,35 @@ public class Schedule {
      * @return true if the exam was placed, false otherwise.
      */
     public boolean freePlacement(Exam toBePlaced) {
-        
+
         // For each available time slot, check if it has no exams scheduled in 
         // it yet. If so, schedule the given exam in the first free slot found.
-        for (Timeslot destination : timeslots ) {
+        for (Timeslot destination : timeslots) {
             if (destination.isFree()) {
                 destination.addExam(toBePlaced);
                 return true;
             }
         }
-        
+
         return false;
     }
-    
+
     /**
      * Count the number of free time slots available;
+     *
      * @return The number of free time slots available.
      */
     public int freeTimeslotAvailability() {
         int count = 0;
-        
+
         // For each available time slot, check if it has no exams scheduled in 
         // it yet. If so, increment the counter.
-        for (Timeslot destination : timeslots ) {
+        for (Timeslot destination : timeslots) {
             if (destination.isFree()) {
                 count++;
             }
         }
-        
+
         return count;
     }
 

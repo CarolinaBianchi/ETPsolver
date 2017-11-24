@@ -36,6 +36,9 @@ public class Timeslot {
     }
 
     public Exam getRandomExam() {
+        if(exams.isEmpty()){
+            return null;
+        }
         Random random = new Random();
         return this.exams.get(random.nextInt(exams.size()));
     }
