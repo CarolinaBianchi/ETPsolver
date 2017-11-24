@@ -6,7 +6,7 @@
 package optimization;
 
 import fileutils.FileManager;
-import optimization.initialization.RandomInitializer;
+import optimization.initialization.FeasibleInitializer;
 import optimization.initialization.AbstractInitializer;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import optimization.initialization.InfeasibleInitializer;
 
 /**
  * Class that manages the program logic, exploiting other classes functions.
@@ -61,8 +62,8 @@ public class Optimizer {
 
     private void initInitializers() {
         
-        AbstractInitializer randomInit = new RandomInitializer(cloneExams(), initialSchedules, tmax),
-                randomInit2 = new RandomInitializer(cloneExams(), initialSchedules, tmax);
+        AbstractInitializer randomInit = new FeasibleInitializer(cloneExams(), initialSchedules, tmax),
+                randomInit2 = new InfeasibleInitializer(cloneExams(), initialSchedules, tmax);
 
         //AbstractInitializer someOther = new SomeOtherInitializer(cloneExams(), schedules, tmax);
         initializers = new ArrayList<>();
