@@ -65,14 +65,18 @@ public class FileManager {
             while ((line = in.readLine()) != null) {
                 if (!line.isEmpty()) {
                     tokens = line.split(" ");
+                    /* If the id of the previous student is different from the 
+                    id of the current student, we have a new student -> I add
+                    the previous one to the list and create a new student                    
+                    */
                     if(!st.getId().equals(tokens[0])){
                         students.add(st);
                         st = new Student(tokens[0]);
                     }
                     st.addExamId(Integer.parseInt(tokens[1]));
-                    students.add(st);;
                 }
             }
+            students.add(st);
         }
         students.remove(0); // DIRTY FIX, CAN BE IMPROVED!
         return students;
