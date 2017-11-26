@@ -54,6 +54,17 @@ public class Schedule {
         return timeslots[rnd.nextInt(timeslots.length)];
     }
 
+    /**
+     * Returns a random Timeslot up to a certain bound.
+     *
+     * @param bound
+     * @return
+     */
+    public Timeslot getRandomTimeslot(int bound) {
+        Random rnd = new Random();
+        return timeslots[rnd.nextInt(bound)];
+    }
+
     public Timeslot getTimeslotWithExams() {
         Random rnd = new Random();
         Timeslot t;
@@ -135,15 +146,6 @@ public class Schedule {
         move(ex2, t2, t1);
     }
 
-    @Override
-    public String toString() {
-        String s = "";
-        for (int i = 0; i < timeslots.length; i++) {
-            s += "Timeslot " + i + timeslots[i].toString() + "\n";
-        }
-        return s;
-    }
-
     /**
      * Tries to place an exam in a random Timeslot.
      *
@@ -156,7 +158,23 @@ public class Schedule {
         destination = getRandomTimeslot();
         if (destination.isCompatible(toBePlaced)) {
             destination.addExam(toBePlaced);
-            //toBePlaced.setPlaced(true);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Tries to place an exam in a random Timeslot considering a window of
+     * timeslots of width <code>width</code>.
+     *
+     * @param toBePlaced the exam that has to be placed
+     * @param width the width of the window
+     * @return true if the exam was successfully placed, false otherwise.
+     */
+    public boolean randomPlacement(Exam toBePlaced, int width) {
+        Timeslot destination = getRandomTimeslot(width);
+        if (destination.isCompatible(toBePlaced)) {
+            destination.addExam(toBePlaced);
             return true;
         }
         return false;
@@ -179,12 +197,29 @@ public class Schedule {
      *
      */
     public boolean randomMove() {
-        Timeslot tj, tk;
-        Exam ex;
+        Timeslot tj = getTimeslotWithExams();
+        Timeslot tk = getRandomTimeslot();
+        Exam ex = tj.getRandomExam();
+        if (tk.isCompatible(ex)) {
+            //System.out.println("Successful move");
+            move(ex, tj, tk);
+            return true;
+        }
 
-        tj = getTimeslotWithExams();
-        tk = getRandomTimeslot();
-        ex = tj.getRandomExam();
+        return false;
+    }
+
+    /**
+     * Moves 2 exams inside a window of timeslots with a certain
+     * <code>width</code>. (Used in WindowInitialized)
+     *
+     * @param width the width of the window
+     * @return true if the exam was successfully moved, false otherwise.
+     */
+    public boolean randomMove(int width) {
+        Timeslot tj = getTimeslotWithExams();
+        Timeslot tk = getRandomTimeslot(width);
+        Exam ex = tj.getRandomExam();
         if (tk.isCompatible(ex)) {
             //System.out.println("Successful move");
             move(ex, tj, tk);
@@ -257,4 +292,12 @@ public class Schedule {
         return count;
     }
 
+    @Override
+    public String toString() {
+        String s = "";
+        for (int i = 0; i < timeslots.length; i++) {
+            s += "Timeslot " + i + timeslots[i].toString() + "\n";
+        }
+        return s;
+    }
 }

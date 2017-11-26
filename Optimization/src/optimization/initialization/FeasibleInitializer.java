@@ -7,11 +7,8 @@ package optimization.initialization;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import optimization.Exam;
 import optimization.Schedule;
-import fileutils.SolutionWriter;
 import optimization.Timeslot;
 
 /**
@@ -143,14 +140,6 @@ public class FeasibleInitializer extends AbstractInitializer {
             }
         }
         return swapped;
-
-        // It tries for SWAP_TRIES times to randomly swap two exams within the schedule. 
-        // If a swap results in a feasible placement, it returns true.
-        /*for (int i = 0; i < SWAP_TRIES; i++) {
-            if( mySchedule.randomSwap() ) return true;
-        }
-        
-        return false;*/
     }
 
     /**
@@ -167,18 +156,6 @@ public class FeasibleInitializer extends AbstractInitializer {
             }
         }
         return moved;
-    }
-
-    private void writeSolution() {
-
-        SolutionWriter sw = new SolutionWriter(mySchedule);
-        try {
-            sw.join();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(FeasibleInitializer.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        sw.run();
-
     }
 
     @Override

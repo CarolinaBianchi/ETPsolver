@@ -5,7 +5,10 @@
  */
 package optimization.initialization;
 
+import fileutils.SolutionWriter;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import optimization.Exam;
 import optimization.Schedule;
 
@@ -48,6 +51,22 @@ public abstract class AbstractInitializer extends Thread {
      */
     protected double getPercPlaced() {
         return (double) mySchedule.getNExams() / (double) exams.size();
+    }
+
+    /**
+     * Writes the schedule that was computated by the initializer. (WILL BE
+     * DELETED).
+     */
+    protected void writeSolution() {
+
+        SolutionWriter sw = new SolutionWriter(mySchedule);
+        try {
+            sw.join();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(FeasibleInitializer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        sw.run();
+
     }
 
     @Override

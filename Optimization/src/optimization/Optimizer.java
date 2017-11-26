@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import optimization.initialization.InfeasibleInitializer;
+import optimization.initialization.WindowInitializer;
 
 /**
  * Class that manages the program logic, exploiting other classes functions.
@@ -62,17 +63,17 @@ public class Optimizer {
 
     private void initInitializers() {
         
-        AbstractInitializer randomInit = new FeasibleInitializer(cloneExams(), initialSchedules, tmax),
-                randomInit2 = new InfeasibleInitializer(cloneExams(), initialSchedules, tmax);
+        AbstractInitializer randomInit = new WindowInitializer(cloneExams(), initialSchedules, tmax)/*,
+                randomInit2 = new WindowInitializer(cloneExams(), initialSchedules, tmax)*/;
 
         //AbstractInitializer someOther = new SomeOtherInitializer(cloneExams(), schedules, tmax);
         initializers = new ArrayList<>();
         initializers.add(randomInit);
-        initializers.add(randomInit2);
+        //initializers.add(randomInit2);
         //inizializers.add(someOther);
         try {
             ((Thread) randomInit).join();
-            ((Thread) randomInit2).join();
+            //((Thread) randomInit2).join();
             //((Thread)someOther).join();
         } catch (InterruptedException ex) {
             Logger.getLogger(Optimizer.class.getName()).log(Level.SEVERE, null, ex);
