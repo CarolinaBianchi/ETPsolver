@@ -31,6 +31,8 @@ public class WindowInitializer extends AbstractInitializer {
     private List<Exam> alreadyPlaced;
     private List<Exam> notYetPlaced;
 
+    
+    //Ciao Roby
     public WindowInitializer(List<Exam> exams, List<Schedule> schedules, int tmax) {
         super(exams, schedules, tmax);
         this.currentWidth = (int) (INITIAL_PERC * tmax);
