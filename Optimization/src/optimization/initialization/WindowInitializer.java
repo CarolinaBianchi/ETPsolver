@@ -23,6 +23,7 @@ import optimization.Schedule;
 public class WindowInitializer extends AbstractInitializer {
 
     private final double INITIAL_PERC = 2.0 / 3.0;  //...
+    private final int STUCK = 10; //..
     private final int THRESHOLD;
     private final int MOVE_TRIES;
     private final int PLACING_TRIES;
@@ -37,21 +38,22 @@ public class WindowInitializer extends AbstractInitializer {
         this.alreadyPlaced = new ArrayList<>();
         this.MOVE_TRIES = 2 * tmax;
         this.PLACING_TRIES = 2 * tmax;
-        this.THRESHOLD=10000; // BOH it works well with our instances.....
+        this.THRESHOLD = 10000; // BOH it works well with our instances.....
     }
 
     /**
      * <pre>
      * This initialization works as foolows.
-     * - I try to place as many exams as possible randomly considering a 
+     * - I try to place as many exams as possible randomly considering a
      * restricted window of timeslots. (exams are considered in descending order
      * of their number of conflicts).
      * - When I get stuck with an exam (I do not manage to place it
      * <code>PLACING_TRIES</code> number of tries) I try to move the already
-     * placed exams in other timeslots. 
-     * - As soon as the number of tries reaches <code>THRESHOLD</code>, the 
+     * placed exams in other timeslots.
+     * - As soon as the number of tries reaches <code>THRESHOLD</code>, the
      * window is widened.
      * - The cycle is repeated until I manage to place all exams.
+     * If I get stuck, I restart the process.
      * </pre>
      *
      * @return
@@ -60,7 +62,7 @@ public class WindowInitializer extends AbstractInitializer {
     public Schedule initialize() {
         Collections.sort(exams);
 
-        int numtries = 0;
+        int numtries = 0, imStuck = 0;
         while (!notYetPlaced.isEmpty()) {
             computeRandomSchedule();
 
@@ -68,18 +70,27 @@ public class WindowInitializer extends AbstractInitializer {
             while (!randomMove()) {
             }
             numtries++;
-            if (numtries > THRESHOLD && this.currentWidth < mySchedule.getTmax()) {
-                this.currentWidth++; // ++ or increased of a certain percentage?
+            // If I'm above the threshold
+            if (numtries > THRESHOLD) {
+                // I widen the window, if possible
+                if (this.currentWidth < mySchedule.getTmax()) {
+                    this.currentWidth++;
+                } else if (imStuck++ == STUCK) { /* The window is at its max size,  
+                                                 If I'm stuck I restart*/
+                    imStuck = 0;
+                    restart();
+                }
                 numtries = 0;
-                System.out.println("currentWidth " + currentWidth + " placed:" + getPercPlaced());
+                printStatus();
             }
         }
+        printStatus();
         writeSolution();
         return mySchedule;
     }
 
     /**
-     * Try to generate a schedule by means of random computation.
+     * Tries to generate a schedule by means of random computation.
      */
     protected void computeRandomSchedule() {
         Exam toBePlaced;
@@ -107,7 +118,6 @@ public class WindowInitializer extends AbstractInitializer {
                 return true;
             }
         }
-        //System.out.println(this.alreadyPlaced.size());
         return false;
     }
 
@@ -127,6 +137,30 @@ public class WindowInitializer extends AbstractInitializer {
         return moved;
     }
 
-    
+    /**
+     * Restarts the entire process : resets alla parameters to their initial
+     * values.
+     */
+    protected void restart() {
+        int tmax = mySchedule.getTmax();
+        this.currentWidth = (int) (INITIAL_PERC * tmax);
+        this.notYetPlaced = new ArrayList<>(exams);
+        this.alreadyPlaced = new ArrayList<>();
+        mySchedule = new Schedule(tmax);
+        computeRandomSchedule();
+    }
+
+    /**
+     * Prints some info about the current status of the solution.
+     */
+    protected void printStatus() {
+        new Thread() {
+            @Override
+            public void run() {
+                System.out.println("currentWidth " + currentWidth + " placed:" + getPercPlaced());
+                System.out.println(mySchedule.getNExams() + "/" + exams.size());
+            }
+        }.start();
+    }
 
 }
