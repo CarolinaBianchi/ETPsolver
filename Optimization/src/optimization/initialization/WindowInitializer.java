@@ -23,7 +23,7 @@ import optimization.Schedule;
 public class WindowInitializer extends AbstractInitializer {
 
     private final double INITIAL_PERC = 2.0 / 3.0;  //...
-    private final int STUCK = 10; //..
+    private final int STUCK = 2; //..
     private final int THRESHOLD;
     private final int MOVE_TRIES;
     private final int PLACING_TRIES;
@@ -34,6 +34,7 @@ public class WindowInitializer extends AbstractInitializer {
     public WindowInitializer(List<Exam> exams, List<Schedule> schedules, int tmax) {
         super(exams, schedules, tmax);
         this.currentWidth = (int) (INITIAL_PERC * tmax);
+        Collections.sort(exams);
         this.notYetPlaced = new ArrayList<>(exams);
         this.alreadyPlaced = new ArrayList<>();
         this.MOVE_TRIES = 2 * tmax;
@@ -60,7 +61,6 @@ public class WindowInitializer extends AbstractInitializer {
      */
     @Override
     public Schedule initialize() {
-        Collections.sort(exams);
 
         int numtries = 0, imStuck = 0;
         while (!notYetPlaced.isEmpty()) {
@@ -75,8 +75,9 @@ public class WindowInitializer extends AbstractInitializer {
                 // I widen the window, if possible
                 if (this.currentWidth < mySchedule.getTmax()) {
                     this.currentWidth++;
-                } else if (imStuck++ == STUCK) { /* The window is at its max size,  
-                                                 If I'm stuck I restart*/
+                } else if (imStuck++ == STUCK) {
+                    /* The window is at its max size,  
+                    If I'm stuck I restart*/
                     imStuck = 0;
                     restart();
                 }
@@ -147,7 +148,6 @@ public class WindowInitializer extends AbstractInitializer {
         this.notYetPlaced = new ArrayList<>(exams);
         this.alreadyPlaced = new ArrayList<>();
         mySchedule = new Schedule(tmax);
-        computeRandomSchedule();
     }
 
     /**
