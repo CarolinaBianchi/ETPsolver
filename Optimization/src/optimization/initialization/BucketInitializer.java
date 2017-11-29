@@ -103,13 +103,13 @@ public class BucketInitializer extends AbstractInitializer {
      */
     protected void computeRandomSchedule(List<Integer> bucket) {
         Exam toBePlaced;
-        //int i=0;
+        int i=0;
         // I iterate on the exams that still have to be placed
-        while (!notYetPlaced.isEmpty() /*&& i<notYetPlaced.size()*/) {
-            toBePlaced = notYetPlaced.get(0);
+        while (!notYetPlaced.isEmpty() && i<notYetPlaced.size()) {
+            toBePlaced = notYetPlaced.get(i);
             // If i didn't manage to place the exam in the available number of tries, I pass to the swap/move phase
             if (!tryRandomPlacement(toBePlaced, bucket)) {
-            //    i++;
+                i++;
                 break;
             }
         }
