@@ -5,7 +5,9 @@
  */
 package optimization;
 
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Class that represents a Schedule.
@@ -63,6 +65,17 @@ public class Schedule {
     public Timeslot getRandomTimeslot(int bound) {
         Random rnd = new Random();
         return timeslots[rnd.nextInt(bound)];
+    }
+    
+    /**
+     * Returns a random Timeslot between a specific given bucket.
+     *
+     * @param bucket The set of time slots to consider 
+     * @return  A randomly chosen time slot between the available ones.
+     */
+    public Timeslot getRandomTimeslot(List<Integer> bucket) {
+        Random rnd = new Random();
+        return timeslots[bucket.get(rnd.nextInt(bucket.size()))];
     }
 
     public Timeslot getTimeslotWithExams() {
@@ -179,6 +192,23 @@ public class Schedule {
         }
         return false;
     }
+    
+    /**
+     * Tries to place an exam in a random Timeslot considering a specific "bucket"
+     * (that is, a given list of time slots).
+     *
+     * @param toBePlaced the exam that has to be placed
+     * @param bucket the list of time slots to consider.
+     * @return true if the exam was successfully placed, false otherwise.
+     */
+    public boolean randomPlacement(Exam toBePlaced, List<Integer> bucket) {
+        Timeslot destination = getRandomTimeslot(bucket);
+        if (destination.isCompatible(toBePlaced)) {
+            destination.addExam(toBePlaced);
+            return true;
+        }
+        return false;   
+    }
 
     /**
      * Force an exam to be placed in a random schedule, even if it generates a
@@ -227,6 +257,26 @@ public class Schedule {
         }
 
         return false;
+    }
+    
+    /**
+     * Moves 2 exams inside a list of buckets. (Used in BucketInitializer)
+     *
+     * @param bucket The list of time slots considered
+     * @return true if the exam was successfully moved, false otherwise.
+     */
+    public boolean randomMove(List<Integer> bucket) {
+        Timeslot tj = getTimeslotWithExams();
+        Timeslot tk = getRandomTimeslot(bucket);
+        
+        Exam ex = tj.getRandomExam();
+        if (tk.isCompatible(ex)) {
+            //System.out.println("Successful move");
+            move(ex, tj, tk);
+            return true;
+        }
+
+        return false;    
     }
 
     /**
