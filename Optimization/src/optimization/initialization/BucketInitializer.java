@@ -17,18 +17,19 @@ import optimization.Timeslot;
  * @author flavio
  */
 public class BucketInitializer extends AbstractInitializer {
+
     private final double INITIAL_PERC = 2.0 / 3.0;  //...
     private final int STUCK = 2; //..
     private int THRESHOLD;
     private final int MOVE_TRIES;
     private final int PLACING_TRIES;
+    private final int[] ORDER = {0, 3, 1, 4, 2, 5};
     private int currentWidth;
     private List<Exam> alreadyPlaced;
     private List<Exam> notYetPlaced;
     private List<Integer>[] buckets;
     int tmax;
 
-    
     public BucketInitializer(List<Exam> exams, List<Schedule> schedules, int tmax) {
         super(exams, schedules, tmax);
         this.tmax = tmax;
@@ -38,7 +39,7 @@ public class BucketInitializer extends AbstractInitializer {
         this.MOVE_TRIES = 2 * tmax;
         this.PLACING_TRIES = 2 * tmax;
         this.THRESHOLD = 1; // BOH it works well with our instances.....
-        
+
         buckets = new List[6];
         initializeBuckets();
     }
@@ -65,7 +66,7 @@ public class BucketInitializer extends AbstractInitializer {
 
         int numtries = 0, imStuck = 0, bucketI = 0;
         List<Integer> currentBucket = buckets[bucketI++];
-        
+
         while (!notYetPlaced.isEmpty()) {
             computeRandomSchedule(currentBucket);
 
@@ -103,9 +104,9 @@ public class BucketInitializer extends AbstractInitializer {
      */
     protected void computeRandomSchedule(List<Integer> bucket) {
         Exam toBePlaced;
-        int i=0;
+        int i = 0;
         // I iterate on the exams that still have to be placed
-        while (!notYetPlaced.isEmpty() && i<notYetPlaced.size()) {
+        while (!notYetPlaced.isEmpty() && i < notYetPlaced.size()) {
             toBePlaced = notYetPlaced.get(i);
             // If i didn't manage to place the exam in the available number of tries, I pass to the swap/move phase
             if (!tryRandomPlacement(toBePlaced, bucket)) {
@@ -182,48 +183,29 @@ public class BucketInitializer extends AbstractInitializer {
     private void initializeBuckets() {
         int current; // Keeps track of the timeslot we're currently dealing with.
         List<Integer> currentBucket; // The bucket we're currently building.
-        
-        for(int i=0; i<6; i++) {
+
+        for (int i = 0; i < 6; i++) {
             currentBucket = new ArrayList<>();
-            
+
             // Set the order of the buckets
-            switch( i ) {
-                case 1:
-                    current = 3;
-                    break;
-                case 2:
-                    current = 1;
-                    break;
-                case 3:
-                    current = 4;
-                    break;
-                case 4:
-                    current = 2;
-                    break;
-                case 5:
-                    current = 5;
-                    break;
-                default:
-                    current = 0;
-                    break;
-            }
-            
-            while(current<this.tmax) {
+            current = ORDER[i];
+
+            while (current < this.tmax) {
                 currentBucket.add(current);
                 current += 6;
             }
-            
+
             buckets[i] = currentBucket;
-            
+
         }
     }
-    
+
     private void printBucket(List<Integer> bucket) {
         Iterator iter = bucket.listIterator();
-        
+
         System.out.println("Time slots currently in the bucket");
         System.out.print(iter.next());
-        while( iter.hasNext()) {
+        while (iter.hasNext()) {
             System.out.print("-" + iter.next());
         }
         System.out.println("");
