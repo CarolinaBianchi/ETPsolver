@@ -10,10 +10,13 @@ import optimization.initialization.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import optimization.metaheuristics.*;
 
 /**
  * Class that manages the program logic, exploiting other classes functions.
@@ -25,16 +28,19 @@ public class Optimizer {
     private List<Exam> exams;
     private List<Student> students;
     private Map<Integer, Exam> eIdExam;
-    private List<Schedule> initialSchedules;
-    private List<AbstractInitializer> initializers;
+    private Schedule bestSchedule; //..
+    private List<Schedule> initialSchedules = new ArrayList<>();
+    private Set<AbstractInitializer> initializers = new HashSet<>();
+    private Set<Class<? extends SingleSolutionMetaheuristic>> ssMetaheuristics = new HashSet<>();
+    private Set<Class<? extends PopulationMetaheuristic>> pMetaheuristics = new HashSet<>();
     private int tmax;
 
     public Optimizer(String instanceName) throws IOException {
         init(instanceName);
-        initialSchedules = new ArrayList<>();
         buildStudentListInEx();
         buildConflictingExamsLists();
         initInitializers();
+        initMetaheuristics();
     }
 
     /**
@@ -50,24 +56,26 @@ public class Optimizer {
         this.tmax = FileManager.readTimeslots(instanceName);
     }
 
+    /**
+     * Creates the set of initializers and joins their threads to the main
+     * thread.
+     */
     private void initInitializers() {
-        
-        AbstractInitializer randomInit = new BucketInitializer(Cloner.clone(exams), tmax, this)/*,
-                randomInit2 = new BucketInitializer(Cloner.clone(exams), tmax, this)*/;
 
-        //AbstractInitializer someOther = new SomeOtherInitializer(Cloner.clone(exams), schedules, tmax);
-        initializers = new ArrayList<>();
-        initializers.add(randomInit);
-        //initializers.add(randomInit2);
-        //inizializers.add(someOther);
-        try {
-            ((Thread) randomInit).join();
-            //((Thread) randomInit2).join();
-            //((Thread)someOther).join();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Optimizer.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        initializers.add(new BucketInitializer(Cloner.clone(exams), tmax, this));
+        /*initializers.add(new BucketInitializer(Cloner.clone(exams), tmax, this));*/
+        joinThreads(initializers);
 
+    }
+
+    /**
+     * Creates the set of metaheuristics.
+     */
+    private void initMetaheuristics() {
+        ssMetaheuristics.add(FakeSSMetaheuristic.class);
+        // we add every class that extends SingleSolutionMetaheuristic
+        pMetaheuristics.add(FakePopulationMetaheuristic.class);
+        // we add every class that extends SingleSolutionMetaheuristic
     }
 
     /**
@@ -103,7 +111,7 @@ public class Optimizer {
                     e2 = sExams.get(j);
                     e1.addConflictingExam(e2.getId());
                     e2.addConflictingExam(e1.getId());
-                    
+
                     // Used for adding the conflicts to the exam conflict map.
                     e1.addConflictingExam2(e2.getId());
                     e2.addConflictingExam2(e1.getId());
@@ -134,12 +142,90 @@ public class Optimizer {
             ex.printStackTrace();
         }
     }
-    
-    public void updateOnNewInitialSolution(Schedule newInitialSol){
-        this.initialSchedules.add(newInitialSol);
+
+    /**
+     * Joins the set of threads to the main thread, so that the main thread
+     * waits for their execution before dying.
+     *
+     * @param <T>
+     * @param coll
+     */
+    private <T extends Thread> void joinThreads(Set<T> coll) {
+
+        try {
+            for (Thread t : coll) {
+                t.join();
+            }
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Optimizer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 
-    public void updateOnNewSolution(Schedule mySolution) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    /**
+     * As a new initial solution is generated, every SingleSolutionMetaheuristic
+     * starts working on it.
+     *
+     * @param newInitialSol
+     */
+    public synchronized void updateOnNewInitialSolution(Schedule newInitialSol) {
+        this.initialSchedules.add(newInitialSol);
+        runAllSSMetaheuristics(newInitialSol);
+        checkAllPMetaheuristics();
+    }
+
+    /**
+     * Runs every implementation of a SingleSolutoinMetaheuristics with the new
+     * initial solution.
+     *
+     * @param newInitialSol
+     */
+    private void runAllSSMetaheuristics(Schedule newInitialSol) {
+        //for (int i = 0; i < 10; i++) {
+        for (Class<? extends SingleSolutionMetaheuristic> clazz : this.ssMetaheuristics) {
+            try {
+                Metaheuristic m = (clazz.getConstructor(Optimizer.class, Schedule.class)).newInstance(this, newInitialSol);
+                m.join();
+                m.start();
+            } catch (Exception ex) {
+                Logger.getLogger(Optimizer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        //}
+    }
+
+    /**
+     * If the number of current initial solutions is enough for the Population
+     * initializers, they're are created and started. The initial schedules are
+     * reset and the initializers are run again.
+     */
+    private void checkAllPMetaheuristics() {
+        if (this.initialSchedules.size() < PopulationMetaheuristic.INITIAL_POP_SIZE) {
+            return;
+        }
+        //for(int i = 0; i<10; i++){
+        for (Class<? extends PopulationMetaheuristic> clazz : this.pMetaheuristics) {
+            try {
+                PopulationMetaheuristic m = (clazz.getConstructor(Optimizer.class, Schedule.class)).newInstance(this, initialSchedules);
+                m.join();
+                m.start();
+            } catch (Exception ex) {
+                Logger.getLogger(Optimizer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        //}
+        this.initialSchedules = new ArrayList<>();
+        //run();
+    }
+
+    /**
+     * Does something as soon as a new solution is generated by some
+     * metaheuristic.
+     *
+     * @param mySolution
+     */
+    public synchronized void updateOnNewSolution(Schedule mySolution) {
+        // TO DO
+        // checks if the given solution is better of the current best solution...
     }
 }

@@ -18,17 +18,11 @@ import optimization.Schedule;
 public abstract class PopulationMetaheuristic extends Metaheuristic {
 
     private Collection<Schedule> initialPopulation;
-
+    public static int INITIAL_POP_SIZE = 10; //?? dont know
+    
     public PopulationMetaheuristic(Optimizer optimizer, Collection<Schedule> initialPopulation) {
         super(optimizer);
         this.initialPopulation = initialPopulation;
     }
-
-    /**
-     * Returns the minumim amount of initial solution needed to run the concrete
-     * metaheuristic.
-     *
-     * @return
-     */
-    public abstract int getThreshold();
+    
 }

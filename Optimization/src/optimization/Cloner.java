@@ -33,7 +33,6 @@ public class Cloner {
             return (T) obj.getClass().getMethod("clone").invoke(obj);
         } catch (Exception ex) {
             Logger.getLogger(Cloner.class.getName()).log(Level.SEVERE, null, ex);
-            System.exit(0);
         }
         return null;
     }

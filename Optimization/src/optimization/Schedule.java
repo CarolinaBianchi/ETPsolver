@@ -7,7 +7,6 @@ package optimization;
 
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 /**
  * Class that represents a Schedule.
