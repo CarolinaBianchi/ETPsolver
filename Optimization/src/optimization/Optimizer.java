@@ -60,10 +60,10 @@ public class Optimizer {
 
     private void initInitializers() {
         
-        AbstractInitializer randomInit = new BucketInitializer(cloneExams(), initialSchedules, tmax)/*,
-                randomInit2 = new BucketInitializer(cloneExams(), initialSchedules, tmax)*/;
+        AbstractInitializer randomInit = new BucketInitializer(Cloner.clone(exams), initialSchedules, tmax)/*,
+                randomInit2 = new BucketInitializer(Cloner.clone(exams), initialSchedules, tmax)*/;
 
-        //AbstractInitializer someOther = new SomeOtherInitializer(cloneExams(), schedules, tmax);
+        //AbstractInitializer someOther = new SomeOtherInitializer(Cloner.clone(exams), schedules, tmax);
         initializers = new ArrayList<>();
         initializers.add(randomInit);
         //initializers.add(randomInit2);
@@ -130,18 +130,6 @@ public class Optimizer {
             eIdExam.put(e.getId(), e);
         }
     }
-    
-    /**
-     * Clones the list of exam, so that it can be used from different threads.
-     * @return 
-     */
-    public List<Exam> cloneExams() {
-        List<Exam> clone = new ArrayList<>(exams.size());
-        for (Exam e : exams) {
-            clone.add(e.clone());
-        }
-        return clone;
-    }
 
     /**
      * Starts the initializers' threads.
@@ -155,8 +143,4 @@ public class Optimizer {
             ex.printStackTrace();
         }
     }
-    
-    
-    
-
 }
