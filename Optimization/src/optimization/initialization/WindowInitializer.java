@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import optimization.Exam;
+import optimization.Optimizer;
 import optimization.Schedule;
 
 /**
@@ -32,8 +33,8 @@ public class WindowInitializer extends AbstractInitializer {
     private List<Exam> notYetPlaced;
 
     
-    public WindowInitializer(List<Exam> exams, List<Schedule> schedules, int tmax) {
-        super(exams, schedules, tmax);
+    public WindowInitializer(List<Exam> exams, int tmax, Optimizer opt) {
+        super(exams, tmax, opt);
         this.currentWidth = (int) (INITIAL_PERC * tmax);
         Collections.sort(exams);
         this.notYetPlaced = new ArrayList<>(exams);

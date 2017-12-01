@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import optimization.Exam;
+import optimization.Optimizer;
 import optimization.Schedule;
 
 /**
@@ -21,19 +22,23 @@ import optimization.Schedule;
 public abstract class AbstractInitializer extends Thread {
 
     protected List<Exam> exams;
-    protected List<Schedule> schedules;
     protected Schedule mySchedule;
+    private Optimizer optimizer;
 
-    public AbstractInitializer(List<Exam> exams, List<Schedule> schedules, int tmax) {
+    public AbstractInitializer(List<Exam> exams, int tmax, Optimizer optimizer) {
         this.exams = exams;
-        this.schedules = schedules;
+        this.optimizer=optimizer;
         this.mySchedule = new Schedule(tmax);
     }
 
     @Override
     public void run() {
         initialize();
-        schedules.add(mySchedule);
+        notifyNewInitialSolution();
+    }
+    
+    private void notifyNewInitialSolution(){
+        optimizer.updateOnNewInitialSolution(mySchedule);
     }
 
     /**

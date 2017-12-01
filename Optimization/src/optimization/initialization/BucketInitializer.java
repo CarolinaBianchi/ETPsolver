@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.*;
 import optimization.Exam;
+import optimization.Optimizer;
 import optimization.Schedule;
 import optimization.Timeslot;
 
@@ -30,8 +31,8 @@ public class BucketInitializer extends AbstractInitializer {
     private List<Integer>[] buckets;
     int tmax;
 
-    public BucketInitializer(List<Exam> exams, List<Schedule> schedules, int tmax) {
-        super(exams, schedules, tmax);
+    public BucketInitializer(List<Exam> exams, int tmax, Optimizer opt) {
+        super(exams, tmax, opt);
         this.tmax = tmax;
         Collections.sort(exams);
         this.notYetPlaced = new ArrayList<>(exams);

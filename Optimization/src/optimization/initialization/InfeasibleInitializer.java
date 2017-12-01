@@ -8,6 +8,7 @@ package optimization.initialization;
 import java.util.Collections;
 import java.util.List;
 import optimization.Exam;
+import optimization.Optimizer;
 import optimization.Schedule;
 
 /**
@@ -16,8 +17,8 @@ import optimization.Schedule;
  */
 public class InfeasibleInitializer extends FeasibleInitializer {
 
-    public InfeasibleInitializer(List<Exam> exams, List<Schedule> schedules, int tmax) {
-        super(exams, schedules, tmax);
+    public InfeasibleInitializer(List<Exam> exams, int tmax, Optimizer opt) {
+        super(exams, tmax, opt);
     }
 
     @Override

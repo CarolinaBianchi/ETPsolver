@@ -8,6 +8,7 @@ package optimization.initialization;
 import java.util.Collections;
 import java.util.List;
 import optimization.Exam;
+import optimization.Optimizer;
 import optimization.Schedule;
 import optimization.Timeslot;
 
@@ -23,8 +24,8 @@ public class FeasibleInitializer extends AbstractInitializer {
     protected static int MOVE_TRIES; //..
     protected int alreadyPlaced; // number of exams already placed in the schedule
 
-    public FeasibleInitializer(List<Exam> exams, List<Schedule> schedules, int tmax) {
-        super(exams, schedules, tmax);
+    public FeasibleInitializer(List<Exam> exams, int tmax, Optimizer opt) {
+        super(exams, tmax, opt);
         this.alreadyPlaced = 0;
         FeasibleInitializer.PLACING_TRIES = (int) 1.5 * tmax;
         FeasibleInitializer.SWAP_TRIES = 2 * tmax;

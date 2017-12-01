@@ -25,20 +25,12 @@ public class Optimizer {
     private List<Exam> exams;
     private List<Student> students;
     private Map<Integer, Exam> eIdExam;
-    // In case we want to implement a multistart algorithm.
     private List<Schedule> initialSchedules;
     private List<AbstractInitializer> initializers;
     private int tmax;
-    // (I'm not sure any of these last 3 attributes is useful)
-    private final int S; // number of students
-    private final int E; // number of exams
-    private boolean[][] a; // a matrix: a[i][j] is true if student i is enrolled in exam j. 
 
     public Optimizer(String instanceName) throws IOException {
         init(instanceName);
-        S = students.size();
-        E = exams.size();
-        a = new boolean[S][E];
         initialSchedules = new ArrayList<>();
         buildStudentListInEx();
         buildConflictingExamsLists();
@@ -60,8 +52,8 @@ public class Optimizer {
 
     private void initInitializers() {
         
-        AbstractInitializer randomInit = new BucketInitializer(Cloner.clone(exams), initialSchedules, tmax)/*,
-                randomInit2 = new BucketInitializer(Cloner.clone(exams), initialSchedules, tmax)*/;
+        AbstractInitializer randomInit = new BucketInitializer(Cloner.clone(exams), tmax, this)/*,
+                randomInit2 = new BucketInitializer(Cloner.clone(exams), tmax, this)*/;
 
         //AbstractInitializer someOther = new SomeOtherInitializer(Cloner.clone(exams), schedules, tmax);
         initializers = new ArrayList<>();
@@ -93,7 +85,6 @@ public class Optimizer {
                 exam = eIdExam.get(eId);
                 //exam.addStudent(student);    //In the future one of this two lines may be useless
                 student.addExam(exam);
-                a[i][exams.indexOf(exam)] = true;
             }
         }
     }
@@ -142,5 +133,13 @@ public class Optimizer {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+    
+    public void updateOnNewInitialSolution(Schedule newInitialSol){
+        this.initialSchedules.add(newInitialSol);
+    }
+
+    public void updateOnNewSolution(Schedule mySolution) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
