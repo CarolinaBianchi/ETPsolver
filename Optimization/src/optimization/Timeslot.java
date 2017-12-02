@@ -14,7 +14,7 @@ import java.util.Random;
  *
  * @author Carolina Bianchi
  */
-public class Timeslot {
+public class Timeslot implements Cloneable{
 
     List<Exam> exams;
     private int numCollisions; 
@@ -29,6 +29,10 @@ public class Timeslot {
     
     public int getCollisions() {
         return this.numCollisions;
+    }
+    
+    public void setCollisions(int n){
+        this.numCollisions = n;
     }
 
     public Exam getExam(int i) {
@@ -91,6 +95,16 @@ public class Timeslot {
      */
     public boolean isFree() {
         return exams.isEmpty();
+    }
+    
+    @Override
+    public Timeslot clone(){
+        Timeslot t = new Timeslot();
+        for(Exam e : this.exams){
+            t.addExam(e.clone());
+        }
+        t.setCollisions(this.numCollisions);
+        return t;
     }
 
     @Override

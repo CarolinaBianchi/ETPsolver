@@ -13,7 +13,7 @@ import java.util.Random;
  *
  * @author Carolina Bianchi
  */
-public class Schedule {
+public class Schedule implements Cloneable {
 
     private Timeslot[] timeslots;
     private double cost; // to be defined
@@ -21,6 +21,10 @@ public class Schedule {
     public Schedule(int tmax) {
         timeslots = new Timeslot[tmax];
         initTimeslots();
+    }
+
+    public void setTimeslots(Timeslot[] ts) {
+        this.timeslots = ts;
     }
 
     private void initTimeslots() {
@@ -65,12 +69,12 @@ public class Schedule {
         Random rnd = new Random();
         return timeslots[rnd.nextInt(bound)];
     }
-    
+
     /**
      * Returns a random Timeslot between a specific given bucket.
      *
-     * @param bucket The set of time slots to consider 
-     * @return  A randomly chosen time slot between the available ones.
+     * @param bucket The set of time slots to consider
+     * @return A randomly chosen time slot between the available ones.
      */
     public Timeslot getRandomTimeslot(List<Integer> bucket) {
         Random rnd = new Random();
@@ -191,10 +195,10 @@ public class Schedule {
         }
         return false;
     }
-    
+
     /**
-     * Tries to place an exam in a random Timeslot considering a specific "bucket"
-     * (that is, a given list of time slots).
+     * Tries to place an exam in a random Timeslot considering a specific
+     * "bucket" (that is, a given list of time slots).
      *
      * @param toBePlaced the exam that has to be placed
      * @param bucket the list of time slots to consider.
@@ -206,7 +210,7 @@ public class Schedule {
             destination.addExam(toBePlaced);
             return true;
         }
-        return false;   
+        return false;
     }
 
     /**
@@ -257,7 +261,7 @@ public class Schedule {
 
         return false;
     }
-    
+
     /**
      * Moves 2 exams inside a list of buckets. (Used in BucketInitializer)
      *
@@ -267,7 +271,7 @@ public class Schedule {
     public boolean randomMove(List<Integer> bucket) {
         Timeslot tj = getTimeslotWithExams();
         Timeslot tk = getRandomTimeslot(bucket);
-        
+
         Exam ex = tj.getRandomExam();
         if (tk.isCompatible(ex)) {
             //System.out.println("Successful move");
@@ -275,7 +279,7 @@ public class Schedule {
             return true;
         }
 
-        return false;    
+        return false;
     }
 
     /**
@@ -339,6 +343,22 @@ public class Schedule {
         }
 
         return count;
+    }
+
+    /**
+     * Returns a clone of this schedule.
+     * @return 
+     */
+    @Override
+    public Schedule clone() {
+        int tmax = this.getTmax();
+        Schedule s = new Schedule(tmax);
+        Timeslot[] tclone = new Timeslot[tmax];
+        for (int i = 0; i < tmax; i++) {
+            tclone[i] = this.timeslots[i].clone();
+        }
+        s.setTimeslots(tclone);
+        return s;
     }
 
     @Override

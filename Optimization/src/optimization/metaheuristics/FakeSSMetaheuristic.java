@@ -12,7 +12,7 @@ import optimization.Schedule;
  *
  * @author Carolina Bianchi
  */
-public class FakeSSMetaheuristic extends SingleSolutionMetaheuristic{
+public class FakeSSMetaheuristic extends SingleSolutionMetaheuristic {
 
     public FakeSSMetaheuristic(Optimizer optimizer, Schedule initSolution) {
         super(optimizer, initSolution);
@@ -20,8 +20,7 @@ public class FakeSSMetaheuristic extends SingleSolutionMetaheuristic{
 
     @Override
     void improveInitialSol() {
-        System.out.println("I'm a single solution metaheuristic");
+        System.out.println("\t I'm a single solution metaheuristic");
     }
 
-    
 }
