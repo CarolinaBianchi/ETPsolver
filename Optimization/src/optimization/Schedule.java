@@ -5,16 +5,19 @@
  */
 package optimization;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Class that represents a Schedule.
  *
  * @author Carolina Bianchi
  */
-public class Schedule implements Cloneable {
+public class Schedule implements Cloneable, Comparable<Schedule> {
 
+    private static int MAX_SWAP_TRIES = 10;
     private Timeslot[] timeslots;
     private double cost; // to be defined
 
@@ -347,7 +350,8 @@ public class Schedule implements Cloneable {
 
     /**
      * Returns a clone of this schedule.
-     * @return 
+     *
+     * @return
      */
     @Override
     public Schedule clone() {
@@ -369,4 +373,33 @@ public class Schedule implements Cloneable {
         }
         return s;
     }
+
+    //------------------------------------ Genetic algorithm-------------------------------------
+   
+    @Override
+    public int compareTo(Schedule o) {
+        return (o.getObjFunction() - this.getObjFunction() * 100);
+    }
+
+    
+    /**
+     * Calculates the value of the objective function for the schedule.
+     * For each distance j it checks in all the timeslots if in the timeslot that
+     * is at a distance j there is a conflicting exam. If so it calculate the penalty.
+     * @return 
+     */
+    private int getObjFunction() {
+        int penalty=0;        
+        for(int j=1; j<=5; j++){
+            for (int i = 0; i < timeslots.length-j; i++){
+                for (Exam e : timeslots[i].getExams()) {
+                    penalty+=timeslots[i + j].calcPenalty(j, e.getConflictingExams());
+                }
+            }
+        }        
+        return penalty;
+    }
+    
+    
+
 }

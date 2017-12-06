@@ -6,8 +6,10 @@
 package optimization;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Class that represents a Timeslot.
@@ -106,7 +108,33 @@ public class Timeslot implements Cloneable{
         t.setCollisions(this.numCollisions);
         return t;
     }
-
+    
+    //--------------------- Genetic algorithm----------------------------------
+    
+    public boolean contains(int eId){
+        return this.exams.get(eId)!=null;
+    }
+    
+    public int calcPenalty(int distance, Set<Integer> conflictingExams){
+        int penalty=0;
+        for(Exam e:exams){
+            for (Iterator<Integer> it = conflictingExams.iterator(); it.hasNext();) {
+                    if(it.next()==e.getId()){
+                        penalty+=2^(5-distance)*e.getNumStudents();
+                    }
+                }
+        }
+        return penalty;
+    }
+    
+    public void clean() {
+        this.exams = new ArrayList<>();
+    }
+    
+    public void addExams(List<Exam> newExams){
+        this.exams.addAll(newExams);
+    }
+  
     @Override
     public String toString() {
         String s = "";

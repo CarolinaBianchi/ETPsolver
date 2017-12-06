@@ -21,7 +21,7 @@ import optimization.Schedule;
  */
 public abstract class PopulationMetaheuristic extends Metaheuristic {
 
-    private Collection<Schedule> initialPopulation;
+    protected Collection<Schedule> initialPopulation;
     public static int INITIAL_POP_SIZE = 10; //?? dont know
 
     public PopulationMetaheuristic(Optimizer optimizer, Collection<Schedule> initialPopulation) {

@@ -11,7 +11,6 @@ import java.util.*;
 import optimization.Exam;
 import optimization.Optimizer;
 import optimization.Schedule;
-import optimization.Timeslot;
 
 /**
  *
@@ -91,11 +90,11 @@ public class BucketInitializer extends AbstractInitializer {
                     currentBucket = buckets[bucketI++];
                 }
                 numtries = 0;
-                printStatus();
+                //printStatus();
                 //printBucket(currentBucket);
             }
         }
-        printStatus();
+        //printStatus();
         writeSolution();
         return mySchedule;
     }
