@@ -65,7 +65,6 @@ public class Optimizer {
         for (int i = 0; i < 10; i++) {
             initializers.add(new BucketInitializer(Cloner.clone(exams), tmax, this));
         }
-        /*initializers.add(new BucketInitializer(Cloner.clone(exams), tmax, this));*/
         joinThreads(initializers);
 
     }
@@ -140,9 +139,9 @@ public class Optimizer {
      * @param newInitialSol
      */
     public void updateOnNewInitialSolution(Schedule newInitialSol) {
-        synchronized (initialSchedules) {
+            synchronized (initialSchedules) {
             this.initialSchedules.add(newInitialSol);
-        }
+            }
         runAllSSMetaheuristics(newInitialSol);
         checkAllPMetaheuristics();
     }
@@ -188,7 +187,7 @@ public class Optimizer {
         (random number) instances for each population metaheuristic that we have
         start working on them
          */
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 1; i++) { // TO DO: put i<3
             for (Class<? extends PopulationMetaheuristic> clazz : this.pMetaheuristics) {
                 try {
                     PopulationMetaheuristic m = (clazz.getConstructor(Optimizer.class, Collection.class)).newInstance(this, initialSchedules);
@@ -247,5 +246,5 @@ public class Optimizer {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-    }
+    }    
 }

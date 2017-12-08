@@ -5,10 +5,8 @@
  */
 package optimization;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 /**
  * Class that represents a Schedule.
@@ -375,31 +373,104 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     }
 
     //------------------------------------ Genetic algorithm-------------------------------------
-   
+    /**
+     * Schedules with lower value of the objective function are put firsts
+     *
+     * @param o
+     * @return
+     */
     @Override
     public int compareTo(Schedule o) {
-        return (o.getObjFunction() - this.getObjFunction() * 100);
+        return this.getObjFunction() - o.getObjFunction();
     }
 
-    
     /**
-     * Calculates the value of the objective function for the schedule.
-     * For each distance j it checks in all the timeslots if in the timeslot that
-     * is at a distance j there is a conflicting exam. If so it calculate the penalty.
-     * @return 
+     * Calculates the value of the objective function for the schedule. For each
+     * distance j it checks in all the timeslots if in the timeslot that is at a
+     * distance j there is a conflicting exam. If so it calculate the penalty.
+     * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! DIVISION FOR S ????????????
+     * @return
      */
-    private int getObjFunction() {
-        int penalty=0;        
-        for(int j=1; j<=5; j++){
-            for (int i = 0; i < timeslots.length-j; i++){
+    public int getObjFunction() {
+        int penalty = 0;
+        for (int j = 1; j <= 5; j++) {
+            for (int i = 0; i < timeslots.length - j; i++) {
                 for (Exam e : timeslots[i].getExams()) {
-                    penalty+=timeslots[i + j].calcPenalty(j, e.getConflictingExams());
+                    penalty += timeslots[i + j].calcPenalty(j, e.getConflictingExams());
                 }
             }
-        }        
+        }
         return penalty;
     }
+
+    /**
+     * Tries to swap two exams of two different timeslots
+     * @return if the swap has happend
+     */
+    public boolean mutateExams() {
+        boolean swapped;
+        int iterNum = 0;
+        do {
+            swapped = randomSwap();
+            iterNum++;
+
+        } while (!swapped && iterNum != MAX_SWAP_TRIES); // 10?
+
+        return swapped;
+    }
+
+    /**
+     * Takes two random timeslots and it swap the exams of one to the other
+     */
+    public void mutateTimeslots() {
+
+        Timeslot tj, tk;
+        Timeslot tmp = new Timeslot();
+        
+        tj = getRandomTimeslot();
+        tk = getRandomTimeslot();       
+        
+        tmp.addExams(tj.getExams());
+        tj.cleanAndAddExams(tk.getExams());
+        tk.cleanAndAddExams(tmp.getExams());
+    }
+
+    /**
+     * Given a startPoint and an endPoint, it remove all the exams in the timeslots in
+     * that interval. Then it assigns those exams in the reverse order, so 
+     * assuming i=endPoint-startPoint-1, the timeslot in position startPoint+i will get the exams 
+     * of the one in position endPoint-i-1 and vice versa
+     * and put them 
+     * @param startPoint
+     * @param endPoint 
+     */
+    public void invertTimeslots(int startPoint, int endPoint) { 
+        int length=endPoint - startPoint;
+        Timeslot[] tmpSlots = createTmpSlots(length);
+
+          for (int i=0; i<length;i++){
+              tmpSlots[length-1-i].addExams(timeslots[startPoint+i].getExams());
+              timeslots[startPoint+i].clean();
+          }  
+
+        for (int i = 0; i < length; i++) {
+            timeslots[startPoint+i].addExams(tmpSlots[i].getExams());
+        }
+    }
     
-    
+    /**
+     * Creates a temporary array of timeslots
+     * @param length
+     * @return 
+     */
+    private Timeslot[] createTmpSlots(int length) {
+        Timeslot[] tmpSlots = new Timeslot[length];
+
+        for (int i = 0; i < tmpSlots.length; i++) {
+            tmpSlots[i] = new Timeslot();
+        }
+
+        return tmpSlots;
+    }
 
 }
