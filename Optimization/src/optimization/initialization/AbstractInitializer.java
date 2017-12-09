@@ -6,9 +6,9 @@
 package optimization.initialization;
 
 import java.util.List;
-import optimization.Exam;
+import optimization.domain.Exam;
 import optimization.Optimizer;
-import optimization.Schedule;
+import optimization.domain.Schedule;
 
 /**
  * Defines the general structure of an initializer. This class extends the class

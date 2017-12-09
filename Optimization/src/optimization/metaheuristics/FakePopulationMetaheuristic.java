@@ -7,7 +7,7 @@ package optimization.metaheuristics;
 
 import java.util.Collection;
 import optimization.Optimizer;
-import optimization.Schedule;
+import optimization.domain.Schedule;
 
 /**
  *

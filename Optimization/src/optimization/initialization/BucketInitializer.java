@@ -8,9 +8,9 @@ package optimization.initialization;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.*;
-import optimization.Exam;
+import optimization.domain.Exam;
 import optimization.Optimizer;
-import optimization.Schedule;
+import optimization.domain.Schedule;
 
 /**
  *

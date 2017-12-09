@@ -8,9 +8,9 @@ package optimization.initialization;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import optimization.Exam;
+import optimization.domain.Exam;
 import optimization.Optimizer;
-import optimization.Schedule;
+import optimization.domain.Schedule;
 
 /**
  * This initializer works as follows. It initially considers a window of

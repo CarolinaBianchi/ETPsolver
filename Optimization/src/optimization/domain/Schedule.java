@@ -3,9 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package optimization;
-
-import java.util.ArrayList;
+package optimization.domain;
 import java.util.List;
 import java.util.Random;
 

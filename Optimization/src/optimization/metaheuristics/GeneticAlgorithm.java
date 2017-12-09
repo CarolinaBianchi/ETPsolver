@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Random;
 import optimization.Cloner;
 import optimization.Optimizer;
-import optimization.Schedule;
+import optimization.domain.Schedule;
 
 /**
  * Class that implements the Genetic Algorithm. Each schedule is a chromosome
