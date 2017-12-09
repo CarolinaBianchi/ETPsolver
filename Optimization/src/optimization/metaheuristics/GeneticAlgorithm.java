@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import optimization.Cloner;
 import optimization.Optimizer;
-import optimization.Schedule;
+import optimization.domain.Schedule;
 
 /**
  *

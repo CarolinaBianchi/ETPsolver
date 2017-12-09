@@ -9,9 +9,9 @@ import fileutils.SolutionWriter;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import optimization.Exam;
+import optimization.domain.Exam;
 import optimization.Optimizer;
-import optimization.Schedule;
+import optimization.domain.Schedule;
 
 /**
  * Defines the general structure of an initializer. This class extends the class
@@ -70,7 +70,7 @@ public abstract class AbstractInitializer extends Thread {
         } catch (InterruptedException ex) {
             Logger.getLogger(FeasibleInitializer.class.getName()).log(Level.SEVERE, null, ex);
         }
-        sw.run();
+        sw.start();
 
     }
 

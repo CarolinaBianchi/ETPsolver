@@ -10,8 +10,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import optimization.Exam;
-import optimization.Student;
+import optimization.domain.Exam;
+import optimization.domain.Student;
 
 /**
  * Class that manages file reads and writes.

@@ -5,6 +5,9 @@
  */
 package optimization;
 
+import optimization.domain.Exam;
+import optimization.domain.Schedule;
+import optimization.domain.Student;
 import fileutils.FileManager;
 import optimization.initialization.*;
 import java.io.IOException;

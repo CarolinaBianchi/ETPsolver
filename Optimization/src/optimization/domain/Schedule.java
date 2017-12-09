@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package optimization;
+package optimization.domain;
 
+import optimization.domain.Timeslot;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;

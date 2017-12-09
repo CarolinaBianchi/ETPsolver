@@ -6,7 +6,7 @@
 package optimization.metaheuristics;
 
 import optimization.Optimizer;
-import optimization.Schedule;
+import optimization.domain.Schedule;
 
 /**
  *
