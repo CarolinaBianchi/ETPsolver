@@ -88,7 +88,7 @@ public class WindowInitializer extends AbstractInitializer {
             }
         }
         printStatus();
-        writeSolution();
+        //writeSolution();
         return mySchedule;
     }
 

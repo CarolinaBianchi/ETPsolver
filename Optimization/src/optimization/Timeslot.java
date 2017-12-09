@@ -112,13 +112,13 @@ public class Timeslot implements Cloneable{
     //--------------------- Genetic algorithm----------------------------------
     
     /**
-     * Returns true if the exam with id <code>eId</code> is assigned to 
+     * Returns true if the exam <code>e</code> is assigned to 
      * the timeslot
-     * @param eId
+     * @param e
      * @return 
      */
-    public boolean contains(int eId){
-        return this.exams.get(eId)!=null;
+    public boolean contains(Exam e){
+        return this.exams.contains(e);
     }
     
     /**

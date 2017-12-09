@@ -95,7 +95,7 @@ public class BucketInitializer extends AbstractInitializer {
             }
         }
         //printStatus();
-        writeSolution();
+        //writeSolution();
         return mySchedule;
     }
 
