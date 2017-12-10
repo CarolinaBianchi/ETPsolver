@@ -6,6 +6,7 @@
 package optimization.metaheuristics;
 
 import java.util.Collection;
+import java.util.List;
 import optimization.Optimizer;
 import optimization.domain.Schedule;
 
@@ -24,7 +25,7 @@ public abstract class PopulationMetaheuristic extends Metaheuristic {
     protected Collection<Schedule> initialPopulation;
     public static int INITIAL_POP_SIZE = 10; //?? dont know
 
-    public PopulationMetaheuristic(Optimizer optimizer, Collection<Schedule> initialPopulation) {
+    public PopulationMetaheuristic(Optimizer optimizer, List<Schedule> initialPopulation) {
         super(optimizer);
         this.initialPopulation = initialPopulation;
     }

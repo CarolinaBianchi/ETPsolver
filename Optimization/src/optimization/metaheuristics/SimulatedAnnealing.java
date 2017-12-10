@@ -32,9 +32,9 @@ public class SimulatedAnnealing extends SingleSolutionMetaheuristic {
         super(optimizer, initSolution);
         System.out.println("new simulated annealing");
         initSolution.setCost(CostFunction.getCost(initSolution.getTimeslots()));
-        temperature = CostFunction.getCost(initSolution.getTimeslots());
+        temperature = CostFunction.getCost(initSolution.getTimeslots())/2;
         tmax = initSolution.getTmax();
-        NUM_ITER = (int) (tmax * tmax);
+        NUM_ITER = (int) (tmax);
         NUM_MOV = NUM_ITER;
     }
 
@@ -44,16 +44,16 @@ public class SimulatedAnnealing extends SingleSolutionMetaheuristic {
         long elapsedTime = 0;
 
         while (elapsedTime < MINUTES * 60 * 1000) {
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < NUM_ITER; i++) {
                 optimizeTimeslotOrder();
                 optimizeExamPosition();
-                System.out.println("temperature : " + (int) this.temperature + "\t cost:" + initSolution.getCost());
-                temperature = temperature * ALPHA;
             }
+            temperature = temperature * ALPHA;
+            System.out.println("temperature : " + (int) this.temperature + "\t cost:" + initSolution.getCost());
             elapsedTime = (new Date()).getTime() - startTime;
         }
 
-        (new SolutionWriter(initSolution)).start();
+        mySolution=initSolution;
     }
 
     private void optimizeTimeslotOrder() {

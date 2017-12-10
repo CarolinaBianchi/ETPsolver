@@ -15,66 +15,72 @@ import optimization.domain.Schedule;
 
 /**
  * Class that implements the Genetic Algorithm. Each schedule is a chromosome
- * and the metaheuristics mutates, inverts and combine(in theory) chromosomes to find the
- * best possible one
+ * and the metaheuristics mutates, inverts and combine(in theory) chromosomes to
+ * find the best possible one
  *
  * @author Elisa
  */
 public class GeneticAlgorithm extends PopulationMetaheuristic {
 
     private List<Schedule> population;
-    private static final int N_ITERATIONS=100;
+    private static final int N_ITERATIONS = 100;
+    private static final int MINUTES = 3;
 
-    public GeneticAlgorithm(Optimizer optimizer, Collection<Schedule> initialPopulation) {
+    public GeneticAlgorithm(Optimizer optimizer, List<Schedule> initialPopulation) {
         super(optimizer, initialPopulation);
+        population = initialPopulation;
     }
 
     @Override
     void improveInitialSol() {
-        population = (List<Schedule>) Cloner.clone(initialPopulation);
-        int counter=0;
-        
+        int counter = 0;
+        long startTime = System.currentTimeMillis();
+        long elapsedTime = 0;
+
         calcObjFunctions();
-        
-        while(counter<N_ITERATIONS){
-            
-            switch(new Random().nextInt(3)){
-                case 0:
-                    mutateExams();
-                    break;
-                case 1:
-                    mutateTimeslots();
-                    break;
-                case 2:
-                    invertTimeslots();
-                    break;
+
+        while (elapsedTime < MINUTES * 60 * 1000) {
+            while (counter++ % 100 != 0) {
+                switch (new Random().nextInt(3)) {
+                    case 0:
+                        mutateExams();
+                        break;
+                    case 1:
+                        mutateTimeslots();
+                        break;
+                    case 2:
+                        invertTimeslots();
+                        break;
+                }
             }
-            counter++;
+            //System.out.println("OBJfunction value: " + findBestSchedule().getCost());
+            elapsedTime = System.currentTimeMillis() - startTime;
         }
-        
-        mySolution=findBestSchedule();
-        System.out.println("OBJfunction value: "+mySolution.getCost());
+
+        mySolution = findBestSchedule();
+        System.out.println("OBJfunction value: " + mySolution.getCost());
     }
-    
+
     /**
-     * Calculates the value of the objective function for each schedule. 
-     * in the <code>population</code>
+     * Calculates the value of the objective function for each schedule. in the
+     * <code>population</code>
      */
     private void calcObjFunctions() {
-        for(Schedule s:population){
-            s.calcObjFunction();
+        for (Schedule s : population) {
+            s.updateCost();
         }
     }
 
     /**
-     * Tries to swap exams between timeslots of a random schedule. If the operation has
-     * success, it start the selection process.
+     * Tries to swap exams between timeslots of a random schedule. If the
+     * operation has success, it start the selection process.
+     *
      * @return
      */
     private void mutateExams() {
         Schedule oldSchedule = getRandomSchedule();
         Schedule newSchedule = Cloner.clone(oldSchedule);
-        if (newSchedule.mutateExams()){
+        if (newSchedule.mutateExams()) {
             actSelection(oldSchedule, newSchedule);
         }
     }
@@ -110,16 +116,17 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
         newSchedule.invertTimeslots(getRandomCutPoints(newSchedule.getTmax()));
         actSelection(oldSchedule, newSchedule);
     }
-    
+
     /**
-     * Does the selection process. If the <code>newSchedule</code> has a lower value of
-     * the objective function with respect to <code>oldSchedule</code> , it substitued the old schedule 
-     * with the new one in the population.
+     * Does the selection process. If the <code>newSchedule</code> has a lower
+     * value of the objective function with respect to <code>oldSchedule</code>
+     * , it substitued the old schedule with the new one in the population.
+     *
      * @param oldSchedule
-     * @param newSchedule 
+     * @param newSchedule
      */
-    private void actSelection(Schedule oldSchedule, Schedule newSchedule){
-        newSchedule.calcObjFunction();
+    private void actSelection(Schedule oldSchedule, Schedule newSchedule) {
+        newSchedule.updateCost();
         if (newSchedule.getCost() < oldSchedule.getCost()) {
             population.remove(oldSchedule);
             population.add(newSchedule);
@@ -127,10 +134,11 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
     }
 
     /**
-     * Returns to random number that are the range of an interval in a schedule with 
-     * length <code>tmax</code>
+     * Returns to random number that are the range of an interval in a schedule
+     * with length <code>tmax</code>
+     *
      * @param tmax
-     * @return 
+     * @return
      */
     private int[] getRandomCutPoints(int tmax) {
         Random rnd = new Random();
@@ -139,17 +147,18 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
         points[1] = points[0] + rnd.nextInt(tmax - points[0] - 1); //endPoint
         return points;
     }
-  
+
     /**
-     * Sorts the schedule on the value of the objective functiona and returns 
+     * Sorts the schedule on the value of the objective functiona and returns
      * the schedule with the best, so lower, value.
-     * @return 
+     *
+     * @return
      */
-    private Schedule findBestSchedule(){
-        Collections.sort(population);        
+    private Schedule findBestSchedule() {
+        Collections.sort(population);
         return population.get(0);
     }
-    
+
 //    private void doOrderCrossover() {
 //        Schedule parent1 = getRandomSchedule();
 //        Schedule parent2 = getRandomSchedule();
@@ -174,6 +183,4 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
 //
 //        // add new schedules
 //    }
-
-    
 }

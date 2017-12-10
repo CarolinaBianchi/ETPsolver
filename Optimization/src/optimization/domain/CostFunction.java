@@ -33,5 +33,16 @@ public interface CostFunction {
         }
         return penalty;
     }
+    
+    /**
+     * Returns the cost of a certain schedule. (NB it still has
+     * to be weighted by the total number of students).
+     *
+     * @param schedule the schedule
+     * @return
+     */
+    static public int getCost(Schedule schedule) {
+        return getCost(schedule.getTimeslots());
+    }
 
 }

@@ -6,6 +6,7 @@
 package optimization.metaheuristics;
 
 import java.util.Collection;
+import java.util.List;
 import optimization.Optimizer;
 import optimization.domain.Schedule;
 
@@ -15,7 +16,7 @@ import optimization.domain.Schedule;
  */
 public class FakePopulationMetaheuristic extends PopulationMetaheuristic{
 
-    public FakePopulationMetaheuristic(Optimizer optimizer, Collection<Schedule> initialPopulation) {
+    public FakePopulationMetaheuristic(Optimizer optimizer, List<Schedule> initialPopulation) {
         super(optimizer, initialPopulation);
     }
 

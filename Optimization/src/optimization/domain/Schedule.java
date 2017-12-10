@@ -50,6 +50,13 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     }
     
     /**
+     * Updates the cost of this schedule.
+     */
+    public void updateCost(){
+        this.cost = CostFunction.getCost(timeslots);
+    }
+    
+    /**
      * Gets the value of the objective function of this schedule.
      * @return 
      */
@@ -134,7 +141,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         if (dest.isCompatible(ex)) {
             source.removeExam(ex);
             dest.addExam(ex);
-            this.setCost(CostFunction.getCost(timeslots));
+            updateCost();
             return true;
         }
         return false;
@@ -360,7 +367,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         Timeslot tj = getTimeslot(j);
         timeslots[i] = tj;
         timeslots[j] = ti;
-        this.setCost(CostFunction.getCost(timeslots));
+        updateCost();
     }
 
     /**
@@ -401,26 +408,6 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         return (int) ((this.getCost() - o.getCost()) * 100);
     }
 
-    /**
-     * Calculates the value of the objective function for the schedule. For each
-     * distance j it checks in all the timeslots if in the timeslot that is at a
-     * distance j there is a conflicting exam. If so it calculate the penalty.
-     * It saves the value of the objective function into the attribute  
-     * <code>cost</code>
-     * ????????????? DIVISION FOR S ????????????
-     *
-     */
-    public void calcObjFunction() {
-        int penalty = 0;
-        for (int j = 1; j <= 5; j++) {
-            for (int i = 0; i < timeslots.length - j; i++) {
-                for (Exam e : timeslots[i].getExams()) {
-                    penalty += timeslots[i + j].calcPenalty(j, e.getConflictingExams());
-                }
-            }
-        }
-        setCost(penalty);
-    }
 
     /**
      * Tries to swap two exams of two different timeslots
@@ -435,7 +422,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
             iterNum++;
 
         } while (!swapped && iterNum != MAX_SWAP_TRIES); // 10?
-
+        updateCost();
         return swapped;
     }
 
@@ -453,6 +440,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         tmp.addExams(tj.getExams());
         tj.cleanAndAddExams(tk.getExams());
         tk.cleanAndAddExams(tmp.getExams());
+        updateCost();
     }
 
     /**
@@ -476,6 +464,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         for (int i = 0; i < length; i++) {
             timeslots[startPoint + i].addExams(tmpSlots[i].getExams());
         }
+        updateCost();
     }
 
     /**

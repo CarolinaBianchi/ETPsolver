@@ -20,13 +20,13 @@ public class Optimization {
     When calling the program from command line, you have to move the "files" 
     folder in the same folder of the jar.
      */
-    public static String instance = "instance01";
+    public static String instance = "instance06";
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-
+        System.out.println(instance);
         //checkArgs(args);  this has to be uncommented when running the program from command line.
         try {
             // TODO code application logic here

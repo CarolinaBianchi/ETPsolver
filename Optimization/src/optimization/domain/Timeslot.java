@@ -142,26 +142,6 @@ public class Timeslot implements Cloneable {
     }
     
     /**
-     * Given a set of id of exams, it checks if it contains one of them. If so it 
-     * calculates the correspondant penalty, that depends on the <code>distance</code>
-     * between this timeslot and the one that contains a conflicting exam
-     * @param distance
-     * @param conflictingExams
-     * @return 
-     */
-    public int calcPenalty(int distance, Set<Integer> conflictingExams){
-        int penalty=0;
-        for(Exam e:exams){
-            for (Iterator<Integer> it = conflictingExams.iterator(); it.hasNext();) {
-                    if(it.next()==e.getId()){
-                        penalty+=2^(5-distance)*e.getNumStudents();
-                    }
-                }
-        }
-        return penalty;
-    }
-    
-    /**
      * Removes all the exams from the timeslot
      */
     public void clean() {
