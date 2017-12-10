@@ -20,7 +20,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
 
     private static int MAX_SWAP_TRIES = 10;
     private Timeslot[] timeslots;
-    private double cost; // to be defined
+    private int cost; // to be defined
 
     public Schedule(int tmax) {
         timeslots = new Timeslot[tmax];
@@ -43,6 +43,14 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
 
     public int getTmax() {
         return this.timeslots.length;
+    }
+
+    public void setCost(int cost) {
+        this.cost = cost;
+    }
+
+    public int getCost() {
+        return this.cost;
     }
 
     public int getTotalCollisions() {
@@ -118,9 +126,14 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
      * @param source
      * @param dest
      */
-    private void move(Exam ex, Timeslot source, Timeslot dest) {
-        source.removeExam(ex);
-        dest.addExam(ex);
+    public boolean move(Exam ex, Timeslot source, Timeslot dest) {
+        if (dest.isCompatible(ex)) {
+            source.removeExam(ex);
+            dest.addExam(ex);
+            this.setCost(CostFunction.getCost(timeslots));
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -237,13 +250,8 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         Timeslot tj = getTimeslotWithExams();
         Timeslot tk = getRandomTimeslot();
         Exam ex = tj.getRandomExam();
-        if (tk.isCompatible(ex)) {
-            //System.out.println("Successful move");
-            move(ex, tj, tk);
-            return true;
-        }
 
-        return false;
+        return move(ex, tj, tk);
     }
 
     /**
@@ -257,13 +265,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         Timeslot tj = getTimeslotWithExams();
         Timeslot tk = getRandomTimeslot(width);
         Exam ex = tj.getRandomExam();
-        if (tk.isCompatible(ex)) {
-            //System.out.println("Successful move");
-            move(ex, tj, tk);
-            return true;
-        }
-
-        return false;
+        return move(ex, tj, tk);
     }
 
     /**
@@ -277,13 +279,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         Timeslot tk = getRandomTimeslot(bucket);
 
         Exam ex = tj.getRandomExam();
-        if (tk.isCompatible(ex)) {
-            //System.out.println("Successful move");
-            move(ex, tj, tk);
-            return true;
-        }
-
-        return false;
+        return move(ex, tj, tk);
     }
 
     /**
@@ -350,6 +346,20 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     }
 
     /**
+     * Swaps timeslot i with timeslot j.
+     *
+     * @param i
+     * @param j
+     */
+    public void swapTimeslots(int i, int j) {
+        Timeslot ti = getTimeslot(i);
+        Timeslot tj = getTimeslot(j);
+        timeslots[i] = tj;
+        timeslots[j] = ti;
+        this.setCost(CostFunction.getCost(timeslots));
+    }
+
+    /**
      * Returns a clone of this schedule.
      *
      * @return
@@ -376,31 +386,28 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     }
 
     //------------------------------------ Genetic algorithm-------------------------------------
-   
     @Override
     public int compareTo(Schedule o) {
         return (o.getObjFunction() - this.getObjFunction() * 100);
     }
 
-    
     /**
-     * Calculates the value of the objective function for the schedule.
-     * For each distance j it checks in all the timeslots if in the timeslot that
-     * is at a distance j there is a conflicting exam. If so it calculate the penalty.
-     * @return 
+     * Calculates the value of the objective function for the schedule. For each
+     * distance j it checks in all the timeslots if in the timeslot that is at a
+     * distance j there is a conflicting exam. If so it calculate the penalty.
+     *
+     * @return
      */
     private int getObjFunction() {
-        int penalty=0;        
-        for(int j=1; j<=5; j++){
-            for (int i = 0; i < timeslots.length-j; i++){
+        int penalty = 0;
+        for (int j = 1; j <= 5; j++) {
+            for (int i = 0; i < timeslots.length - j; i++) {
                 for (Exam e : timeslots[i].getExams()) {
-                    penalty+=timeslots[i + j].calcPenalty(j, e.getConflictingExams());
+                    penalty += timeslots[i + j].calcPenalty(j, e.getConflictingExams());
                 }
             }
-        }        
+        }
         return penalty;
     }
-    
-    
 
 }

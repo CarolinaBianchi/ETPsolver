@@ -8,6 +8,7 @@ package optimization.domain;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -16,10 +17,10 @@ import java.util.Set;
  *
  * @author Carolina Bianchi
  */
-public class Timeslot implements Cloneable{
+public class Timeslot implements Cloneable {
 
     List<Exam> exams;
-    private int numCollisions; 
+    private int numCollisions;
 
     public Timeslot() {
         this.exams = new ArrayList<>();
@@ -28,12 +29,12 @@ public class Timeslot implements Cloneable{
     public List<Exam> getExams() {
         return this.exams;
     }
-    
+
     public int getCollisions() {
         return this.numCollisions;
     }
-    
-    public void setCollisions(int n){
+
+    public void setCollisions(int n) {
         this.numCollisions = n;
     }
 
@@ -42,7 +43,7 @@ public class Timeslot implements Cloneable{
     }
 
     public Exam getRandomExam() {
-        if(exams.isEmpty()){
+        if (exams.isEmpty()) {
             return null;
         }
         Random random = new Random();
@@ -59,15 +60,16 @@ public class Timeslot implements Cloneable{
 
     /**
      * Force an exam to be scheduled in this time slot;
+     *
      * @param toBePlaced The exam we want to force in this time slot.
      */
     public void forceExam(Exam toBePlaced) {
         int collisionsGenerated = 0;
-        
-        for( Exam e : this.exams ) {
+
+        for (Exam e : this.exams) {
             collisionsGenerated += toBePlaced.studentsInvolvedInCollision(e.getId());
         }
-        
+
         this.exams.add(toBePlaced);
         this.numCollisions += collisionsGenerated;
     }
@@ -89,7 +91,7 @@ public class Timeslot implements Cloneable{
         }
         return true;
     }
-    
+
     /**
      * Tell if there are exams currently scheduled in this time slot
      *
@@ -98,23 +100,40 @@ public class Timeslot implements Cloneable{
     public boolean isFree() {
         return exams.isEmpty();
     }
-    
+
+    /**
+     * Counts the weight of the conflict between an exam with a certain set of
+     * conflicting exams (represented by the conflictWeights) and this timeslot.
+     * [TO DO!!!!]
+     *
+     * @return
+     */
+    public int conflictWeight(Map<Integer, Integer> conflictWeights) {
+        int count = 0;
+        Integer commonStudents;
+        for (Exam examHere : this.exams) {
+            if ((commonStudents = conflictWeights.get(examHere.getId())) != null) {
+                count += commonStudents;
+            }
+        }
+        return count;
+    }
+
     @Override
-    public Timeslot clone(){
+    public Timeslot clone() {
         Timeslot t = new Timeslot();
-        for(Exam e : this.exams){
+        for (Exam e : this.exams) {
             t.addExam(e.clone());
         }
         t.setCollisions(this.numCollisions);
         return t;
     }
-    
+
     //--------------------- Genetic algorithm----------------------------------
-    
-    public boolean contains(int eId){
-        return this.exams.get(eId)!=null;
+    public boolean contains(int eId) {
+        return this.exams.get(eId) != null;
     }
-    
+
     public int calcPenalty(int distance, Set<Integer> conflictingExams){
         int penalty=0;
         for(Exam e:exams){
@@ -130,11 +149,11 @@ public class Timeslot implements Cloneable{
     public void clean() {
         this.exams = new ArrayList<>();
     }
-    
-    public void addExams(List<Exam> newExams){
+
+    public void addExams(List<Exam> newExams) {
         this.exams.addAll(newExams);
     }
-  
+
     @Override
     public String toString() {
         String s = "";

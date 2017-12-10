@@ -65,9 +65,9 @@ public class Optimizer {
      * thread.
      */
     private void initInitializers() {
-        for (int i = 0; i < 10; i++) {
+        //for (int i = 0; i < 10; i++) {
             initializers.add(new BucketInitializer(Cloner.clone(exams), tmax, this));
-        }
+        //}
         /*initializers.add(new BucketInitializer(Cloner.clone(exams), tmax, this));*/
         joinThreads(initializers);
 
@@ -77,10 +77,10 @@ public class Optimizer {
      * Creates the set of metaheuristics.
      */
     private void initMetaheuristics() {
-        //ssMetaheuristics.add(FakeSSMetaheuristic.class);
+        ssMetaheuristics.add(SimulatedAnnealing.class);
         // we add every class that extends SingleSolutionMetaheuristic
         //pMetaheuristics.add(FakePopulationMetaheuristic.class);
-        pMetaheuristics.add(GeneticAlgorithm.class);
+        //pMetaheuristics.add(GeneticAlgorithm.class);
         // we add every class that extends SingleSolutionMetaheuristic
     }
 
@@ -161,7 +161,7 @@ public class Optimizer {
         Set<Thread> threadPool = new HashSet<>(3);
         // For each new initial solution 3 (random number) single solution metaheuristics 
         //of each type start working on it.
-        for (int i = 0; i < 3; i++) {
+        //for (int i = 0; i < 3; i++) {
             for (Class<? extends SingleSolutionMetaheuristic> clazz : this.ssMetaheuristics) {
                 try {
                     Metaheuristic m = (clazz.getConstructor(Optimizer.class, Schedule.class))
@@ -172,7 +172,7 @@ public class Optimizer {
                     Logger.getLogger(Optimizer.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-        }
+        //}
         joinThreads(threadPool);
     }
 
