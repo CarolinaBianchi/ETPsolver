@@ -379,6 +379,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     public Schedule clone() {
         int tmax = this.getTmax();
         Schedule s = new Schedule(tmax);
+        s.setCost(this.cost);
         Timeslot[] tclone = new Timeslot[tmax];
         for (int i = 0; i < tmax; i++) {
             tclone[i] = this.timeslots[i].clone();

@@ -5,6 +5,7 @@
  */
 package optimization.metaheuristics;
 
+import optimization.Cloner;
 import optimization.Optimizer;
 import optimization.domain.Schedule;
 
@@ -24,7 +25,8 @@ public abstract class SingleSolutionMetaheuristic extends Metaheuristic {
 
     public SingleSolutionMetaheuristic(Optimizer optimizer, Schedule initSolution) {
         super(optimizer);
-        this.initSolution = initSolution;
+        this.mySolution = initSolution;
+        this.initSolution = Cloner.clone(initSolution);
     }
 
 }

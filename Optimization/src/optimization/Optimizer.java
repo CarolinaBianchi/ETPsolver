@@ -13,7 +13,6 @@ import fileutils.SolutionWriter;
 import optimization.initialization.*;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -145,6 +144,7 @@ public class Optimizer {
      * @param newInitialSol
      */
     public void updateOnNewInitialSolution(Schedule newInitialSol) {
+        newInitialSol.updateCost();
         synchronized (initialSchedules) {
             this.initialSchedules.add(newInitialSol);
         }
