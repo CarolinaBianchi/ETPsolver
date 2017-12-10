@@ -266,12 +266,14 @@ public class Optimizer {
     private void writeSolution() {
 
         SolutionWriter sw = new SolutionWriter(bestSchedule);
+        
         try {
             sw.join();
         } catch (InterruptedException ex) {
-            Logger.getLogger(FeasibleInitializer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Optimizer.class.getName()).log(Level.SEVERE, null, ex);
         }
-        sw.run();
+        
+        sw.start();
 
     }
 }
