@@ -46,7 +46,7 @@ public class BucketInitializer extends AbstractInitializer {
 
     /**
      * <pre>
-     * This initialization works as foolows.
+     * This initialization works as follows.
      * - I try to place as many exams as possible randomly considering a
      * restricted window of timeslots. (exams are considered in descending order
      * of their number of conflicts).
@@ -95,7 +95,7 @@ public class BucketInitializer extends AbstractInitializer {
             }
         }
         //printStatus();
-        writeSolution();
+        //writeSolution();
         return mySchedule;
     }
 

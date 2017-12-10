@@ -130,10 +130,25 @@ public class Timeslot implements Cloneable {
     }
 
     //--------------------- Genetic algorithm----------------------------------
-    public boolean contains(int eId) {
-        return this.exams.get(eId) != null;
+    
+    /**
+     * Returns true if the exam <code>e</code> is assigned to 
+     * the timeslot
+     * @param e
+     * @return 
+     */
+    public boolean contains(Exam e){
+        return this.exams.contains(e);
     }
-
+    
+    /**
+     * Given a set of id of exams, it checks if it contains one of them. If so it 
+     * calculates the correspondant penalty, that depends on the <code>distance</code>
+     * between this timeslot and the one that contains a conflicting exam
+     * @param distance
+     * @param conflictingExams
+     * @return 
+     */
     public int calcPenalty(int distance, Set<Integer> conflictingExams){
         int penalty=0;
         for(Exam e:exams){
@@ -146,14 +161,31 @@ public class Timeslot implements Cloneable {
         return penalty;
     }
     
+    /**
+     * Removes all the exams from the timeslot
+     */
     public void clean() {
         this.exams = new ArrayList<>();
     }
-
-    public void addExams(List<Exam> newExams) {
+    
+    /**
+     * Adds a list of exams to the timeslot
+     * @param newExams 
+     */
+    public void addExams(List<Exam> newExams){
         this.exams.addAll(newExams);
     }
-
+    
+    /**
+     * Removes all exams and adds the list of <code>newExams</code> to the
+     * timeslot
+     * @param newExams 
+     */
+    public void cleanAndAddExams(List<Exam> newExams){
+        clean();
+        addExams(newExams);
+    }
+  
     @Override
     public String toString() {
         String s = "";

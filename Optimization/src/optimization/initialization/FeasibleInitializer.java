@@ -57,7 +57,7 @@ public class FeasibleInitializer extends AbstractInitializer {
             //System.out.println("Available time slots: " + mySchedule.freeTimeslotAvailability());
             numtries++;
         }
-        writeSolution();
+        //writeSolution();
         System.out.println("Number of tries: " + numtries);
         System.out.println("Number of collisions: " + mySchedule.getTotalCollisions());
 

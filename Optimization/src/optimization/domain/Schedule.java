@@ -4,12 +4,8 @@
  * and open the template in the editor.
  */
 package optimization.domain;
-
-import optimization.domain.Timeslot;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 /**
  * Class that represents a Schedule.
@@ -45,10 +41,18 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         return this.timeslots.length;
     }
 
+    /**
+     * Sets the value of the objective function of this schedule.
+     * @param cost 
+     */
     public void setCost(int cost) {
         this.cost = cost;
     }
-
+    
+    /**
+     * Gets the value of the objective function of this schedule.
+     * @return 
+     */
     public int getCost() {
         return this.cost;
     }
@@ -386,19 +390,27 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     }
 
     //------------------------------------ Genetic algorithm-------------------------------------
+    /**
+     * Schedules with lower value of the objective function are put firsts
+     *
+     * @param o
+     * @return
+     */
     @Override
     public int compareTo(Schedule o) {
-        return (o.getObjFunction() - this.getObjFunction() * 100);
+        return (int) ((this.getCost() - o.getCost()) * 100);
     }
 
     /**
      * Calculates the value of the objective function for the schedule. For each
      * distance j it checks in all the timeslots if in the timeslot that is at a
      * distance j there is a conflicting exam. If so it calculate the penalty.
+     * It saves the value of the objective function into the attribute  
+     * <code>cost</code>
+     * ????????????? DIVISION FOR S ????????????
      *
-     * @return
      */
-    private int getObjFunction() {
+    public void calcObjFunction() {
         int penalty = 0;
         for (int j = 1; j <= 5; j++) {
             for (int i = 0; i < timeslots.length - j; i++) {
@@ -407,7 +419,181 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
                 }
             }
         }
-        return penalty;
+        setCost(penalty);
     }
+
+    /**
+     * Tries to swap two exams of two different timeslots
+     *
+     * @return if the swap has happend
+     */
+    public boolean mutateExams() {
+        boolean swapped;
+        int iterNum = 0;
+        do {
+            swapped = randomSwap();
+            iterNum++;
+
+        } while (!swapped && iterNum != MAX_SWAP_TRIES); // 10?
+
+        return swapped;
+    }
+
+    /**
+     * Takes two random timeslots and swaps the exams of one to the other
+     */
+    public void mutateTimeslots() {
+
+        Timeslot tj, tk;
+        Timeslot tmp = new Timeslot();
+
+        tj = getRandomTimeslot();
+        tk = getRandomTimeslot();
+
+        tmp.addExams(tj.getExams());
+        tj.cleanAndAddExams(tk.getExams());
+        tk.cleanAndAddExams(tmp.getExams());
+    }
+
+    /**
+     * Given two cut-points, it remove all the exams in the timeslots in that
+     * interval. Then it assigns those exams to the timeslots in the reverse
+     * order.
+     *
+     * @param cutPoints
+     */
+    public void invertTimeslots(int[] cutPoints) {
+        int startPoint = cutPoints[0];
+        int endPoint = cutPoints[1];
+        int length = endPoint - startPoint;
+        Timeslot[] tmpSlots = createTmpSlots(length);
+
+        for (int i = 0; i < length; i++) {
+            tmpSlots[length - 1 - i].addExams(timeslots[startPoint + i].getExams());
+            timeslots[startPoint + i].clean();
+        }
+
+        for (int i = 0; i < length; i++) {
+            timeslots[startPoint + i].addExams(tmpSlots[i].getExams());
+        }
+    }
+
+    /**
+     * Creates a temporary array of timeslots
+     *
+     * @param length
+     * @return
+     */
+    private Timeslot[] createTmpSlots(int length) {
+        Timeslot[] tmpSlots = new Timeslot[length];
+
+        for (int i = 0; i < tmpSlots.length; i++) {
+            tmpSlots[i] = new Timeslot();
+        }
+
+        return tmpSlots;
+    }
+
+    /**
+     * Eliminates all the exams that are not in the timeslots in the intevarl
+     * [<code>cutPoints[0]</code>, <code>cutPoints[1]</code>)
+     * @param cutPoints 
+     */
+//    public void selectSection(int[] cutPoints) {
+//        for (int i = 0; i < this.getTmax(); i++) {
+//            if (i < cutPoints[0] || i >= cutPoints[1]) {
+//                timeslots[i].clean();
+//            }
+//        }
+//    }
+
+    /**
+     * Returns if the exam <code>e</code> is in the interval of timeslots
+     * [<code>cutPoints[0]</code>, <code>cutPoints[1]</code>)
+     * @param e
+     * @param points
+     * @return 
+     */
+//    public boolean isExamInSection(Exam e, int[] points) {
+//        for (int i = points[0]; i < points[1]; i++) {
+//            if (timeslots[i].contains(e)) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
+
+    /**
+     * If an exam of timeslot <code>t</code> is not in the interval of timeslots
+     * [<code>cutPoints[0]</code>, <code>cutPoints[1]</code>), it adds it in the timeslot 
+     * <code>timeslots[position]</code>
+     * @param position
+     * @param t
+     * @param points 
+     */
+//    public void addTimeslotExams(int position, Timeslot t, int[] points) {
+//        for (Exam e : t.getExams()) {
+//            if (!isExamInSection(e, points)) {
+//                timeslots[position].addExam(e);
+//            }
+//        }
+//    }
+
+    /**
+     * Retrieves the timeslot in the interval [<code>cutPoints[0]</code>, <code>cutPoints[1]</code>)
+     * @param cutPoints
+     * @return 
+     */
+//    public Timeslot[] getSectionTimeslots(int[] cutPoints) {
+//        Timeslot[] tmpSlots = createTmpSlots(cutPoints[1] - cutPoints[0]);
+//        for (int i = cutPoints[0]; i < cutPoints[1]; i++) {
+//            tmpSlots[i - cutPoints[0]] = timeslots[i];
+//        }
+//        return tmpSlots;
+//    }
+
+//    public void doExamOrderCrossover(Timeslot[] p2section, int[] points) {
+//        List<Exam> unpositioned = findUnpositionedExams(p2section);
+//        int counter = 0;
+//        boolean positioned = false;
+//        for (Exam e : unpositioned) {
+//            //System.out.println(e);
+//            for (int i = points[1]; i < getTmax(); i++) {
+//                if (positioned = timeslots[i].isCompatible(e)) {
+//                    timeslots[i].addExam(e);
+//                    counter++;
+//                    break;
+//                }
+//            }
+//            if (!positioned) {
+//                for (int i = 0; i < points[1]; i++) {
+//                    if (timeslots[i].isCompatible(e)) {
+//                        timeslots[i].addExam(e);
+//                        counter++;
+//                        break;
+//                    }
+//                }
+//            }
+//            //System.out.println(positioned);
+//        }
+//        System.out.println(counter);
+//    }
+//
+//    private List<Exam> findUnpositionedExams(Timeslot[] p2section) {
+//        List<Exam> unpositioned = new ArrayList<>();
+//        boolean positioned;
+//        for (Timeslot tk : p2section) {
+//            for (Exam e : tk.getExams()) {
+//                positioned = false;
+//                for (Timeslot tj : timeslots) {
+//                    positioned = positioned || tj.contains(e);
+//                }
+//                if (!positioned) {
+//                    unpositioned.add(e);
+//                }
+//            }
+//        }
+//        return unpositioned;
+//    }
 
 }
