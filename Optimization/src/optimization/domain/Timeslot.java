@@ -21,9 +21,15 @@ public class Timeslot implements Cloneable {
 
     List<Exam> exams;
     private int numCollisions;
+    private int timeslotID;
 
     public Timeslot() {
         this.exams = new ArrayList<>();
+    }
+    
+    public Timeslot(int timeslotID) {
+        this.exams = new ArrayList<>();
+        this.timeslotID=timeslotID;
     }
 
     public List<Exam> getExams() {
@@ -173,6 +179,10 @@ public class Timeslot implements Cloneable {
             s += e.toString() + "\t";
         }
         return s;
+    }
+
+    public int getTimesoltID() {
+        return this.timeslotID;
     }
 
 }

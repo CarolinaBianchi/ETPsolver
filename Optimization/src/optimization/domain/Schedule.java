@@ -29,7 +29,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
 
     private void initTimeslots() {
         for (int i = 0; i < timeslots.length; i++) {
-            timeslots[i] = new Timeslot();
+            timeslots[i] = new Timeslot(i);
         }
     }
 
@@ -478,7 +478,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         Timeslot[] tmpSlots = new Timeslot[length];
 
         for (int i = 0; i < tmpSlots.length; i++) {
-            tmpSlots[i] = new Timeslot();
+            tmpSlots[i] = new Timeslot(i);
         }
 
         return tmpSlots;
