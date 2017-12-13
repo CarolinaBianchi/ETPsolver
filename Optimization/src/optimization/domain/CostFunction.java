@@ -14,7 +14,7 @@ public interface CostFunction {
     static final int[] COST = {0, 16, 8, 4, 2, 1};
 
     /**
-     * Returns the cost of a certain timeslot confliguration. (NB it still has
+     * Returns the cost of a certain time slot configuration. (NB it still has
      * to be weighted by the total number of students).
      *
      * @param timeslots
@@ -43,45 +43,24 @@ public interface CostFunction {
     static public int getCost(Schedule schedule) {
         return getCost(schedule.getTimeslots());
     }
-
+    
     /**
-     * WRONG! .... returns the cost of swapping timeslots at index[0] with the one at
-     * index[1]; 
-     *
-     * @param indexes
-     * @param timeslots
-     * @return
+     * Returns the cost associated to a specific exam
+     * @param e The exam for which we want to compute the associated cost.
+     * @param src The index of the timeslot associated to the selected exam
+     * @param timeslots The starting set of time slots 
+     * @return The cost associated to the given exam
      */
-    static public int getCost(int[] indexes, Timeslot[] timeslots) {
-        reorder(indexes);
+    static public int getExamCost(Exam e, int src, Timeslot[] timeslots) {
+        // Compute the range of time slots that could conflict with the target time slot 
+        int[] rangeI = getRange(src, timeslots.length);
+        
         int penalty = 0;
-        penalty += scanRange(indexes[0], indexes[1], timeslots);
-        penalty += scanRange(indexes[1], indexes[0], timeslots);
-        penalty += 2 * mutualPenalty(indexes, timeslots);
-        return penalty;
-    }
-
-    /**
-     * WRONG! Calculates the penalty given by virtually moving the timeslot that is at
-     * <code>otherIndex</code> to <code>currentIndex</code>. It subtracts the
-     * penalty due to the position of the timeslot that was @ currentIndex and
-     * adds the penalty due to the fact that it is virtually replaced with the
-     * timeslot that was at otherIndex.
-     *
-     * @param currentIndex
-     * @param otherIndex
-     * @param timeslots
-     * @return
-     */
-    static public int scanRange(int currentIndex, int otherIndex, Timeslot[] timeslots) {
-        int[] range = getRange(currentIndex, timeslots.length);
-        int penalty = 0;
-        for (int i = range[0]; i < range[1]; i++) {
-            int distance = currentIndex - i;
-            for (Exam e : timeslots[currentIndex].getExams()) {
-                penalty -= timeslots[i].conflictWeight(e.getConflictingExams2()) * COST[Math.abs(distance)];
-            }
-            for (Exam e : timeslots[otherIndex].getExams()) {
+        // For each time slot within the computed range, calculate the penalty due
+        // to moving the selected time slot in currentIndex position
+        for (int i = rangeI[0]; i <= rangeI[1]; i++) {
+            if(i!=src) {   
+                int distance = src - i;
                 penalty += timeslots[i].conflictWeight(e.getConflictingExams2()) * COST[Math.abs(distance)];
             }
         }
@@ -89,37 +68,90 @@ public interface CostFunction {
     }
 
     /**
-     * Returns the TRUE cost of swapping 2 timeslots. Prints the comparison with
-     * the WRONG cost calculated with my wrong method.
-     *
-     * @param indexes
-     * @param schedule
-     * @return
+     * Returns the cost associated to a specific time slot
+     * @param index The index associated to the selected time slot
+     * @param timeslots The starting set of time slots 
+     * @return The cost associated to the given time slot
      */
-    static public int getCost(int[] indexes, Schedule schedule) {
-        //return getCost(indexes, schedule.getTimeslots());
-        int wrongPenalty = getCost(indexes, schedule.getTimeslots());
-        int oldCost = schedule.getCost();
-        schedule.swapTimeslots(indexes[0], indexes[1]);
-        int newCost = schedule.getCost();
-        System.out.println(indexes[0] + "-" + indexes[1] + "\t True penalty" + (newCost - oldCost) + "\t vs S" + wrongPenalty + "\t" + mutualPenalty(indexes, schedule.getTimeslots()));
-        return newCost - oldCost;
+    static public int getTimeslotCost(int index, Timeslot[] timeslots) {
+        int[] range = getRange(index, timeslots.length);
+        int cost = 0;
+        
+        for (int i = range[0]; i <= range[1]; i++) {
+            int distance = index - i;
+            for (Exam e : timeslots[index].getExams()) {
+                cost += timeslots[i].conflictWeight(e.getConflictingExams2()) * COST[Math.abs(distance)];
+            }
+        }
+        return cost;
+    }
+    
+    
+    /**
+     * Returns the cost of swapping an exam from time slot src to time slot dest; 
+     *
+     * @param e The exam we want to move.
+     * @param src The index of the current time slot of the given exam.
+     * @param dest The index of the time slot where we want to move the selected exam.
+     * @param timeslots The starting set of time slots.
+     * @return The penalty assigned to a specific move. 
+     */
+    static public int getExamMovePenalty(Exam e, int src, int dest, Timeslot[] timeslots) {
+        int penalty = 0;
+        // Get the cost of the exam in the current position
+        penalty -= getExamCost(e, src, timeslots);
+        // Get the cost of the exam in the new position
+        penalty += getExamCost(e, dest, timeslots);
+        return penalty;
     }
 
     /**
-     * Orders the indexes so that the first one is less or equal than the second
-     * one.
+     * Returns the cost of swapping time slot at index i with the one at index j; 
      *
-     * @param indexes
+     * @param i The index of the first time slot to swap.
+     * @param j The index of the second time slot to swap.
+     * @param timeslots The starting set of time slots 
+     * @return The penalty assigned to a specific swap. 
      */
-    static void reorder(int[] indexes) {
-        int tmp;
-        if (indexes[0] > indexes[1]) {
-            tmp = indexes[0];
-            indexes[0] = indexes[1];
-            indexes[1] = tmp;
-        }
+    static public int getTimeslotSwapPenalty(int i, int j, Timeslot[] timeslots) {
+        int penalty = 0;
+        penalty += getNewTimeslotPenalty(i, j, timeslots);
+        penalty += getNewTimeslotPenalty(j, i, timeslots);
+        return penalty;
+    }
 
+    /**
+     * Calculates the penalty given by virtually moving the time slot that is at
+     * <code>otherIndex</code> to <code>currentIndex</code>. It subtracts the
+     * penalty due to the position of the time slot that was in currentIndex and
+     * adds the penalty due to the fact that it is virtually replaced with the
+     * time slot that was at otherIndex.
+     *
+     * @param currentIndex The targeted index position.
+     * @param otherIndex The index associated to the time slot we want to move in current index.
+     * @param timeslots The starting set of time slots 
+     * @return The penalty due to the time slot change of index.
+     */
+    static public int getNewTimeslotPenalty(int currentIndex, int otherIndex, Timeslot[] timeslots) {
+        // Compute the range of time slots that could conflict with the target time slot 
+        int[] range = getRange(currentIndex, timeslots.length);
+
+        int penalty = 0;
+        // For each time slot within the computed range, calculate the penalty due
+        // to moving the selected time slot in currentIndex position
+        for (int i = range[0]; i <= range[1]; i++) {
+            //  Not considering this two cases saves us from doing useless computations.  
+            if(i!=currentIndex && i!=otherIndex) {
+                int distance = currentIndex - i;
+                for (Exam e : timeslots[currentIndex].getExams()) {
+                    penalty -= timeslots[i].conflictWeight(e.getConflictingExams2()) * COST[Math.abs(distance)];
+                }
+                for (Exam e : timeslots[otherIndex].getExams()) {
+                    penalty += timeslots[i].conflictWeight(e.getConflictingExams2()) * COST[Math.abs(distance)];
+                }
+            }
+        }
+        return penalty;
     }
 
     /**
@@ -131,17 +163,25 @@ public interface CostFunction {
      * @return
      */
     static int[] getRange(int index, int tmax) {
-        int[] range = {Math.max(index - 5, 0), Math.min(index + 5, tmax)};
+        int[] range = {Math.max(index - 5, 0), Math.min(index + 5, tmax-1)};
         return range;
     }
-
+    
+    
+    
+    
+    
+    
+    
+    /* ******* OLD METHOD'S GRAVEYARD ********* */
+    
     /**
      * Calculates the mutual penalty between 2 timeslots.
      *
      * @param indexes
      * @param timeslots
      * @return
-     */
+    
     public static int mutualPenalty(int[] indexes, Timeslot[] timeslots) {
         int penalty = 0;
         int distance = Math.abs(indexes[0] - indexes[1]);
@@ -152,6 +192,21 @@ public interface CostFunction {
             penalty += timeslots[indexes[1]].conflictWeight(e.getConflictingExams2()) * COST[distance];
         }
         return penalty;
-    }
+    } */
+    
+    /**
+     * Orders the indexes so that the first one is less or equal than the second
+     * one.
+     *
+     * @param indexes
+     
+    static void reorder(int[] indexes) {
+        int tmp;
+        if (indexes[0] > indexes[1]) {
+            tmp = indexes[0];
+            indexes[0] = indexes[1];
+            indexes[1] = tmp;
+        }
 
+    }*/
 }

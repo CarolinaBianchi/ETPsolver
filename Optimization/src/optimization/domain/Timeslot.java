@@ -19,11 +19,17 @@ import java.util.Set;
  */
 public class Timeslot implements Cloneable {
 
-    List<Exam> exams;
+    private int position;
+    private List<Exam> exams;
     private int numCollisions;
 
-    public Timeslot() {
+    public Timeslot(int position) {
         this.exams = new ArrayList<>();
+        this.position = position;
+    }
+    
+    public int getPosition() {
+        return this.position;
     }
 
     public List<Exam> getExams() {
@@ -32,6 +38,10 @@ public class Timeslot implements Cloneable {
 
     public int getCollisions() {
         return this.numCollisions;
+    }
+    
+    public void setPosition( int position) {
+        this.position = position;
     }
 
     public void setCollisions(int n) {
@@ -121,7 +131,7 @@ public class Timeslot implements Cloneable {
 
     @Override
     public Timeslot clone() {
-        Timeslot t = new Timeslot();
+        Timeslot t = new Timeslot(position);
         for (Exam e : this.exams) {
             t.addExam(e.clone());
         }

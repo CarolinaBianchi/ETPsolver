@@ -58,8 +58,6 @@ public class Optimizer {
         buildEIdExam();
         this.students = FileManager.readStudents(instanceName);
         this.tmax = FileManager.readTimeslots(instanceName);
-        bestSchedule = new Schedule(tmax);
-        bestSchedule.setCost(0);
     }
 
     /**
@@ -68,7 +66,7 @@ public class Optimizer {
      */
     private void initInitializers() {
         //for (int i = 0; i < 10; i++) {
-            initializers.add(new BucketInitializer(Cloner.clone(exams), tmax, this));
+            initializers.add(new BucketInitializer(Cloner.clone(exams), tmax, this, students.size()));
         //}
         /*initializers.add(new BucketInitializer(Cloner.clone(exams), tmax, this));*/
         joinThreads(initializers);
@@ -144,10 +142,11 @@ public class Optimizer {
      * @param newInitialSol
      */
     public void updateOnNewInitialSolution(Schedule newInitialSol) {
-        newInitialSol.updateCost();
         synchronized (initialSchedules) {
             this.initialSchedules.add(newInitialSol);
         }
+        bestSchedule = newInitialSol;
+        writeSolution();
         runAllSSMetaheuristics(newInitialSol);
         checkAllPMetaheuristics();
     }

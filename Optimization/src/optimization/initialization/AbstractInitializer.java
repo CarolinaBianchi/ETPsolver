@@ -21,16 +21,19 @@ public abstract class AbstractInitializer extends Thread {
     protected List<Exam> exams;
     protected Schedule mySchedule;
     private Optimizer optimizer;
+    protected final int numStudents;
 
-    public AbstractInitializer(List<Exam> exams, int tmax, Optimizer optimizer) {
+    public AbstractInitializer(List<Exam> exams, int tmax, Optimizer optimizer, int numStudents) {
         this.exams = exams;
         this.optimizer=optimizer;
-        this.mySchedule = new Schedule(tmax);
+        this.mySchedule = new Schedule(tmax, numStudents);
+        this.numStudents = numStudents;
     }
 
     @Override
     public void run() {
         initialize();
+        mySchedule.computeCost();
         notifyNewInitialSolution();
     }
     

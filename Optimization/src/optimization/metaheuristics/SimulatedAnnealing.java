@@ -33,8 +33,8 @@ public class SimulatedAnnealing extends SingleSolutionMetaheuristic {
     public SimulatedAnnealing(Optimizer optimizer, Schedule initSolution) {
         super(optimizer, initSolution);
         System.out.println("new simulated annealing");
-        initSolution.setCost(CostFunction.getCost(initSolution.getTimeslots()));
-        initTemperature = CostFunction.getCost(initSolution.getTimeslots());
+        //initSolution.setCost(CostFunction.getCost(initSolution.getTimeslots()));
+        initTemperature = initSolution.getCost(); //CostFunction.getCost(initSolution.getTimeslots());
         temperature = initTemperature;
         tmax = initSolution.getTmax();
         NUM_ITER = tmax;
