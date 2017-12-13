@@ -12,6 +12,7 @@ import fileutils.FileManager;
 import fileutils.SolutionWriter;
 import optimization.initialization.*;
 import java.io.IOException;
+import static java.lang.Math.pow;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import optimization.domain.Timeslot;
 import optimization.metaheuristics.*;
 
 /**
@@ -38,9 +40,12 @@ public class Optimizer {
     private Set<Class<? extends SingleSolutionMetaheuristic>> ssMetaheuristics = new HashSet<>();
     private Set<Class<? extends PopulationMetaheuristic>> pMetaheuristics = new HashSet<>();
     private int tmax;
+    private int[][] numberOfStudent;    //numberOfStudent[i][j] number of student enrolled in both exams i and j
+
 
     public Optimizer(String instanceName) throws IOException {
         init(instanceName);
+        numberOfStudent = new int[this.exams.size() + 1][this.exams.size() + 1];
         buildStudentListInEx();
         buildConflictingExamsLists();
         initInitializers();
@@ -77,10 +82,11 @@ public class Optimizer {
      * Creates the set of metaheuristics.
      */
     private void initMetaheuristics() {
-        ssMetaheuristics.add(SimulatedAnnealing.class);
+        //ssMetaheuristics.add(SimulatedAnnealing.class);
         // we add every class that extends SingleSolutionMetaheuristic
         //pMetaheuristics.add(GeneticAlgorithm.class);
         // we add every class that extends SingleSolutionMetaheuristic
+         ssMetaheuristics.add(TabuSearchAlgorithm.class);
     }
 
     /**
@@ -120,6 +126,9 @@ public class Optimizer {
                     // Used for adding the conflicts to the exam conflict map.
                     e1.addConflictingExam2(e2.getId());
                     e2.addConflictingExam2(e1.getId());
+                    
+                    numberOfStudent[e1.getId()][e2.getId()]++;
+                    numberOfStudent[e2.getId()][e1.getId()]++;
                 }
             }
         }
@@ -275,4 +284,40 @@ public class Optimizer {
         sw.start();
 
     }
+    
+    /**
+     * compute the value of our objectif function
+     *
+     * @param schedule
+     * @return
+     */
+    public double objectifFunction(Schedule mySchedule) {
+        Timeslot[] timeslots = mySchedule.getTimeslots();
+        double cost = 0;
+
+        for (int i = 1; i <= 5; i++) {
+            for (int t = 0; t < timeslots.length - i; t++) {
+
+                if ((t + i) < timeslots.length) {
+                    int sum = 0;
+                    for (Exam e : timeslots[t].getExams()) {
+                        for (Exam e1 : timeslots[t + i].getExams()) {
+                            if (e1 == null || e == null) {
+                                break;
+                            }
+
+                            sum = sum + numberOfStudent[e.getId()][e1.getId()];
+
+                        }
+                    }
+                    cost = cost + sum * pow(2, 5 - i);
+                }
+            }
+
+        }
+
+        return cost / this.students.size();
+    }
+
+
 }

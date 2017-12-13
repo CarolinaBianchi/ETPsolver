@@ -152,7 +152,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
      */
     public boolean move(Exam ex, Timeslot source, Timeslot dest) {
         if (dest.isCompatible(ex)) {
-            int penalty = CostFunction.getExamMovePenalty(ex, source.getPosition(), dest.getPosition(), timeslots);
+            int penalty = CostFunction.getExamMovePenalty(ex, source.getTimeslotID(), dest.getTimeslotID(), timeslots);
             updateCost(penalty);
             source.removeExam(ex);
             dest.addExam(ex);
@@ -611,7 +611,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     
     private void printTimeslots() {
         for( int i=0; i<timeslots.length; i++) {
-            System.out.println(i + " - has timeslot " + timeslots[i].getPosition());
+            System.out.println(i + " - has timeslot " + timeslots[i].getTimeslotID());
         }
     }
 }
