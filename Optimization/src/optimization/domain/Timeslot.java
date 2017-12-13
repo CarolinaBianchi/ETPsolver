@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class that represents a Timeslot.
@@ -26,10 +28,10 @@ public class Timeslot implements Cloneable {
     public Timeslot() {
         this.exams = new ArrayList<>();
     }
-    
+
     public Timeslot(int timeslotID) {
         this.exams = new ArrayList<>();
-        this.timeslotID=timeslotID;
+        this.timeslotID = timeslotID;
     }
 
     public List<Exam> getExams() {
@@ -57,7 +59,9 @@ public class Timeslot implements Cloneable {
     }
 
     public void addExam(Exam e) {
-        this.exams.add(e);
+        if (e != null) {
+            this.exams.add(e);
+        }
     }
 
     public void removeExam(Exam e) {
@@ -127,7 +131,7 @@ public class Timeslot implements Cloneable {
 
     @Override
     public Timeslot clone() {
-        Timeslot t = new Timeslot();
+        Timeslot t = new Timeslot(this.timeslotID);
         for (Exam e : this.exams) {
             t.addExam(e.clone());
         }
@@ -136,42 +140,43 @@ public class Timeslot implements Cloneable {
     }
 
     //--------------------- Genetic algorithm----------------------------------
-    
     /**
-     * Returns true if the exam <code>e</code> is assigned to 
-     * the timeslot
+     * Returns true if the exam <code>e</code> is assigned to the timeslot
+     *
      * @param e
-     * @return 
+     * @return
      */
-    public boolean contains(Exam e){
+    public boolean contains(Exam e) {
         return this.exams.contains(e);
     }
-    
+
     /**
      * Removes all the exams from the timeslot
      */
     public void clean() {
         this.exams = new ArrayList<>();
     }
-    
+
     /**
      * Adds a list of exams to the timeslot
-     * @param newExams 
+     *
+     * @param newExams
      */
-    public void addExams(List<Exam> newExams){
+    public void addExams(List<Exam> newExams) {
         this.exams.addAll(newExams);
     }
-    
+
     /**
      * Removes all exams and adds the list of <code>newExams</code> to the
      * timeslot
-     * @param newExams 
+     *
+     * @param newExams
      */
-    public void cleanAndAddExams(List<Exam> newExams){
+    public void cleanAndAddExams(List<Exam> newExams) {
         clean();
         addExams(newExams);
     }
-  
+
     @Override
     public String toString() {
         String s = "";
