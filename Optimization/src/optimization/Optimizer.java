@@ -12,6 +12,7 @@ import fileutils.FileManager;
 import fileutils.SolutionWriter;
 import optimization.initialization.*;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -150,7 +151,7 @@ public class Optimizer {
         }
         runAllSSMetaheuristics(newInitialSol);
         checkAllPMetaheuristics();
-    }
+        }
 
     /**
      * Runs every implementation of a SingleSolutoinMetaheuristics with the new
@@ -266,7 +267,6 @@ public class Optimizer {
     private void writeSolution() {
 
         SolutionWriter sw = new SolutionWriter(bestSchedule);
-        
         try {
             sw.join();
         } catch (InterruptedException ex) {
@@ -274,6 +274,10 @@ public class Optimizer {
         }
         
         sw.start();
+        int benchmark = Optimization.getBenchmark();
+        DecimalFormat df = new DecimalFormat("##.00"); 
+        double gap = 100*((bestSchedule.getCost()*1.0-benchmark*1.0)/benchmark*1.0);
+        System.out.println("OurSolution:"+bestSchedule.getCost()+"\tBenchmark:"+benchmark+"\t gap:"+df.format(gap)+"%");
 
     }
 }

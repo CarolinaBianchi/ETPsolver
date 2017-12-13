@@ -82,6 +82,9 @@ public class Timeslot implements Cloneable {
      * @return
      */
     public boolean isCompatible(Exam e) {
+        if(isFree()){
+            return true;
+        }
         boolean compatible = true;
         for (Exam alreadyIn : exams) {
             compatible &= e.isCompatible(alreadyIn.getId());
