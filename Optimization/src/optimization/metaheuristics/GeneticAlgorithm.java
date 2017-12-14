@@ -69,7 +69,7 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
      */
     private void calcObjFunctions() {
         for (Schedule s : population) {
-            s.updateCost();
+            s.computeCost();
         }
     }
 
@@ -128,7 +128,7 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
      * @param newSchedule
      */
     private void actSelection(Schedule oldSchedule, Schedule newSchedule) {
-        newSchedule.updateCost();
+        newSchedule.computeCost();
         if (newSchedule.getCost() < oldSchedule.getCost()) {
             population.remove(oldSchedule);
             population.add(newSchedule);

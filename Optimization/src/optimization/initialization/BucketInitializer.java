@@ -30,8 +30,8 @@ public class BucketInitializer extends AbstractInitializer {
     private List<Integer>[] buckets;
     int tmax;
 
-    public BucketInitializer(List<Exam> exams, int tmax, Optimizer opt) {
-        super(exams, tmax, opt);
+    public BucketInitializer(List<Exam> exams, int tmax, Optimizer opt, int numStudents) {
+        super(exams, tmax, opt, numStudents);
         this.tmax = tmax;
         Collections.sort(exams);
         this.notYetPlaced = new ArrayList<>(exams);
@@ -155,10 +155,11 @@ public class BucketInitializer extends AbstractInitializer {
      */
     protected void restart() {
         int tmax = mySchedule.getTmax();
+        int numStudents = mySchedule.getNumberStudents();
         this.currentWidth = 0;
         this.notYetPlaced = new ArrayList<>(exams);
         this.alreadyPlaced = new ArrayList<>();
-        mySchedule = new Schedule(tmax);
+        mySchedule = new Schedule(tmax, numStudents);
         buckets = new List[6];
         initializeBuckets();
         this.THRESHOLD++;
