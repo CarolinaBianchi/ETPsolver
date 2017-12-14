@@ -20,8 +20,6 @@ import java.util.logging.Logger;
  * @author Carolina Bianchi
  */
 public class Timeslot implements Cloneable {
-
-    private int position;
     private List<Exam> exams;
     private int numCollisions;
     private int timeslotID;
@@ -42,13 +40,13 @@ public class Timeslot implements Cloneable {
     public int getCollisions() {
         return this.numCollisions;
     }
-    
-    public void setPosition( int position) {
-        this.position = position;
-    }
 
     public void setCollisions(int n) {
         this.numCollisions = n;
+    }
+    
+    public void setTimeslotID( int tID) {
+        this.timeslotID = tID;
     }
 
     public Exam getExam(int i) {
@@ -139,7 +137,7 @@ public class Timeslot implements Cloneable {
 
     @Override
     public Timeslot clone() {
-        Timeslot t = new Timeslot(position);
+        Timeslot t = new Timeslot(timeslotID);
         for (Exam e : this.exams) {
             t.addExam(e.clone());
         }

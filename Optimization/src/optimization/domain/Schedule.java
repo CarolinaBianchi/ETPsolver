@@ -401,8 +401,8 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
 
         // Since we swapped two timeslots, we need to update the position written
         // in their instaces.
-        timeslots[i].setPosition(i);
-        timeslots[j].setPosition(j);
+        timeslots[i].setTimeslotID(i);
+        timeslots[j].setTimeslotID(j);
         updateCost(penalty);
     }
 

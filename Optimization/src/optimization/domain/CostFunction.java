@@ -105,7 +105,7 @@ public interface CostFunction {
         return penalty;
     }
     
-        /**
+    /**
      * Returns the cost of swapping an exam from time slot src to time slot dest; 
      *
      * @param e The exam we want to move.
