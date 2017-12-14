@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 package optimization.domain;
+
 import java.util.List;
 import java.util.Random;
 
@@ -16,10 +17,12 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
 
     private static int MAX_SWAP_TRIES = 10;
     private Timeslot[] timeslots;
-    private int cost; // to be defined
+    private int cost;
+    private int numStudents;
 
-    public Schedule(int tmax) {
+    public Schedule(int tmax, int numStudents) {
         timeslots = new Timeslot[tmax];
+        this.numStudents = numStudents;
         initTimeslots();
     }
 
@@ -29,7 +32,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
 
     private void initTimeslots() {
         for (int i = 0; i < timeslots.length; i++) {
-            timeslots[i] = new Timeslot();
+            timeslots[i] = new Timeslot(i);
         }
     }
 
@@ -41,24 +44,37 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         return this.timeslots.length;
     }
 
+    public int getNumberStudents() {
+        return this.numStudents;
+    }
+
     /**
      * Sets the value of the objective function of this schedule.
-     * @param cost 
+     *
+     * @param cost
      */
     public void setCost(int cost) {
         this.cost = cost;
     }
-    
+
+    /**
+     * Computes the cost of this schedule.
+     */
+    public void computeCost() {
+        this.cost = CostFunction.getCost(timeslots);
+    }
+
     /**
      * Updates the cost of this schedule.
      */
-    public void updateCost(){
-        this.cost = CostFunction.getCost(timeslots);
+    public void updateCost(int penalty) {
+        this.cost += penalty;
     }
-    
+
     /**
      * Gets the value of the objective function of this schedule.
-     * @return 
+     *
+     * @return
      */
     public int getCost() {
         return this.cost;
@@ -131,7 +147,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     }
 
     /**
-     * Moves an exam from a source timeslot to a destination.
+     * Moves an exam from a source time slot to a destination.
      *
      * @param ex
      * @param source
@@ -139,12 +155,24 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
      */
     public boolean move(Exam ex, Timeslot source, Timeslot dest) {
         if (dest.isCompatible(ex)) {
+            int penalty = CostFunction.getExamMovePenalty(ex, source.getTimeslotID(), dest.getTimeslotID(), timeslots);
+            updateCost(penalty);
             source.removeExam(ex);
             dest.addExam(ex);
-            updateCost();
             return true;
         }
         return false;
+    }
+
+    /**
+     * Moves an exam from a source time slot to a destination.
+     *
+     * @param ex
+     * @param source
+     * @param dest
+     */
+    public boolean move(Exam ex, int sourceI, int destI) {
+        return move(ex, timeslots[sourceI], timeslots[destI]);
     }
 
     /**
@@ -363,11 +391,19 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
      * @param j
      */
     public void swapTimeslots(int i, int j) {
+        int penalty = CostFunction.getTimeslotSwapPenalty(i, j, timeslots);
+
         Timeslot ti = getTimeslot(i);
         Timeslot tj = getTimeslot(j);
+
         timeslots[i] = tj;
         timeslots[j] = ti;
-        updateCost();
+
+        // Since we swapped two timeslots, we need to update the position written
+        // in their instaces.
+        timeslots[i].setPosition(i);
+        timeslots[j].setPosition(j);
+        updateCost(penalty);
     }
 
     /**
@@ -378,7 +414,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     @Override
     public Schedule clone() {
         int tmax = this.getTmax();
-        Schedule s = new Schedule(tmax);
+        Schedule s = new Schedule(tmax, numStudents);
         s.setCost(this.cost);
         Timeslot[] tclone = new Timeslot[tmax];
         for (int i = 0; i < tmax; i++) {
@@ -409,7 +445,6 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         return (int) ((this.getCost() - o.getCost()) * 100);
     }
 
-
     /**
      * Tries to swap two exams of two different timeslots
      *
@@ -423,7 +458,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
             iterNum++;
 
         } while (!swapped && iterNum != MAX_SWAP_TRIES); // 10?
-        updateCost();
+        computeCost();
         return swapped;
     }
 
@@ -433,7 +468,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     public void mutateTimeslots() {
 
         Timeslot tj, tk;
-        Timeslot tmp = new Timeslot();
+        Timeslot tmp = new Timeslot(0);
 
         tj = getRandomTimeslot();
         tk = getRandomTimeslot();
@@ -441,7 +476,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         tmp.addExams(tj.getExams());
         tj.cleanAndAddExams(tk.getExams());
         tk.cleanAndAddExams(tmp.getExams());
-        updateCost();
+        computeCost();
     }
 
     /**
@@ -465,7 +500,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         for (int i = 0; i < length; i++) {
             timeslots[startPoint + i].addExams(tmpSlots[i].getExams());
         }
-        updateCost();
+        computeCost();
     }
 
     /**
@@ -478,7 +513,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         Timeslot[] tmpSlots = new Timeslot[length];
 
         for (int i = 0; i < tmpSlots.length; i++) {
-            tmpSlots[i] = new Timeslot();
+            tmpSlots[i] = new Timeslot(i);
         }
 
         return tmpSlots;
@@ -487,7 +522,8 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     /**
      * Eliminates all the exams that are not in the timeslots in the intevarl
      * [<code>cutPoints[0]</code>, <code>cutPoints[1]</code>)
-     * @param cutPoints 
+     *
+     * @param cutPoints
      */
 //    public void selectSection(int[] cutPoints) {
 //        for (int i = 0; i < this.getTmax(); i++) {
@@ -496,13 +532,13 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
 //            }
 //        }
 //    }
-
     /**
      * Returns if the exam <code>e</code> is in the interval of timeslots
      * [<code>cutPoints[0]</code>, <code>cutPoints[1]</code>)
+     *
      * @param e
      * @param points
-     * @return 
+     * @return
      */
 //    public boolean isExamInSection(Exam e, int[] points) {
 //        for (int i = points[0]; i < points[1]; i++) {
@@ -512,14 +548,14 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
 //        }
 //        return false;
 //    }
-
     /**
      * If an exam of timeslot <code>t</code> is not in the interval of timeslots
-     * [<code>cutPoints[0]</code>, <code>cutPoints[1]</code>), it adds it in the timeslot 
-     * <code>timeslots[position]</code>
+     * [<code>cutPoints[0]</code>, <code>cutPoints[1]</code>), it adds it in the
+     * timeslot <code>timeslots[position]</code>
+     *
      * @param position
      * @param t
-     * @param points 
+     * @param points
      */
 //    public void addTimeslotExams(int position, Timeslot t, int[] points) {
 //        for (Exam e : t.getExams()) {
@@ -528,11 +564,12 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
 //            }
 //        }
 //    }
-
     /**
-     * Retrieves the timeslot in the interval [<code>cutPoints[0]</code>, <code>cutPoints[1]</code>)
+     * Retrieves the timeslot in the interval [<code>cutPoints[0]</code>,
+     * <code>cutPoints[1]</code>)
+     *
      * @param cutPoints
-     * @return 
+     * @return
      */
 //    public Timeslot[] getSectionTimeslots(int[] cutPoints) {
 //        Timeslot[] tmpSlots = createTmpSlots(cutPoints[1] - cutPoints[0]);
@@ -541,7 +578,6 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
 //        }
 //        return tmpSlots;
 //    }
-
 //    public void doExamOrderCrossover(Timeslot[] p2section, int[] points) {
 //        List<Exam> unpositioned = findUnpositionedExams(p2section);
 //        int counter = 0;
@@ -585,5 +621,9 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
 //        }
 //        return unpositioned;
 //    }
-
+    private void printTimeslots() {
+        for (int i = 0; i < timeslots.length; i++) {
+            System.out.println(i + " - has timeslot " + timeslots[i].getTimeslotID());
+        }
+    }
 }

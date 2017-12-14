@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class that represents a Timeslot.
@@ -19,19 +21,30 @@ import java.util.Set;
  */
 public class Timeslot implements Cloneable {
 
-    List<Exam> exams;
+    private int position;
+    private List<Exam> exams;
     private int numCollisions;
+    private int timeslotID;
 
-    public Timeslot() {
+    public Timeslot(int timeslotID) {
         this.exams = new ArrayList<>();
+        this.timeslotID = timeslotID;
     }
 
     public List<Exam> getExams() {
         return this.exams;
     }
+    
+    public int getTimeslotID() {
+        return this.timeslotID;
+    }
 
     public int getCollisions() {
         return this.numCollisions;
+    }
+    
+    public void setPosition( int position) {
+        this.position = position;
     }
 
     public void setCollisions(int n) {
@@ -51,7 +64,9 @@ public class Timeslot implements Cloneable {
     }
 
     public void addExam(Exam e) {
-        this.exams.add(e);
+        if (e != null) {
+            this.exams.add(e);
+        }
     }
 
     public void removeExam(Exam e) {
@@ -124,7 +139,7 @@ public class Timeslot implements Cloneable {
 
     @Override
     public Timeslot clone() {
-        Timeslot t = new Timeslot();
+        Timeslot t = new Timeslot(position);
         for (Exam e : this.exams) {
             t.addExam(e.clone());
         }
@@ -133,42 +148,43 @@ public class Timeslot implements Cloneable {
     }
 
     //--------------------- Genetic algorithm----------------------------------
-    
     /**
-     * Returns true if the exam <code>e</code> is assigned to 
-     * the timeslot
+     * Returns true if the exam <code>e</code> is assigned to the timeslot
+     *
      * @param e
-     * @return 
+     * @return
      */
-    public boolean contains(Exam e){
+    public boolean contains(Exam e) {
         return this.exams.contains(e);
     }
-    
+
     /**
      * Removes all the exams from the timeslot
      */
     public void clean() {
         this.exams = new ArrayList<>();
     }
-    
+
     /**
      * Adds a list of exams to the timeslot
-     * @param newExams 
+     *
+     * @param newExams
      */
-    public void addExams(List<Exam> newExams){
+    public void addExams(List<Exam> newExams) {
         this.exams.addAll(newExams);
     }
-    
+
     /**
      * Removes all exams and adds the list of <code>newExams</code> to the
      * timeslot
-     * @param newExams 
+     *
+     * @param newExams
      */
-    public void cleanAndAddExams(List<Exam> newExams){
+    public void cleanAndAddExams(List<Exam> newExams) {
         clean();
         addExams(newExams);
     }
-  
+
     @Override
     public String toString() {
         String s = "";
@@ -177,5 +193,4 @@ public class Timeslot implements Cloneable {
         }
         return s;
     }
-
 }

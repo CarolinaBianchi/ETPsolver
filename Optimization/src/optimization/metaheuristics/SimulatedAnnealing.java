@@ -47,7 +47,7 @@ public class SimulatedAnnealing extends SingleSolutionMetaheuristic {
      */
     private long checkTime = 0; // Last time I checked
     private int checkObjFun;    // The objFun last time i check
-    private long checkIntervalLength = 10 * 1000; // I check every 10 sec (it's increased during the algorithm)
+    private long checkIntervalLength = 1 * 1000; // I check every 10 sec (it's increased during the algorithm)
     private Random rg = new Random();
     int tmax;
 
@@ -88,28 +88,16 @@ public class SimulatedAnnealing extends SingleSolutionMetaheuristic {
      */
     private void optimizeTimeslotOrder() {
         int delta, i, j;
+        
         for (int iter = 0; iter < getNSwap(); iter++) {
             i = rg.nextInt(tmax);
             j = rg.nextInt(tmax);
-            delta = swapTimeslots(i, j);
-            if (!accept(delta)) {
-                swapTimeslots(i, j);
+            delta = CostFunction.getTimeslotSwapPenalty(i, j, initSolution);
+            if (accept(delta)) {
+                initSolution.swapTimeslots(i, j);
             }
         }
 
-    }
-
-    /**
-     * Swaps 2 timeslots.
-     *
-     * @param i
-     * @param j
-     * @return the difference between the old and new cost.
-     */
-    private int swapTimeslots(int i, int j) {
-        int oldCost = initSolution.getCost();
-        initSolution.swapTimeslots(i, j);
-        return initSolution.getCost() - oldCost;
     }
 
     /**
@@ -118,34 +106,19 @@ public class SimulatedAnnealing extends SingleSolutionMetaheuristic {
      * current temperature.
      */
     private void optimizeExamPosition() {
-        Timeslot source, dest;
+        int sourceI, destI;
         Exam exam;
         int delta;
         for (int iter = 0; iter < getNMov(); iter++) {
-            source = initSolution.getRandomTimeslot();
-            dest = initSolution.getRandomTimeslot();
-            exam = source.getRandomExam();
-            delta = moveExam(exam, source, dest);
-            // If i don't accept the difference in the new and old obj function, I move back the exam.
-            if (!accept(delta)) {
-                moveExam(exam, dest, source);
+            sourceI = rg.nextInt(tmax);
+            destI = rg.nextInt(tmax);
+            exam = initSolution.getTimeslot(sourceI).getRandomExam();
+            delta = CostFunction.getExamMovePenalty(exam, sourceI, destI, initSolution);
+            // If I accept the difference in the new and old obj function, I move the exam.
+            if (accept(delta)) {
+                initSolution.move(exam, sourceI, destI);
             }
         }
-    }
-
-    /**
-     * Moves a single exam, from its source to the destination.
-     *
-     * @param exam
-     * @param source
-     * @param dest
-     * @return the difference of cost of the current schedule and the old
-     * schedule.
-     */
-    private int moveExam(Exam exam, Timeslot source, Timeslot dest) {
-        int oldCost = initSolution.getCost();
-        initSolution.move(exam, source, dest);
-        return initSolution.getCost() - oldCost;
     }
 
     /**
