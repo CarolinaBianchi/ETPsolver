@@ -67,9 +67,9 @@ public class Optimizer {
      * thread.
      */
     private void initInitializers() {
-        //for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; i++) {
             initializers.add(new BucketInitializer(Cloner.clone(exams), tmax, this));
-        //}
+        }
         /*initializers.add(new BucketInitializer(Cloner.clone(exams), tmax, this));*/
         joinThreads(initializers);
 
@@ -81,7 +81,7 @@ public class Optimizer {
     private void initMetaheuristics() {
         ssMetaheuristics.add(SimulatedAnnealing.class);
         // we add every class that extends SingleSolutionMetaheuristic
-        //pMetaheuristics.add(GeneticAlgorithm.class);
+        pMetaheuristics.add(GeneticAlgorithm.class);
         // we add every class that extends SingleSolutionMetaheuristic
     }
 
@@ -148,7 +148,7 @@ public class Optimizer {
         synchronized (initialSchedules) {
             this.initialSchedules.add(newInitialSol);
         }
-        runAllSSMetaheuristics(newInitialSol);
+        //runAllSSMetaheuristics(newInitialSol);
         checkAllPMetaheuristics();
     }
 
@@ -184,7 +184,6 @@ public class Optimizer {
      * reset and the initializers are run again.
      */
     private void checkAllPMetaheuristics() {
-
         if (this.initialSchedules.size() < PopulationMetaheuristic.INITIAL_POP_SIZE) {
             return;
         }
@@ -194,15 +193,15 @@ public class Optimizer {
         start working on them
          */
         //for (int i = 0; i < 3; i++) {
-        for (Class<? extends PopulationMetaheuristic> clazz : this.pMetaheuristics) {
-            try {
-                PopulationMetaheuristic m = (clazz.getConstructor(Optimizer.class, List.class)).newInstance(this, Cloner.clone(initialSchedules));
-                threadPool.add(m);
-                m.start();
-            } catch (Exception ex) {
-                Logger.getLogger(Optimizer.class.getName()).log(Level.SEVERE, null, ex);
+            for (Class<? extends PopulationMetaheuristic> clazz : this.pMetaheuristics) {
+                try {
+                    PopulationMetaheuristic m = (clazz.getConstructor(Optimizer.class, List.class)).newInstance(this, Cloner.clone(initialSchedules));
+                    threadPool.add(m);
+                    m.start();
+                } catch (Exception ex) {
+                    Logger.getLogger(Optimizer.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
-        }
         //}
         joinThreads(threadPool);
         synchronized (initialSchedules) {
@@ -266,13 +265,13 @@ public class Optimizer {
     private void writeSolution() {
 
         SolutionWriter sw = new SolutionWriter(bestSchedule);
-        
+
         try {
             sw.join();
         } catch (InterruptedException ex) {
             Logger.getLogger(Optimizer.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         sw.start();
 
     }

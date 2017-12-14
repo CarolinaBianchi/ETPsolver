@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Random;
 import optimization.Cloner;
 import optimization.Optimizer;
+import optimization.domain.Exam;
 import optimization.domain.Schedule;
 
 /**
@@ -32,6 +33,8 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
 
     @Override
     void improveInitialSol() {
+        System.out.println("Genetic Algorithm");
+     
         int counter = 0;
         long startTime = System.currentTimeMillis();
         long elapsedTime = 0;
@@ -158,28 +161,92 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
         return population.get(0);
     }
 
-//    private void doOrderCrossover() {
-//        Schedule parent1 = getRandomSchedule();
-//        Schedule parent2 = getRandomSchedule();
-//        Schedule child1 = Cloner.clone(parent1);
-//        //Schedule child2=Cloner.clone(parent2);
-//        //int[] points = getRandomPoints(child1);
-//        int[] points = new int[]{2, 5};
-//        child1.selectSection(points);
+    private void doOrderCrossover() {
+        Schedule parent1 = getRandomSchedule();
+        Schedule parent2 = getRandomSchedule();
+        Schedule child1 = Cloner.clone(parent1);
+        Schedule p2Copy = Cloner.clone(parent2);
+        //Schedule child2=Cloner.clone(parent2);
+        //int[] cutPoints = getRandomPoints(child1);
+//        int[] cutPoints = new int[]{2, 5};
+//        child1.selectSection(cutPoints);
 //
-//        for (int i = points[1]; i < child1.getTmax(); i++) { // dall'endPoint del genitore1 provo a mettere i timeslots del 2
-//            child1.addTimeslot(i, parent2.getTimeslot(i), points);
+//        for (int i = cutPoints[1]; i < child1.getTmax(); i++) { // dall'endPoint del genitore1 provo a mettere i timeslots del 2
+//            child1.addTimeslot(i, parent2.getTimeslot(i), cutPoints);
 //        }
 //
-//        for (int i = 0; i < points[0]; i++) {
-//            child1.addTimeslot(i, parent2.getTimeslot(i), points);
+//        for (int i = 0; i < cutPoints[0]; i++) {
+//            child1.addTimeslot(i, parent2.getTimeslot(i), cutPoints);
 //        }
 //
-//        //System.out.println("C1"+child1);
 //        int unpositioned = 622 - child1.getNExams();
 //        System.out.println("unpositioned " + unpositioned);
-//        child1.doExamOrderCrossover(parent2.getSectionTimeslots(points), points);
+//        child1.doExamOrderCrossover(parent2.getSectionTimeslots(cutPoints), cutPoints);
+
+//        int[] cutPoints = new int[]{2, 5};
+//        child1.selectSection(cutPoints);
+//        int counter=0;
+//
+//        for (int j = cutPoints[1]; j < p2Copy.getTmax(); j++) {
+//            List<Exam> exams=p2Copy.getTimeslot(j).getExams();
+//            for (int k=0; k< p2Copy.getTimeslot(j).getExams().size();k++) {
+//                boolean positioned=false;
+//                for (int i = cutPoints[1]; i < child1.getTmax(); i++) {
+//                    if (child1.getTimeslot(i).isCompatible(exams.get(k))) {
+//                        child1.getTimeslot(i).addExam(exams.get(k));
+//                        p2Copy.getTimeslot(j).removeExam(exams.get(k));
+//                        positioned=true;
+//                        counter++;
+//                        break;
+//                    }
+//                }
+//
+//                if(!positioned){
+//                    for (int i = 0; i < cutPoints[0]; i++) {
+//                    if (child1.getTimeslot(i).isCompatible(exams.get(k))) {
+//                        child1.getTimeslot(i).addExam(exams.get(k));
+//                        p2Copy.getTimeslot(j).removeExam(exams.get(k));
+//                        counter++;
+//                    }
+//                }
+//                }
+//                
+//            }
+//
+//        }
+//        
+//        for (int j = 0; j < cutPoints[0]; j++) {
+//            
+//            List<Exam> exams=p2Copy.getTimeslot(j).getExams();
+//            for (int k=0; k< p2Copy.getTimeslot(j).getExams().size();k++) {
+//                boolean positioned=false;
+//                for (int i = cutPoints[1]; i < child1.getTmax(); i++) {
+//                    if (child1.getTimeslot(i).isCompatible(exams.get(k))) {
+//                        child1.getTimeslot(i).addExam(exams.get(k));
+//                        p2Copy.getTimeslot(j).removeExam(exams.get(k));
+//                        positioned=true;
+//                        counter++;
+//                        break;
+//                    }
+//                }
+//
+//                if(!positioned){
+//                    for (int i = 0; i < cutPoints[0]; i++) {
+//                    if (child1.getTimeslot(i).isCompatible(exams.get(k))) {
+//                        child1.getTimeslot(i).addExam(exams.get(k));
+//                        p2Copy.getTimeslot(j).removeExam(exams.get(k));
+//                        counter++;
+//                    }
+//                }
+//                }
+//                
+//            }
+//
+//        }
+//
+//        int unpositioned = 622 - child1.getNExams();
+//        System.out.println("unpositioned " + unpositioned);
 //
 //        // add new schedules
-//    }
+    }
 }

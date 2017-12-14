@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 package optimization.domain;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -489,13 +490,13 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
      * [<code>cutPoints[0]</code>, <code>cutPoints[1]</code>)
      * @param cutPoints 
      */
-//    public void selectSection(int[] cutPoints) {
-//        for (int i = 0; i < this.getTmax(); i++) {
-//            if (i < cutPoints[0] || i >= cutPoints[1]) {
-//                timeslots[i].clean();
-//            }
-//        }
-//    }
+    public void selectSection(int[] cutPoints) {
+        for (int i = 0; i < this.getTmax(); i++) {
+            if (i < cutPoints[0] || i >= cutPoints[1]) {
+                timeslots[i].clean();
+            }
+        }
+    }
 
     /**
      * Returns if the exam <code>e</code> is in the interval of timeslots
@@ -504,14 +505,14 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
      * @param points
      * @return 
      */
-//    public boolean isExamInSection(Exam e, int[] points) {
-//        for (int i = points[0]; i < points[1]; i++) {
-//            if (timeslots[i].contains(e)) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
+    public boolean isExamInSection(Exam e, int[] points) {
+        for (int i = points[0]; i < points[1]; i++) {
+            if (timeslots[i].contains(e)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * If an exam of timeslot <code>t</code> is not in the interval of timeslots
@@ -519,71 +520,71 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
      * <code>timeslots[position]</code>
      * @param position
      * @param t
-     * @param points 
+     * @param cutPoints 
      */
-//    public void addTimeslotExams(int position, Timeslot t, int[] points) {
-//        for (Exam e : t.getExams()) {
-//            if (!isExamInSection(e, points)) {
-//                timeslots[position].addExam(e);
-//            }
-//        }
-//    }
+    public void addTimeslot(int position, Timeslot t, int[] cutPoints) {
+        for (Exam e : t.getExams()) {
+            if (!isExamInSection(e, cutPoints)) {
+                timeslots[position].addExam(e);
+            }
+        }
+    }
 
     /**
      * Retrieves the timeslot in the interval [<code>cutPoints[0]</code>, <code>cutPoints[1]</code>)
      * @param cutPoints
      * @return 
      */
-//    public Timeslot[] getSectionTimeslots(int[] cutPoints) {
-//        Timeslot[] tmpSlots = createTmpSlots(cutPoints[1] - cutPoints[0]);
-//        for (int i = cutPoints[0]; i < cutPoints[1]; i++) {
-//            tmpSlots[i - cutPoints[0]] = timeslots[i];
-//        }
-//        return tmpSlots;
-//    }
+    public Timeslot[] getSectionTimeslots(int[] cutPoints) {
+        Timeslot[] tmpSlots = createTmpSlots(cutPoints[1] - cutPoints[0]);
+        for (int i = cutPoints[0]; i < cutPoints[1]; i++) {
+            tmpSlots[i - cutPoints[0]] = timeslots[i];
+        }
+        return tmpSlots;
+    }
 
-//    public void doExamOrderCrossover(Timeslot[] p2section, int[] points) {
-//        List<Exam> unpositioned = findUnpositionedExams(p2section);
-//        int counter = 0;
-//        boolean positioned = false;
-//        for (Exam e : unpositioned) {
-//            //System.out.println(e);
-//            for (int i = points[1]; i < getTmax(); i++) {
-//                if (positioned = timeslots[i].isCompatible(e)) {
-//                    timeslots[i].addExam(e);
-//                    counter++;
-//                    break;
-//                }
-//            }
-//            if (!positioned) {
-//                for (int i = 0; i < points[1]; i++) {
-//                    if (timeslots[i].isCompatible(e)) {
-//                        timeslots[i].addExam(e);
-//                        counter++;
-//                        break;
-//                    }
-//                }
-//            }
-//            //System.out.println(positioned);
-//        }
-//        System.out.println(counter);
-//    }
-//
-//    private List<Exam> findUnpositionedExams(Timeslot[] p2section) {
-//        List<Exam> unpositioned = new ArrayList<>();
-//        boolean positioned;
-//        for (Timeslot tk : p2section) {
-//            for (Exam e : tk.getExams()) {
-//                positioned = false;
-//                for (Timeslot tj : timeslots) {
-//                    positioned = positioned || tj.contains(e);
-//                }
-//                if (!positioned) {
-//                    unpositioned.add(e);
-//                }
-//            }
-//        }
-//        return unpositioned;
-//    }
+    public void doExamOrderCrossover(Timeslot[] p2section, int[] points) {
+        List<Exam> unpositioned = findUnpositionedExams(p2section);
+        int counter = 0;
+        boolean positioned = false;
+        for (Exam e : unpositioned) {
+            //System.out.println(e);
+            for (int i = points[1]; i < getTmax(); i++) {
+                if (positioned = timeslots[i].isCompatible(e)) {
+                    timeslots[i].addExam(e);
+                    counter++;
+                    break;
+                }
+            }
+            if (!positioned) {
+                for (int i = 0; i < points[1]; i++) {
+                    if (timeslots[i].isCompatible(e)) {
+                        timeslots[i].addExam(e);
+                        counter++;
+                        break;
+                    }
+                }
+            }
+            //System.out.println(positioned);
+        }
+        System.out.println(counter);
+    }
+
+    private List<Exam> findUnpositionedExams(Timeslot[] p2section) {
+        List<Exam> unpositioned = new ArrayList<>();
+        boolean positioned;
+        for (Timeslot tk : p2section) {
+            for (Exam e : tk.getExams()) {
+                positioned = false;
+                for (Timeslot tj : timeslots) {
+                    positioned = positioned || tj.contains(e);
+                }
+                if (!positioned) {
+                    unpositioned.add(e);
+                }
+            }
+        }
+        return unpositioned;
+    }
 
 }
