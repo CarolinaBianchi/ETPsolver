@@ -56,17 +56,12 @@ public class TabuSearchAlgorithm extends SingleSolutionMetaheuristic {
         double currentBestCost = this.initialCost;
         double currentCost;
         System.out.println(currentBestCost+"  "+this.initialSchedule.getCost());
-        int j=0;
         for (int i = 0; i < numberOfIterarion; i++) {
 
             Timeslot source = currentSchedule.getRandomTimeslot();   // source Timeslot
             Timeslot dest = currentSchedule.getRandomTimeslot();   // destination Timeslot
             Exam ex = source.getRandomExam();
             if (source.getTimeslotID() != dest.getTimeslotID() && ex!=null && currentSchedule.move(ex, source, dest)) { 
-           // if (source.getTimeslotID() != dest.getTimeslotID() && ex!=null && dest.isCompatible(ex)) { 
-               // source.removeExam(ex);
-               // dest.addExam(ex);
-               // currentCost = CostFunction.getCost(currentSchedule);
                 currentCost=currentSchedule.getCost();
                 if(currentCost < currentBestCost){
                     currentBestCost=currentCost;
@@ -86,11 +81,9 @@ public class TabuSearchAlgorithm extends SingleSolutionMetaheuristic {
                         }
                    }
                 }else{
-                  //  this.swapOneExam(dest, source, ex, bestSchedule);
+                 
                     currentSchedule.move(ex, dest, source);
                 }
-               
-
                 System.out.println("currentCost  " + currentCost + "  bestCost   " + currentBestCost);
             }
         }
