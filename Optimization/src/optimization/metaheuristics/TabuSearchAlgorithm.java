@@ -22,10 +22,10 @@ public class TabuSearchAlgorithm extends SingleSolutionMetaheuristic {
     private Optimizer optimizer;
     private Schedule initialSchedule;
     private LinkedList<String> tabuList;
-    private int numberOfIterarion = 1000000;
+    private int numberOfIterarion = 100000;
     //private Schedule bestSchedule;
     private double initialCost;
-    private int tabuListsize = 100;
+    private int tabuListsize = 500;
 
     public TabuSearchAlgorithm(Optimizer optimizer, Schedule initialSchedule) {
         super(optimizer, initialSchedule);
@@ -44,8 +44,8 @@ public class TabuSearchAlgorithm extends SingleSolutionMetaheuristic {
     }
     
     /** this method implement the tabu search algorithm 
-     * firstly it denerate two random timeslot from the initialSchedule which one is the sourse(t1) the other is the destination(t2)
-     * and then from the source timeslot I randomly choose one exam which will be swap into the destination timeslot if there are compatible
+     * firstly it generate two random timeslot from the initialSchedule, which one is the sourse the other is the destination
+     * and then from the source timeslot it randomly chooses one exam which will be move into the destination timeslot if there are compatible
      * 
      * @return return the best schedule found
      */
@@ -56,34 +56,38 @@ public class TabuSearchAlgorithm extends SingleSolutionMetaheuristic {
         double currentBestCost = this.initialCost;
         double currentCost;
         System.out.println(currentBestCost+"  "+this.initialSchedule.getCost());
+        int j=0;
         for (int i = 0; i < numberOfIterarion; i++) {
 
             Timeslot source = currentSchedule.getRandomTimeslot();   // source Timeslot
             Timeslot dest = currentSchedule.getRandomTimeslot();   // destination Timeslot
             Exam ex = source.getRandomExam();
-            if (source.getTimeslotID() != dest.getTimeslotID() && ex!=null && currentSchedule.move(ex, source, dest)) {  
-                //currentCost = CostFunction.getCost(currentSchedule);
+            if (source.getTimeslotID() != dest.getTimeslotID() && ex!=null && currentSchedule.move(ex, source, dest)) { 
+           // if (source.getTimeslotID() != dest.getTimeslotID() && ex!=null && dest.isCompatible(ex)) { 
+               // source.removeExam(ex);
+               // dest.addExam(ex);
+               // currentCost = CostFunction.getCost(currentSchedule);
                 currentCost=currentSchedule.getCost();
                 if(currentCost < currentBestCost){
                     currentBestCost=currentCost;
                     bestSchedule=currentSchedule;
                     if(tabuList.size() < tabuListsize){
                         if (!tabuList.contains(source.getTimeslotID() + "-" + dest.getTimeslotID() + "-" + ex)) {
-                        tabuList.addFirst(dest.getTimeslotID() + "-" + source.getTimeslotID() + "-" + ex);
-                        }else tabuList.addFirst(source.getTimeslotID() + "-" + dest.getTimeslotID() + "-" + ex);
-                            
-                        
+                            /**
+                             * I insert in the tabuList a String containing information about the 
+                             * move I have to prevent
+                             */
+                        tabuList.addFirst(dest.getTimeslotID() + "-" + source.getTimeslotID() + "-" + ex); 
+                        }
                     }else{
                         if (!tabuList.contains(source.getTimeslotID() + "-" + dest.getTimeslotID() + "-" + ex)) {
                         tabuList.removeLast();
                         tabuList.addFirst(dest.getTimeslotID() + "-" + source.getTimeslotID() + "-" + ex);
-                        }else{
-                            tabuList.removeLast();
-                            tabuList.addFirst(source.getTimeslotID() + "-" + dest.getTimeslotID() + "-" + ex);
                         }
                    }
                 }else{
-                    this.swapOneExam(dest, source, ex, bestSchedule);
+                  //  this.swapOneExam(dest, source, ex, bestSchedule);
+                    currentSchedule.move(ex, dest, source);
                 }
                
 
@@ -92,6 +96,14 @@ public class TabuSearchAlgorithm extends SingleSolutionMetaheuristic {
         }
         return bestSchedule;
     }
+    
+    /** this method implement the tabu search algorithm second version 
+     * firstly it generate two random timeslots from the initialSchedule, which one is the sourse the other the destination
+     * and then from the source timeslot it randomly chooses one exam(ex1) it does the same for the second timeslot to obtain an exam(ex2)
+     * next, it swaps the 2 exams into the timeslots
+     * 
+     * @return return the best schedule found
+     */
     
      public Schedule algorithm2() {
         Schedule bestSchedule = this.initialSchedule;
@@ -106,14 +118,14 @@ public class TabuSearchAlgorithm extends SingleSolutionMetaheuristic {
             Exam ex1 = source.getRandomExam();
             Exam ex2 = source.getRandomExam();
             
-            if (source.getTimeslotID() != dest.getTimeslotID() && ex1!=null && ex2!=null && checkFeasibleSwap(source, ex1, dest, ex2)) {  
-                //currentCost = CostFunction.getCost(currentSchedule);
-                //this.swap(source, ex1, dest, ex2,currentSchedule);
+            if (source.getTimeslotID() != dest.getTimeslotID() && currentSchedule.checkFeasibleSwap(source, ex1, dest, ex2)) {  
+                currentSchedule.swap(source, ex1, dest, ex2);
                 currentCost=currentSchedule.getCost();
                 if(currentCost < currentBestCost){
                     currentBestCost=currentCost;
                     bestSchedule=currentSchedule;
                     if(tabuList.size() < tabuListsize){
+                        //  I insert in the tabuList a String containing information about the swap I have to prevent 
                        if (!tabuList.contains(source.getTimeslotID()+"-"+ex1+"-"+ dest.getTimeslotID()+"-"+ ex2)) {
                         tabuList.addFirst(dest.getTimeslotID()+"-"+ ex1 +"-"+source.getTimeslotID()+"-" + ex2);
                         }
@@ -125,20 +137,22 @@ public class TabuSearchAlgorithm extends SingleSolutionMetaheuristic {
                         }
                    }
                 }else{
-                    this.swap(dest, ex2, source, ex1, currentSchedule);
+                   currentSchedule.swap(dest, ex1, source, ex2);
                 }
                
-
                 System.out.println("currentCost  " + currentCost + "  bestCost   " + currentBestCost);
             }
         }
         return bestSchedule;
     }
+     
+     
+     
     
-    private boolean checkFeasibleSwap(Timeslot t1, Exam ex1, Timeslot t2, Exam ex2) {
+  /*  private boolean checkFeasibleSwap(Timeslot t1, Exam ex1, Timeslot t2, Exam ex2) {
         return checkSwap(t1, ex1, ex2) && checkSwap(t2, ex2, ex1);
     }
-
+  */
     /**
      * Checks the feasibility of swapping Exam ex1 (which is in timeslot t1)
      * whith Exam ex2.
@@ -148,13 +162,13 @@ public class TabuSearchAlgorithm extends SingleSolutionMetaheuristic {
      * @param ex2
      * @return
      */
-    private boolean checkSwap(Timeslot t1, Exam ex1, Exam ex2) {
+ /*   private boolean checkSwap(Timeslot t1, Exam ex1, Exam ex2) {
         t1.removeExam(ex1);
         boolean compatible = t1.isCompatible(ex2);
         t1.addExam(ex1);
         return compatible;
     }
-
+*/
     /**
      * Swaps 2 exams.
      *
@@ -163,10 +177,7 @@ public class TabuSearchAlgorithm extends SingleSolutionMetaheuristic {
      * @param t2 source timeslot of exam ex2
      * @param ex2
      */
-     private void swap(Timeslot t1, Exam ex1, Timeslot t2, Exam ex2,Schedule schedule) {
-       schedule.move(ex1, t1, t2);
-       schedule.move(ex2, t2, t1);
-    }
+   /**/
      
     /**
      * Swaps 1 exams.
@@ -175,9 +186,9 @@ public class TabuSearchAlgorithm extends SingleSolutionMetaheuristic {
      * @param dest  destination timeslot
      * @param ex2
      */
-     private void swapOneExam(Timeslot source, Timeslot dest, Exam ex,Schedule schedule) {
+  /*   private void swapOneExam(Timeslot source, Timeslot dest, Exam ex,Schedule schedule) {
        schedule.move(ex, source, dest);
-    }
+    }*/
      
      /** this method implement the tabu search algorithm 
      * firstly it denerate two random timeslot from the initialSchedule which one is the sourse(t1) the other is the destination(t2)
