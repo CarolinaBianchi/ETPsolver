@@ -34,7 +34,9 @@ public abstract class AbstractInitializer extends Thread {
     @Override
     public void run() {
         initialize();
-        mySchedule.setCost(CostFunction.getCost(mySchedule));
+        mySchedule.computeCost();
+        mySchedule.optimizeTimeslotOrder(); // Comment out if you don't want the optimization
+        //mySchedule.setCost(CostFunction.getCost(mySchedule));
         notifyNewInitialSolution();
     }
     
