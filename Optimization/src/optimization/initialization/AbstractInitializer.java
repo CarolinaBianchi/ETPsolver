@@ -8,6 +8,7 @@ package optimization.initialization;
 import java.util.List;
 import optimization.domain.Exam;
 import optimization.Optimizer;
+import optimization.domain.CostFunction;
 import optimization.domain.Schedule;
 
 /**
@@ -33,7 +34,7 @@ public abstract class AbstractInitializer extends Thread {
     @Override
     public void run() {
         initialize();
-        mySchedule.computeCost();
+        mySchedule.setCost(CostFunction.getCost(mySchedule));
         notifyNewInitialSolution();
     }
     

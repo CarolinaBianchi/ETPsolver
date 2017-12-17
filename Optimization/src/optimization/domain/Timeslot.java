@@ -182,6 +182,17 @@ public class Timeslot implements Cloneable {
         clean();
         addExams(newExams);
     }
+    
+    public List<Exam> tryInsertExams(List<Exam> toInsert){
+        List<Exam> positioned=new ArrayList<>();
+        for(Exam e:toInsert){
+            if(!contains(e) && isCompatible(e)){
+                addExam(e);
+                positioned.add(e);
+            }
+        }
+        return positioned;
+    }
 
     @Override
     public String toString() {

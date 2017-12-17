@@ -159,8 +159,7 @@ public interface CostFunction {
      */
     static public int getNewTimeslotPenalty(int currentIndex, int otherIndex, Timeslot[] timeslots) {
         // Compute the range of time slots that could conflict with the target time slot 
-        int[] range = getRange(currentIndex, timeslots.length);
-
+        int[] range = getRange(currentIndex, timeslots.length); 
         int penalty = 0;
         // For each time slot within the computed range, calculate the penalty due
         // to moving the selected time slot in currentIndex position

@@ -8,9 +8,8 @@ package optimization.metaheuristics;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import optimization.Cloner;
 import optimization.Optimizer;
-import optimization.domain.Exam;
+import optimization.domain.CostFunction;
 import optimization.domain.Schedule;
 
 /**
@@ -23,79 +22,83 @@ import optimization.domain.Schedule;
 public class GeneticAlgorithm extends PopulationMetaheuristic {
 
     private List<Schedule> population;
-    private static final int N_ITERATIONS = 100;
     private static final int MINUTES = 3;
+    private static Random rnd;
 
     public GeneticAlgorithm(Optimizer optimizer, List<Schedule> initialPopulation) {
         super(optimizer, initialPopulation);
         population = initialPopulation;
+        rnd = new Random();
     }
 
     @Override
     void improveInitialSol() {
         System.out.println("Genetic Algorithm");
-     
-        int counter = 0;
-        long startTime = System.currentTimeMillis();
-        long elapsedTime = 0;
 
         calcObjFunctions();
-
-        while (elapsedTime < MINUTES * 60 * 1000) {
-            while (counter++ % 100 != 0) {
-                switch (new Random().nextInt(3)) {
-                    case 0:
-                        mutateExams();
-                        break;
-                    case 1:
-                        mutateTimeslots();
-                        break;
-                    case 2:
-                        invertTimeslots();
-                        break;
-                }
-            }
-            //System.out.println("OBJfunction value: " + findBestSchedule().getCost());
-            elapsedTime = System.currentTimeMillis() - startTime;
-        }
-
+        startAlgorithm();
         mySolution = findBestSchedule();
         System.out.println("OBJfunction value: " + mySolution.getCost());
     }
 
     /**
-     * Calculates the value of the objective function for each schedule. in the
+     * Starts the timer and chose randomly how to change the population.
+     */
+    private void startAlgorithm() {
+        int counter = 0;
+        long startTime = System.currentTimeMillis();
+        long elapsedTime = 0;
+        while (elapsedTime < MINUTES * 60 * 1000) {
+            while (counter++ % 100 != 0) {              
+
+                switch (rnd.nextInt(4)) {
+                    case 0:
+                        //mutateExams();
+                        break;
+                    case 1:
+                        mutateTimeslots();
+                        break;
+                    case 2:
+                        //invertTimeslots();
+                        break;
+                    case 3:
+                        doCrossover();
+                        break;
+                }
+                   
+            }
+            
+            elapsedTime = System.currentTimeMillis() - startTime;
+        }
+    }
+
+    /**
+     * Calculates the value of the objective function for each schedule in the
      * <code>population</code>
      */
     private void calcObjFunctions() {
         for (Schedule s : population) {
-            s.computeCost();
+            s.setCost(CostFunction.getCost(s));
         }
     }
 
     /**
      * Tries to swap exams between timeslots of a random schedule. If the
-     * operation has success, it start the selection process.
+     * operation has success and it decreases the cost, the mutated scheduled is
+     * kept as part of the population.
      *
      * @return
      */
     private void mutateExams() {
-        Schedule oldSchedule = getRandomSchedule();
-        Schedule newSchedule = Cloner.clone(oldSchedule);
-        if (newSchedule.mutateExams()) {
-            actSelection(oldSchedule, newSchedule);
-        }
+        getRandomSchedule().mutateExams();
     }
 
     /**
-     * Swaps one timeslot with another in a random schedule, then it starts the
-     * selection process.
+     * In a random schedule, it swaps one timeslot with another if the swap
+     * reduces the penalty.
      */
     private void mutateTimeslots() {
-        Schedule oldSchedule = getRandomSchedule();
-        Schedule newSchedule = Cloner.clone(oldSchedule);
-        newSchedule.mutateTimeslots();
-        actSelection(oldSchedule, newSchedule);
+        getRandomSchedule().tryMutateTimeslots();
     }
 
     /**
@@ -104,7 +107,6 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
      * @return
      */
     private Schedule getRandomSchedule() {
-        Random rnd = new Random();
         return population.get(rnd.nextInt(population.size()));
     }
 
@@ -113,26 +115,9 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
      *
      */
     private void invertTimeslots() {
-        Schedule oldSchedule = getRandomSchedule();
-        Schedule newSchedule = Cloner.clone(oldSchedule);
-        newSchedule.invertTimeslots(getRandomCutPoints(newSchedule.getTmax()));
-        actSelection(oldSchedule, newSchedule);
-    }
+        Schedule schedule = getRandomSchedule();
+        schedule.tryInvertTimeslots(getRandomCutPoints(schedule.getTmax()));
 
-    /**
-     * Does the selection process. If the <code>newSchedule</code> has a lower
-     * value of the objective function with respect to <code>oldSchedule</code>
-     * , it substitued the old schedule with the new one in the population.
-     *
-     * @param oldSchedule
-     * @param newSchedule
-     */
-    private void actSelection(Schedule oldSchedule, Schedule newSchedule) {
-        newSchedule.computeCost();
-        if (newSchedule.getCost() < oldSchedule.getCost()) {
-            population.remove(oldSchedule);
-            population.add(newSchedule);
-        }
     }
 
     /**
@@ -143,7 +128,6 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
      * @return
      */
     private int[] getRandomCutPoints(int tmax) {
-        Random rnd = new Random();
         int[] points = new int[2];
         points[0] = rnd.nextInt(tmax - 1); //startPoint
         points[1] = points[0] + rnd.nextInt(tmax - points[0] - 1); //endPoint
@@ -161,92 +145,18 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
         return population.get(0);
     }
 
-    private void doOrderCrossover() {
+    /**
+     * Takes two different schedules from the population and tries to do a crossover between the two.
+     * If the change improves the value of the cost function, it takes the exams 
+     * contained into a timeslot of <code>parent2</code> and it select randomly one of them.
+     * It find the position of this exam in <code>parent1</code> and tries to add there the other exams
+     * previously found.
+     */
+    private void doCrossover() {
         Schedule parent1 = getRandomSchedule();
         Schedule parent2 = getRandomSchedule();
-        Schedule child1 = Cloner.clone(parent1);
-        Schedule p2Copy = Cloner.clone(parent2);
-        //Schedule child2=Cloner.clone(parent2);
-        //int[] cutPoints = getRandomPoints(child1);
-//        int[] cutPoints = new int[]{2, 5};
-//        child1.selectSection(cutPoints);
-//
-//        for (int i = cutPoints[1]; i < child1.getTmax(); i++) { // dall'endPoint del genitore1 provo a mettere i timeslots del 2
-//            child1.addTimeslot(i, parent2.getTimeslot(i), cutPoints);
-//        }
-//
-//        for (int i = 0; i < cutPoints[0]; i++) {
-//            child1.addTimeslot(i, parent2.getTimeslot(i), cutPoints);
-//        }
-//
-//        int unpositioned = 622 - child1.getNExams();
-//        System.out.println("unpositioned " + unpositioned);
-//        child1.doExamOrderCrossover(parent2.getSectionTimeslots(cutPoints), cutPoints);
-
-//        int[] cutPoints = new int[]{2, 5};
-//        child1.selectSection(cutPoints);
-//        int counter=0;
-//
-//        for (int j = cutPoints[1]; j < p2Copy.getTmax(); j++) {
-//            List<Exam> exams=p2Copy.getTimeslot(j).getExams();
-//            for (int k=0; k< p2Copy.getTimeslot(j).getExams().size();k++) {
-//                boolean positioned=false;
-//                for (int i = cutPoints[1]; i < child1.getTmax(); i++) {
-//                    if (child1.getTimeslot(i).isCompatible(exams.get(k))) {
-//                        child1.getTimeslot(i).addExam(exams.get(k));
-//                        p2Copy.getTimeslot(j).removeExam(exams.get(k));
-//                        positioned=true;
-//                        counter++;
-//                        break;
-//                    }
-//                }
-//
-//                if(!positioned){
-//                    for (int i = 0; i < cutPoints[0]; i++) {
-//                    if (child1.getTimeslot(i).isCompatible(exams.get(k))) {
-//                        child1.getTimeslot(i).addExam(exams.get(k));
-//                        p2Copy.getTimeslot(j).removeExam(exams.get(k));
-//                        counter++;
-//                    }
-//                }
-//                }
-//                
-//            }
-//
-//        }
-//        
-//        for (int j = 0; j < cutPoints[0]; j++) {
-//            
-//            List<Exam> exams=p2Copy.getTimeslot(j).getExams();
-//            for (int k=0; k< p2Copy.getTimeslot(j).getExams().size();k++) {
-//                boolean positioned=false;
-//                for (int i = cutPoints[1]; i < child1.getTmax(); i++) {
-//                    if (child1.getTimeslot(i).isCompatible(exams.get(k))) {
-//                        child1.getTimeslot(i).addExam(exams.get(k));
-//                        p2Copy.getTimeslot(j).removeExam(exams.get(k));
-//                        positioned=true;
-//                        counter++;
-//                        break;
-//                    }
-//                }
-//
-//                if(!positioned){
-//                    for (int i = 0; i < cutPoints[0]; i++) {
-//                    if (child1.getTimeslot(i).isCompatible(exams.get(k))) {
-//                        child1.getTimeslot(i).addExam(exams.get(k));
-//                        p2Copy.getTimeslot(j).removeExam(exams.get(k));
-//                        counter++;
-//                    }
-//                }
-//                }
-//                
-//            }
-//
-//        }
-//
-//        int unpositioned = 622 - child1.getNExams();
-//        System.out.println("unpositioned " + unpositioned);
-//
-//        // add new schedules
+        if (parent1 != parent2) {
+            parent1.tryCrossover(parent2.getRandomTimeslot().getExams());
+        }
     }
 }

@@ -4,7 +4,9 @@
  * and open the template in the editor.
  */
 package optimization.domain;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -58,14 +60,9 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     }
 
     /**
-     * Computes the cost of this schedule.
-     */
-    public void computeCost() {
-        this.cost = CostFunction.getCost(timeslots);
-    }
-
-    /**
      * Updates the cost of this schedule.
+     *
+     * @param penalty
      */
     public void updateCost(int penalty) {
         this.cost += penalty;
@@ -442,7 +439,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
      */
     @Override
     public int compareTo(Schedule o) {
-        return (int) ((this.getCost() - o.getCost()) * 100);
+        return this.getCost() - o.getCost();
     }
 
     /**
@@ -454,44 +451,129 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         boolean swapped;
         int iterNum = 0;
         do {
-            swapped = randomSwap();
+            swapped = randomSwapWithPenalty();
             iterNum++;
 
-        } while (!swapped && iterNum != MAX_SWAP_TRIES); // 10?
-        computeCost();
+        } while (!swapped && iterNum != MAX_SWAP_TRIES);
+
         return swapped;
+
     }
 
-    /**
-     * Takes two random timeslots and swaps the exams of one to the other
-     */
-    public void mutateTimeslots() {
-
+    private boolean randomSwapWithPenalty() {
         Timeslot tj, tk;
-        Timeslot tmp = new Timeslot(0);
+        Exam ex1, ex2;
 
-        tj = getRandomTimeslot();
-        tk = getRandomTimeslot();
+        tj = getTimeslotWithExams();
+        tk = getTimeslotWithExams();
+        ex1 = tj.getRandomExam();
+        ex2 = tk.getRandomExam();
 
-        tmp.addExams(tj.getExams());
-        tj.cleanAndAddExams(tk.getExams());
-        tk.cleanAndAddExams(tmp.getExams());
-        computeCost();
+        if (checkFeasibleSwap(tj, ex1, tk, ex2)) {
+            int penalty = getSwapCost(tj.getTimeslotID(), ex1, tk.getTimeslotID(), ex2);
+            if (penalty < 0) {
+                swap(tj, ex1, tk, ex2);
+                updateCost(penalty);
+                System.out.println(getCost());
+                return true;
+            }
+
+        }
+
+        return false;
     }
 
     /**
-     * Given two cut-points, it remove all the exams in the timeslots in that
-     * interval. Then it assigns those exams to the timeslots in the reverse
-     * order.
+     * Calculates the cost of swapping <code>ex1</code> with <code>ex2</code>
+     *
+     * @param tjId
+     * @param ex1
+     * @param tkId
+     * @param ex2
+     * @return
+     */
+    private int getSwapCost(int tjId, Exam ex1, int tkId, Exam ex2) {
+        return CostFunction.getExamMovePenalty(ex1, tjId, tkId, timeslots) + CostFunction.getExamMovePenalty(ex2, tkId, tjId, timeslots);
+    }
+
+    /**
+     * Takes two random timeslots and swaps their position if the generated
+     * total penalty decreases.
+     *
+     */
+    public void tryMutateTimeslots() {
+
+        Timeslot tk = getRandomTimeslot();
+        Timeslot tj = getRandomTimeslot();
+        int penalty = CostFunction.getTimeslotSwapPenalty(tk.getTimeslotID(), tj.getTimeslotID(), timeslots);
+        if (penalty < 0) {
+            mutateTimeslots(tj,tk);
+            updateCost(penalty);
+            System.out.println(getCost());
+        }
+    }
+
+    /**
+     * Swaps the postion of two timeslots.
+     * @param tj
+     * @param tk 
+     */
+    private void mutateTimeslots(Timeslot tj, Timeslot tk) {
+        int tjId=tj.getTimeslotID();
+        int tkId=tk.getTimeslotID();
+        timeslots[tkId] = tj;
+        timeslots[tjId] = tk;
+        timeslots[tkId].setTimeslotID(tkId);
+        timeslots[tjId].setTimeslotID(tjId);
+    }
+
+    /**
+     * Given two cut-points, if the cost function decreases, it invert the order
+     * of the timeslots in the interval
+     * [<code>cutPoints[0]</code>;<code>cutPoints[1]</code>)
      *
      * @param cutPoints
      */
-    public void invertTimeslots(int[] cutPoints) {
-        int startPoint = cutPoints[0];
-        int endPoint = cutPoints[1];
-        int length = endPoint - startPoint;
-        Timeslot[] tmpSlots = createTmpSlots(length);
+    public void tryInvertTimeslots(int[] cutPoints) {
+        int penalty = calcInvertPenalty(cutPoints[0], cutPoints[1]);
+        if (penalty < 0) {
+            invertTimeslots(cutPoints[0], cutPoints[1]);
+            updateCost(penalty);
+            System.out.println(getCost());
+        }
 
+    }
+
+    /**
+     * Calculates the cost of inverting the timeslot in the interval
+     * [<code>startPoint</code>;<code>endPoint</code>)
+     *
+     * @param startPoint
+     * @param endPoint
+     * @return
+     */
+    private int calcInvertPenalty(int startPoint, int endPoint) {
+        int penalty = 0;
+        for (int i = 0; i < endPoint - startPoint; i++) {
+            if (endPoint - i - 1 != startPoint + i) {
+                penalty += CostFunction.getNewTimeslotPenalty(endPoint - i - 1, startPoint + i, timeslots);
+            }
+        }
+        return penalty;
+    }
+
+    /**
+     * Remove all the exams in the timeslots in the interval
+     * [<code>startPoint</code>;<code>endPoint</code>). Then it assigns those
+     * exams to the timeslots in the reverse order.
+     *
+     * @param startPoint
+     * @param endPoint
+     * @param penalty
+     */
+    private void invertTimeslots(int startPoint, int endPoint) {
+        int length = endPoint - startPoint;
+        Timeslot[] tmpSlots = this.createTmpSlots(length);
         for (int i = 0; i < length; i++) {
             tmpSlots[length - 1 - i].addExams(timeslots[startPoint + i].getExams());
             timeslots[startPoint + i].clean();
@@ -500,7 +582,6 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         for (int i = 0; i < length; i++) {
             timeslots[startPoint + i].addExams(tmpSlots[i].getExams());
         }
-        computeCost();
     }
 
     /**
@@ -520,110 +601,98 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     }
 
     /**
-     * Eliminates all the exams that are not in the timeslots in the intevarl
-     * [<code>cutPoints[0]</code>, <code>cutPoints[1]</code>)
+     * Takes a random exam among <code>parent2Exams</code> and, if the cost
+     * function decreases, it does the crossover.
      *
-     * @param cutPoints
+     * @param parent2Exams
      */
-    public void selectSection(int[] cutPoints) {
-        for (int i = 0; i < this.getTmax(); i++) {
-            if (i < cutPoints[0] || i >= cutPoints[1]) {
-                timeslots[i].clean();
+    public void tryCrossover(List<Exam> parent2Exams) {
+        // If there are no exams
+        if (parent2Exams.isEmpty()) {
+            return;
+        }
+
+        Exam candidate = parent2Exams.get(new Random().nextInt(parent2Exams.size()));
+        for (Timeslot t : timeslots) {
+            if (t.contains(candidate)) {
+                int penalty = calcCrossoverPenalty(parent2Exams, t);
+                if (penalty < 0) {
+                    doCrossover(parent2Exams, t);
+                    updateCost(penalty);
+                }
+                return;
             }
+        }
+
+    }
+
+    /**
+     * Tries to insert the exams of <code>parent2Exams</code> into timeslot
+     * <code>t</code>. If at least one exams has been moved, it fix the
+     * schedule, removing the exam from its previous position.
+     *
+     * @param parent2Exams
+     * @param t
+     */
+    private void doCrossover(List<Exam> parent2Exams, Timeslot t) {
+        List<Exam> positionedExams = t.tryInsertExams(parent2Exams);
+        if (!positionedExams.isEmpty()) {
+            fixSchedule(t, positionedExams);
         }
     }
 
     /**
-     * Returns if the exam <code>e</code> is in the interval of timeslots
-     * [<code>cutPoints[0]</code>, <code>cutPoints[1]</code>)
+     * For eaxh exam in <code>parent2Exams</code>, if they are not contained in
+     * <code>dest</code> it checks if it is compatible to move there the exam;
+     * if so it xcalculates the penalty related to the movement.
+     *
+     * @param parent2Exams
+     * @param dest
+     * @return
+     */
+    private int calcCrossoverPenalty(List<Exam> parent2Exams, Timeslot dest) {
+        int penalty = 0;
+        int destTId = dest.getTimeslotID();
+        for (Exam e : parent2Exams) {
+            Timeslot src = getTimeslotByExam(e);
+            if (src != dest && dest.isCompatible(e)) {
+                penalty += CostFunction.getExamMovePenalty(e, src.getTimeslotID(), destTId, this);
+            }
+        }
+        return penalty;
+    }
+
+    /**
+     * Retrieves the timeslot which contains exam <code>e</code>
      *
      * @param e
-     * @param points
      * @return
      */
-    public boolean isExamInSection(Exam e, int[] points) {
-        for (int i = points[0]; i < points[1]; i++) {
-            if (timeslots[i].contains(e)) {
-                return true;
+    private Timeslot getTimeslotByExam(Exam e) {
+        for (Timeslot t : timeslots) {
+            if (t.contains(e)) {
+                return t;
             }
         }
-        return false;
+        return null; // never
     }
 
     /**
-     * If an exam of timeslot <code>t</code> is not in the interval of timeslots
-     * [<code>cutPoints[0]</code>, <code>cutPoints[1]</code>), it adds it in the
-     * timeslot <code>timeslots[position]</code>
+     * Removes all the exams in <code>positionedExams</code> from their previous
+     * position
      *
-     * @param position
-     * @param t
-     * @param cutPoints 
+     * @param destTimeslot
+     * @param positionedExams
      */
-    public void addTimeslot(int position, Timeslot t, int[] cutPoints) {
-        for (Exam e : t.getExams()) {
-            if (!isExamInSection(e, cutPoints)) {
-                timeslots[position].addExam(e);
-            }
-        }
-    }
+    private void fixSchedule(Timeslot destTimeslot, List<Exam> positionedExams) {
+        for (Exam e : positionedExams) {
+            for (Timeslot t : timeslots) {
+                if (t.contains(e) && t != destTimeslot) {
+                    t.removeExam(e);
+                }
 
-    /**
-     * Retrieves the timeslot in the interval [<code>cutPoints[0]</code>,
-     * <code>cutPoints[1]</code>)
-     *
-     * @param cutPoints
-     * @return
-     */
-    public Timeslot[] getSectionTimeslots(int[] cutPoints) {
-        Timeslot[] tmpSlots = createTmpSlots(cutPoints[1] - cutPoints[0]);
-        for (int i = cutPoints[0]; i < cutPoints[1]; i++) {
-            tmpSlots[i - cutPoints[0]] = timeslots[i];
-        }
-        return tmpSlots;
-    }
-
-    public void doExamOrderCrossover(Timeslot[] p2section, int[] points) {
-        List<Exam> unpositioned = findUnpositionedExams(p2section);
-        int counter = 0;
-        boolean positioned = false;
-        for (Exam e : unpositioned) {
-            //System.out.println(e);
-            for (int i = points[1]; i < getTmax(); i++) {
-                if (positioned = timeslots[i].isCompatible(e)) {
-                    timeslots[i].addExam(e);
-                    counter++;
-                    break;
-                }
-            }
-            if (!positioned) {
-                for (int i = 0; i < points[1]; i++) {
-                    if (timeslots[i].isCompatible(e)) {
-                        timeslots[i].addExam(e);
-                        counter++;
-                        break;
-                    }
-                }
-            }
-            //System.out.println(positioned);
-        }
-        System.out.println(counter);
-    }
-
-    private List<Exam> findUnpositionedExams(Timeslot[] p2section) {
-        List<Exam> unpositioned = new ArrayList<>();
-        boolean positioned;
-        for (Timeslot tk : p2section) {
-            for (Exam e : tk.getExams()) {
-                positioned = false;
-                for (Timeslot tj : timeslots) {
-                    positioned = positioned || tj.contains(e);
-                }
-                if (!positioned) {
-                    unpositioned.add(e);
-                }
             }
         }
-        return unpositioned;
     }
 
 }

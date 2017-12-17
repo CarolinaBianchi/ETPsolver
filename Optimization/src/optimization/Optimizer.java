@@ -86,7 +86,7 @@ public class Optimizer {
         // we add every class that extends SingleSolutionMetaheuristic
         pMetaheuristics.add(GeneticAlgorithm.class);
         // we add every class that extends SingleSolutionMetaheuristic
-         ssMetaheuristics.add(SimulatedAnnealing.class);
+         //ssMetaheuristics.add(SimulatedAnnealing.class);
     }
 
     /**
