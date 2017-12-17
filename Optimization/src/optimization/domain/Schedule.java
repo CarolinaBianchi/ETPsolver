@@ -383,6 +383,18 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     }
 
     /**
+     * Returns true if the Exam <code>exam</code> can be moved to the Timeslot
+     * @<code>destIndex</code>.
+     *
+     * @param exam
+     * @param destIndex
+     * @return
+     */
+    public boolean isFeasibleMove(Exam exam, int destIndex) {
+        return this.timeslots[destIndex].isCompatible(exam);
+    }
+
+    /**
      * Swaps timeslot i with timeslot j.
      *
      * @param i
@@ -403,43 +415,45 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         timeslots[j].setTimeslotID(j);
         updateCost(penalty);
     }
-    
+
     /**
-     * Create the best possible timeslot order without moving any exam singularly.
+     * Create the best possible timeslot order without moving any exam
+     * singularly.
      */
     public void optimizeTimeslotOrder() {
         this.timeslots = optimizeTimeslotOrder(this.timeslots);
         computeCost();
     }
-    
+
     /**
-     * Create the best possible timeslot order without moving any exam singularly.
-     * @param timeslots 
-     * @return  
+     * Create the best possible timeslot order without moving any exam
+     * singularly.
+     *
+     * @param timeslots
+     * @return
      */
     public Timeslot[] optimizeTimeslotOrder(Timeslot[] timeslots) {
         int length = timeslots.length;
-        
+
         // Base of the recursive method
-        if( length == 1 ) {
+        if (length == 1) {
             return timeslots;
         }
-        
+
         // Generate a set of timeslots of size length-1 and another one of size length
-        Timeslot[] optimizedTimeslots = new Timeslot[length-1];
-        
-        System.arraycopy(timeslots, 0, optimizedTimeslots, 0, length-1);
-        
+        Timeslot[] optimizedTimeslots = new Timeslot[length - 1];
+
+        System.arraycopy(timeslots, 0, optimizedTimeslots, 0, length - 1);
+
         // Recursively call optimizeTimeslotOrder to obtain the best possible 
         // set of timeslots of size equals to (length-1)
         optimizedTimeslots = optimizeTimeslotOrder(optimizedTimeslots);
-        
-        timeslots = getOptimalTimeslotPlacement(optimizedTimeslots, timeslots[length-1]);
-        
-        
+
+        timeslots = getOptimalTimeslotPlacement(optimizedTimeslots, timeslots[length - 1]);
+
         return timeslots;
     }
-    
+
     public Timeslot[] getOptimalTimeslotPlacement(Timeslot[] timeslots, Timeslot toAdd) {
         int added = 0;
         int best = -1;
@@ -447,31 +461,31 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         Timeslot[] newTimeslots = new Timeslot[length];
         Timeslot[] optimizedTimeslots = new Timeslot[length];
         Timeslot auxToAdd;
-        
+
         // The first loop is used to determine the position of toAdd in timeslots
-        for( int i = 0; i<length; i++) {
+        for (int i = 0; i < length; i++) {
             auxToAdd = toAdd.clone();
-            
+
             // The inner loop builds the set optimizedTimeslots, placing toAdd in
             // i position. Variable added is used to be able to correctly visit 
             // the set timeslots
-            for( int j = 0; j<length; j++ ) {
-                if( i==j ) {
+            for (int j = 0; j < length; j++) {
+                if (i == j) {
                     auxToAdd.setTimeslotID(j);
                     newTimeslots[j] = auxToAdd;
                     added = 1;
                 } else {
-                    newTimeslots[j] = timeslots[j-added].clone();
+                    newTimeslots[j] = timeslots[j - added].clone();
                     newTimeslots[j].setTimeslotID(j);
                 }
             }
             // Check if the cost of optimizedTimeslots is the best found so far;
             int currentCost = CostFunction.getCost(newTimeslots);
-            
-            if( currentCost<best || best<0) {
+
+            if (currentCost < best || best < 0) {
                 optimizedTimeslots = newTimeslots.clone();
                 best = currentCost;
-            } 
+            }
             added = 0;
         }
         return optimizedTimeslots;
@@ -581,7 +595,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         Timeslot tj = getRandomTimeslot();
         int penalty = CostFunction.getTimeslotSwapPenalty(tk.getTimeslotID(), tj.getTimeslotID(), timeslots);
         if (penalty < 0) {
-            mutateTimeslots(tj,tk);
+            mutateTimeslots(tj, tk);
             updateCost(penalty);
             System.out.println(getCost());
         }
@@ -589,12 +603,13 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
 
     /**
      * Swaps the postion of two timeslots.
+     *
      * @param tj
-     * @param tk 
+     * @param tk
      */
     private void mutateTimeslots(Timeslot tj, Timeslot tk) {
-        int tjId=tj.getTimeslotID();
-        int tkId=tk.getTimeslotID();
+        int tjId = tj.getTimeslotID();
+        int tkId = tk.getTimeslotID();
         timeslots[tkId] = tj;
         timeslots[tjId] = tk;
         timeslots[tkId].setTimeslotID(tkId);
@@ -768,7 +783,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
             }
         }
     }
-    
+
     /**
      * Computes the cost of this schedule.
      */
