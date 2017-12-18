@@ -36,6 +36,7 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
         System.out.println("Genetic Algorithm");
 
         calcObjFunctions();
+        //invertTimeslots();
         startAlgorithm();
         mySolution = findBestSchedule();
         System.out.println("OBJfunction value: " + mySolution.getCost());
@@ -45,30 +46,27 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
      * Starts the timer and chose randomly how to change the population.
      */
     private void startAlgorithm() {
-        int counter = 0;
         long startTime = System.currentTimeMillis();
         long elapsedTime = 0;
-        while (elapsedTime < MINUTES * 60 * 1000) {
-            while (counter++ % 100 != 0) {              
-
-                switch (rnd.nextInt(4)) {
-                    case 0:
-                        //mutateExams();
-                        break;
-                    case 1:
-                        mutateTimeslots();
-                        break;
-                    case 2:
-                        //invertTimeslots();
-                        break;
-                    case 3:
-                        doCrossover();
-                        break;
-                }
-                   
+        long totalTime = MINUTES * 60 * 1000;
+        while (elapsedTime < totalTime) {
+            switch (rnd.nextInt(4)) {
+                case 0:
+                    mutateExams();
+                    break;
+                case 1:
+                    mutateTimeslots();
+                    break;
+                case 2:
+                    invertTimeslots();
+                    break;
+                case 3:
+                    doCrossover();
+                    break;
             }
-            
+
             elapsedTime = System.currentTimeMillis() - startTime;
+
         }
     }
 
@@ -90,7 +88,10 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
      * @return
      */
     private void mutateExams() {
-        getRandomSchedule().mutateExams();
+        Schedule s = getRandomSchedule();
+        int oldCost=s.getCost();
+        s.mutateExams();
+        //System.out.println("MutateExams "+ (oldCost!=s.getCost())+ "| "+oldCost+" - "+ s.getCost());
     }
 
     /**
@@ -98,7 +99,10 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
      * reduces the penalty.
      */
     private void mutateTimeslots() {
-        getRandomSchedule().tryMutateTimeslots();
+        Schedule s = getRandomSchedule();
+        int oldCost=s.getCost();
+        s.tryMutateTimeslots();
+        //System.out.println("MutateTimeslots "+ (oldCost!=s.getCost())+ "| "+oldCost+" - "+ s.getCost());
     }
 
     /**
@@ -115,9 +119,13 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
      *
      */
     private void invertTimeslots() {
-        Schedule schedule = getRandomSchedule();
-        schedule.tryInvertTimeslots(getRandomCutPoints(schedule.getTmax()));
-
+        Schedule s = getRandomSchedule();
+        int oldCost=s.getCost();
+        int[] cutPoints = getRandomCutPoints(s.getTmax());
+        if ((cutPoints[1] - cutPoints[0]) > 1) {
+            s.tryInvertTimeslots(cutPoints);
+        }
+        //System.out.println("InvertTimeslots "+ (oldCost!=s.getCost())+ "| "+oldCost+" - "+ s.getCost());
     }
 
     /**
@@ -146,17 +154,20 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
     }
 
     /**
-     * Takes two different schedules from the population and tries to do a crossover between the two.
-     * If the change improves the value of the cost function, it takes the exams 
-     * contained into a timeslot of <code>parent2</code> and it select randomly one of them.
-     * It find the position of this exam in <code>parent1</code> and tries to add there the other exams
-     * previously found.
+     * Takes two different schedules from the population and tries to do a
+     * crossover between the two. If the change improves the value of the cost
+     * function, it takes the exams contained into a timeslot of
+     * <code>parent2</code> and it select randomly one of them. It finds the
+     * position of this exam in <code>parent1</code> and tries to add there the
+     * other exams previously found.
      */
     private void doCrossover() {
         Schedule parent1 = getRandomSchedule();
+        int oldCost=parent1.getCost();
         Schedule parent2 = getRandomSchedule();
         if (parent1 != parent2) {
             parent1.tryCrossover(parent2.getRandomTimeslot().getExams());
         }
+        //System.out.println("DoCrossover "+ (oldCost!=parent1.getCost())+ "| "+oldCost+" - "+ parent1.getCost());
     }
 }

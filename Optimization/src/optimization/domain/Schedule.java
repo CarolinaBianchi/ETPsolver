@@ -5,11 +5,8 @@
  */
 package optimization.domain;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import optimization.Cloner;
 
 /**
  * Class that represents a Schedule.
@@ -403,43 +400,45 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         timeslots[j].setTimeslotID(j);
         updateCost(penalty);
     }
-    
+
     /**
-     * Create the best possible timeslot order without moving any exam singularly.
+     * Create the best possible timeslot order without moving any exam
+     * singularly.
      */
     public void optimizeTimeslotOrder() {
         this.timeslots = optimizeTimeslotOrder(this.timeslots);
         computeCost();
     }
-    
+
     /**
-     * Create the best possible timeslot order without moving any exam singularly.
-     * @param timeslots 
-     * @return  
+     * Create the best possible timeslot order without moving any exam
+     * singularly.
+     *
+     * @param timeslots
+     * @return
      */
     public Timeslot[] optimizeTimeslotOrder(Timeslot[] timeslots) {
         int length = timeslots.length;
-        
+
         // Base of the recursive method
-        if( length == 1 ) {
+        if (length == 1) {
             return timeslots;
         }
-        
+
         // Generate a set of timeslots of size length-1 and another one of size length
-        Timeslot[] optimizedTimeslots = new Timeslot[length-1];
-        
-        System.arraycopy(timeslots, 0, optimizedTimeslots, 0, length-1);
-        
+        Timeslot[] optimizedTimeslots = new Timeslot[length - 1];
+
+        System.arraycopy(timeslots, 0, optimizedTimeslots, 0, length - 1);
+
         // Recursively call optimizeTimeslotOrder to obtain the best possible 
         // set of timeslots of size equals to (length-1)
         optimizedTimeslots = optimizeTimeslotOrder(optimizedTimeslots);
-        
-        timeslots = getOptimalTimeslotPlacement(optimizedTimeslots, timeslots[length-1]);
-        
-        
+
+        timeslots = getOptimalTimeslotPlacement(optimizedTimeslots, timeslots[length - 1]);
+
         return timeslots;
     }
-    
+
     public Timeslot[] getOptimalTimeslotPlacement(Timeslot[] timeslots, Timeslot toAdd) {
         int added = 0;
         int best = -1;
@@ -447,31 +446,31 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         Timeslot[] newTimeslots = new Timeslot[length];
         Timeslot[] optimizedTimeslots = new Timeslot[length];
         Timeslot auxToAdd;
-        
+
         // The first loop is used to determine the position of toAdd in timeslots
-        for( int i = 0; i<length; i++) {
+        for (int i = 0; i < length; i++) {
             auxToAdd = toAdd.clone();
-            
+
             // The inner loop builds the set optimizedTimeslots, placing toAdd in
             // i position. Variable added is used to be able to correctly visit 
             // the set timeslots
-            for( int j = 0; j<length; j++ ) {
-                if( i==j ) {
+            for (int j = 0; j < length; j++) {
+                if (i == j) {
                     auxToAdd.setTimeslotID(j);
                     newTimeslots[j] = auxToAdd;
                     added = 1;
                 } else {
-                    newTimeslots[j] = timeslots[j-added].clone();
+                    newTimeslots[j] = timeslots[j - added].clone();
                     newTimeslots[j].setTimeslotID(j);
                 }
             }
             // Check if the cost of optimizedTimeslots is the best found so far;
             int currentCost = CostFunction.getCost(newTimeslots);
-            
-            if( currentCost<best || best<0) {
+
+            if (currentCost < best || best < 0) {
                 optimizedTimeslots = newTimeslots.clone();
                 best = currentCost;
-            } 
+            }
             added = 0;
         }
         return optimizedTimeslots;
@@ -547,8 +546,6 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
             int penalty = getSwapCost(tj.getTimeslotID(), ex1, tk.getTimeslotID(), ex2);
             if (penalty < 0) {
                 swap(tj, ex1, tk, ex2);
-                updateCost(penalty);
-                System.out.println(getCost());
                 return true;
             }
 
@@ -581,20 +578,20 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         Timeslot tj = getRandomTimeslot();
         int penalty = CostFunction.getTimeslotSwapPenalty(tk.getTimeslotID(), tj.getTimeslotID(), timeslots);
         if (penalty < 0) {
-            mutateTimeslots(tj,tk);
+            mutateTimeslots(tj, tk);
             updateCost(penalty);
-            System.out.println(getCost());
         }
     }
 
     /**
      * Swaps the postion of two timeslots.
+     *
      * @param tj
-     * @param tk 
+     * @param tk
      */
     private void mutateTimeslots(Timeslot tj, Timeslot tk) {
-        int tjId=tj.getTimeslotID();
-        int tkId=tk.getTimeslotID();
+        int tjId = tj.getTimeslotID();
+        int tkId = tk.getTimeslotID();
         timeslots[tkId] = tj;
         timeslots[tjId] = tk;
         timeslots[tkId].setTimeslotID(tkId);
@@ -609,31 +606,12 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
      * @param cutPoints
      */
     public void tryInvertTimeslots(int[] cutPoints) {
-        int penalty = calcInvertPenalty(cutPoints[0], cutPoints[1]);
+        int penalty = CostFunction.getInvertionTimeslotsPenalty(cutPoints[0], cutPoints[1], timeslots);
         if (penalty < 0) {
             invertTimeslots(cutPoints[0], cutPoints[1]);
             updateCost(penalty);
-            System.out.println(getCost());
         }
 
-    }
-
-    /**
-     * Calculates the cost of inverting the timeslot in the interval
-     * [<code>startPoint</code>;<code>endPoint</code>)
-     *
-     * @param startPoint
-     * @param endPoint
-     * @return
-     */
-    private int calcInvertPenalty(int startPoint, int endPoint) {
-        int penalty = 0;
-        for (int i = 0; i < endPoint - startPoint; i++) {
-            if (endPoint - i - 1 != startPoint + i) {
-                penalty += CostFunction.getNewTimeslotPenalty(endPoint - i - 1, startPoint + i, timeslots);
-            }
-        }
-        return penalty;
     }
 
     /**
@@ -646,8 +624,9 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
      * @param penalty
      */
     private void invertTimeslots(int startPoint, int endPoint) {
-        int length = endPoint - startPoint;
+        int length = endPoint - startPoint; //3
         Timeslot[] tmpSlots = this.createTmpSlots(length);
+
         for (int i = 0; i < length; i++) {
             tmpSlots[length - 1 - i].addExams(timeslots[startPoint + i].getExams());
             timeslots[startPoint + i].clean();
@@ -656,6 +635,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         for (int i = 0; i < length; i++) {
             timeslots[startPoint + i].addExams(tmpSlots[i].getExams());
         }
+
     }
 
     /**
@@ -768,7 +748,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
             }
         }
     }
-    
+
     /**
      * Computes the cost of this schedule.
      */
