@@ -84,7 +84,7 @@ public class Optimizer {
     private void initMetaheuristics() {
         ssMetaheuristics.add(TabuSearchAlgorithm.class);
         // we add every class that extends SingleSolutionMetaheuristic
-        pMetaheuristics.add(GeneticAlgorithm.class);
+        //pMetaheuristics.add(GeneticAlgorithm.class);
         // we add every class that extends SingleSolutionMetaheuristic
          //ssMetaheuristics.add(SimulatedAnnealing.class);
     }
