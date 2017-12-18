@@ -134,6 +134,14 @@ public class Timeslot implements Cloneable {
         }
         return count;
     }
+    
+    /**
+     * Returns the number of exams in the timeslot.
+     * @return 
+     */
+    public int getNExams(){
+        return this.exams.size();
+    }
 
     @Override
     public Timeslot clone() {

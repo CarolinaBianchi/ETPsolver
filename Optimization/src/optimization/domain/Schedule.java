@@ -380,6 +380,18 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     }
 
     /**
+     * Returns true if the Exam <code>exam</code> can be moved to the Timeslot
+     * @<code>destIndex</code>.
+     *
+     * @param exam
+     * @param destIndex
+     * @return
+     */
+    public boolean isFeasibleMove(Exam exam, int destIndex) {
+        return this.timeslots[destIndex].isCompatible(exam);
+    }
+
+    /**
      * Swaps timeslot i with timeslot j.
      *
      * @param i

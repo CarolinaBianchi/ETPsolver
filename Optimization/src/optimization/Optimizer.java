@@ -71,9 +71,9 @@ public class Optimizer {
      * thread.
      */
     private void initInitializers() {
-        for (int i = 0; i < 10; i++) {
+        //for (int i = 0; i < 10; i++) {
             initializers.add(new BucketInitializer(Cloner.clone(exams), tmax, this, this.students.size()));
-        }
+        //}
         joinThreads(initializers);
 
     }
@@ -82,7 +82,7 @@ public class Optimizer {
      * Creates the set of metaheuristics.
      */
     private void initMetaheuristics() {
-        //ssMetaheuristics.add(SimulatedAnnealing.class);
+        ssMetaheuristics.add(TabuSearchAlgorithm.class);
         // we add every class that extends SingleSolutionMetaheuristic
         pMetaheuristics.add(GeneticAlgorithm.class);
         // we add every class that extends SingleSolutionMetaheuristic
