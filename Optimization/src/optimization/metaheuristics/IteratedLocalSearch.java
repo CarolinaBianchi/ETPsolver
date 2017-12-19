@@ -37,7 +37,6 @@ public class IteratedLocalSearch extends SingleSolutionMetaheuristic {
     public IteratedLocalSearch(Optimizer optimizer, Schedule initSolution) {
         super(optimizer, initSolution);
         this.optimizer = optimizer;
-        initSolution.optimizeTimeslotOrder();
         this.initSolution = Cloner.clone(initSolution);
         this.currentSolution = initSolution;
         this.currentBestSolution = currentSolution;
