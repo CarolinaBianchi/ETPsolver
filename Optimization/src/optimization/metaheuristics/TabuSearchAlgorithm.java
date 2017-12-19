@@ -44,7 +44,6 @@ public class TabuSearchAlgorithm extends SingleSolutionMetaheuristic {
         //this.mySchedule=mySchedule;
         this.tabuList = new LinkedList<>();
         this.optimizer = optimizer;
-        initialSchedule.optimizeTimeslotOrder();
         this.initialSchedule = Cloner.clone(initialSchedule);
         initSolution.setCost(CostFunction.getCost(initSolution));
         this.initialCost = CostFunction.getCost(initialSchedule);

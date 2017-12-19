@@ -12,7 +12,6 @@ import fileutils.FileManager;
 import fileutils.SolutionWriter;
 import optimization.initialization.*;
 import java.io.IOException;
-import static java.lang.Math.pow;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,7 +42,6 @@ public class Optimizer {
     private int tmax;
     private int[][] numberOfStudent;    //numberOfStudent[i][j] number of student enrolled in both exams i and j
 
-
     public Optimizer(String instanceName) throws IOException {
         init(instanceName);
         numberOfStudent = new int[this.exams.size() + 1][this.exams.size() + 1];
@@ -72,7 +70,7 @@ public class Optimizer {
      */
     private void initInitializers() {
         //for (int i = 0; i < 10; i++) {
-            initializers.add(new BucketInitializer(Cloner.clone(exams), tmax, this, this.students.size()));
+        initializers.add(new BucketInitializer(Cloner.clone(exams), tmax, this, this.students.size()));
         //}
         joinThreads(initializers);
 
@@ -82,11 +80,11 @@ public class Optimizer {
      * Creates the set of metaheuristics.
      */
     private void initMetaheuristics() {
-        ssMetaheuristics.add(TabuSearchAlgorithm.class);
+        ssMetaheuristics.add(SimulatedAnnealing.class);
         // we add every class that extends SingleSolutionMetaheuristic
         //pMetaheuristics.add(GeneticAlgorithm.class);
         // we add every class that extends SingleSolutionMetaheuristic
-         //ssMetaheuristics.add(SimulatedAnnealing.class);
+        //ssMetaheuristics.add(SimulatedAnnealing.class);
     }
 
     /**
@@ -126,7 +124,7 @@ public class Optimizer {
                     // Used for adding the conflicts to the exam conflict map.
                     e1.addConflictingExam2(e2.getId());
                     e2.addConflictingExam2(e1.getId());
-                    
+
                     numberOfStudent[e1.getId()][e2.getId()]++;
                     numberOfStudent[e2.getId()][e1.getId()]++;
                 }
@@ -145,20 +143,23 @@ public class Optimizer {
     }
 
     /**
-     * As a new initial solution is generated, every SingleSolutionMetaheuristic
-     * starts working on it.
+     * As a new initial solution is generated, it is preprocessed by means of
+     * the CheapestInsertion metaheuristic.
      *
      * @param newInitialSol
      */
     public void updateOnNewInitialSolution(Schedule newInitialSol) {
-        synchronized (initialSchedules) {
+        // I preprocess all the initial solutions, through the cheapest insertion algorithm.
+        (new CheapestInsertion(this, newInitialSol)).run();
+        /*synchronized (initialSchedules) {
             this.initialSchedules.add(newInitialSol);
         }
         bestSchedule = newInitialSol;
         writeSolution();
         runAllSSMetaheuristics(newInitialSol);
-        checkAllPMetaheuristics();
-        }
+        checkAllPMetaheuristics();*/
+
+    }
 
     /**
      * Runs every implementation of a SingleSolutoinMetaheuristics with the new
@@ -201,15 +202,15 @@ public class Optimizer {
         start working on them
          */
         //for (int i = 0; i < 3; i++) {
-            for (Class<? extends PopulationMetaheuristic> clazz : this.pMetaheuristics) {
-                try {
-                    PopulationMetaheuristic m = (clazz.getConstructor(Optimizer.class, List.class)).newInstance(this, Cloner.clone(initialSchedules));
-                    threadPool.add(m);
-                    m.start();
-                } catch (Exception ex) {
-                    Logger.getLogger(Optimizer.class.getName()).log(Level.SEVERE, null, ex);
-                }
+        for (Class<? extends PopulationMetaheuristic> clazz : this.pMetaheuristics) {
+            try {
+                PopulationMetaheuristic m = (clazz.getConstructor(Optimizer.class, List.class)).newInstance(this, Cloner.clone(initialSchedules));
+                threadPool.add(m);
+                m.start();
+            } catch (Exception ex) {
+                Logger.getLogger(Optimizer.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
         //}
         joinThreads(threadPool);
         synchronized (initialSchedules) {
@@ -228,11 +229,40 @@ public class Optimizer {
      *
      * @param mySolution
      */
-    public synchronized void updateOnNewSolution(Schedule mySolution) {
-        if (bestSchedule.getCost() == 0 || mySolution.getCost() < bestSchedule.getCost()) {
+    public void updateOnNewSolution(Schedule mySolution) {
+        /*
+        * Case 1: the solution has undergone ONLY the preprocessing phase 
+        * (e.g. its timeslot order has been optimized with the CheapestInsertion)
+         */
+        if (mySolution.isPreprocessed()) {
+            mySolution.setPreprocessed(false);
+            startMetaheuristics(mySolution);
+            bestSchedule = mySolution;
+            /*
+            Case 2: The solution comes from a metaheuristic.
+             */
+        } else if (bestSchedule.getCost() == 0 || mySolution.getCost() < bestSchedule.getCost()) {
             bestSchedule = mySolution;
             writeSolution();
         }
+    }
+
+    /**
+     * As a new solution that has undergone the preprocessing phase (Cheapest
+     * insertion) is provided, the single solution metaheuristics are started;
+     * population metaheuristics are started if the number of initial solution
+     * is big enough.
+     *
+     * @param mySolution
+     */
+    private void startMetaheuristics(Schedule mySolution) {
+
+        synchronized (initialSchedules) {
+            this.initialSchedules.add(mySolution);
+        }
+        bestSchedule = mySolution;
+        runAllSSMetaheuristics(mySolution);
+        checkAllPMetaheuristics();
     }
 
     /**
@@ -282,45 +312,10 @@ public class Optimizer {
 
         sw.start();
         int benchmark = Optimization.getBenchmark();
-        DecimalFormat df = new DecimalFormat("##.00"); 
-        double gap = 100*((bestSchedule.getCost()*1.0-benchmark*1.0)/benchmark*1.0);
-        System.out.println("OurSolution:"+bestSchedule.getCost()+"\tBenchmark:"+benchmark+"\t gap:"+df.format(gap)+"%");
+        DecimalFormat df = new DecimalFormat("##.00");
+        double gap = 100 * ((bestSchedule.getCost() * 1.0 - benchmark * 1.0) / benchmark * 1.0);
+        System.out.println("OurSolution:" + bestSchedule.getCost() + "\tBenchmark:" + benchmark + "\t gap:" + df.format(gap) + "%");
 
     }
-    
-    /**
-     * compute the value of our objectif function
-     *
-     * @param schedule
-     * @return
-     */
-    public double objectifFunction(Schedule mySchedule) {
-        Timeslot[] timeslots = mySchedule.getTimeslots();
-        double cost = 0;
-
-        for (int i = 1; i <= 5; i++) {
-            for (int t = 0; t < timeslots.length - i; t++) {
-
-                if ((t + i) < timeslots.length) {
-                    int sum = 0;
-                    for (Exam e : timeslots[t].getExams()) {
-                        for (Exam e1 : timeslots[t + i].getExams()) {
-                            if (e1 == null || e == null) {
-                                break;
-                            }
-
-                            sum = sum + numberOfStudent[e.getId()][e1.getId()];
-
-                        }
-                    }
-                    cost = cost + sum * pow(2, 5 - i);
-                }
-            }
-
-        }
-
-        return cost / this.students.size();
-    }
-
 
 }

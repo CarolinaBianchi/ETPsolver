@@ -11,7 +11,6 @@ import optimization.Optimizer;
 import optimization.domain.CostFunction;
 import optimization.domain.Exam;
 import optimization.domain.Schedule;
-import optimization.domain.Timeslot;
 
 /**
  * <pre>
@@ -38,7 +37,7 @@ public class SimulatedAnnealing extends SingleSolutionMetaheuristic {
     private double temperature;
     private final int ITER_PER_TEMPERATURE;
     private final int NUM_ITER; // number of moves per iter
-    private final int MINUTES = 3;
+    private final int MINUTES = 1;
     private final int MAX_MILLIS = MINUTES * 60 * 1000;
     private long elapsedTime;
     private final double FASTDECAY_TIME_FRACTION = 1.0 / 5.0; // The fraction of time in which the temperature is decreased fast
@@ -60,13 +59,14 @@ public class SimulatedAnnealing extends SingleSolutionMetaheuristic {
         tmax = initSolution.getTmax();
         NUM_ITER = tmax / 2;
         ITER_PER_TEMPERATURE = tmax / 2;//tmax;
+        System.out.println("Initial cost" + checkObjFun);
     }
 
     @Override
     void improveInitialSol() {
         long startTime = System.currentTimeMillis();
         long maxMillis = MINUTES * 60 * 1000;
-
+        System.out.println("SA.initialCost: "+initSolution.getCost());
         while (elapsedTime < maxMillis) {
             for (int i = 0; i < ITER_PER_TEMPERATURE; i++) {
                 optimizeTimeslotOrder();
@@ -88,14 +88,12 @@ public class SimulatedAnnealing extends SingleSolutionMetaheuristic {
      */
     private void optimizeTimeslotOrder() {
         int delta, i, j;
-        
-        for (int iter = 0; iter < getNSwap(); iter++) {
-            i = rg.nextInt(tmax);
-            j = rg.nextInt(tmax);
-            delta = CostFunction.getTimeslotSwapPenalty(i, j, initSolution);
-            if (accept(delta)) {
-                initSolution.swapTimeslots(i, j);
-            }
+
+        i = rg.nextInt(tmax);
+        j = rg.nextInt(tmax);
+        delta = CostFunction.getTimeslotSwapPenalty(i, j, initSolution);
+        if (accept(delta)) {
+            initSolution.swapTimeslots(i, j);
         }
 
     }
@@ -109,7 +107,7 @@ public class SimulatedAnnealing extends SingleSolutionMetaheuristic {
         int sourceI, destI;
         Exam exam;
         int delta;
-        for (int iter = 0; iter < getNMov(); iter++) {
+        for (int iter = 0; iter < NUM_ITER; iter++) {
             sourceI = rg.nextInt(tmax);
             destI = rg.nextInt(tmax);
             exam = initSolution.getTimeslot(sourceI).getRandomExam();
@@ -183,29 +181,6 @@ public class SimulatedAnnealing extends SingleSolutionMetaheuristic {
     private double antiLogDecay(double initVal, double x, double xStar) {
         double offset = initVal / (Math.log(xStar + 1));
         return initVal / (Math.log(x + 1)) - offset;
-    }
-
-    /**
-     * Returns the number of swaps allowed in the current iteration. The number
-     * of swaps decreases lineraly with the time and is 0 in the second half of
-     * the time.
-     *
-     * @return
-     */
-    private int getNSwap() {
-        int nSwap = (int) (NUM_ITER * (1 - elapsedTime / (MAX_MILLIS * FASTDECAY_TIME_FRACTION)));
-        return (nSwap < 0) ? 1 : nSwap;
-    }
-
-    /**
-     * Returns the number of exams moves allowed in the current iteration. The
-     * number of allowed moves increases linealy with the time and is set to
-     * <code>NUM_ITER</code> for the second half of the time.
-     *
-     * @return
-     */
-    private int getNMov() {
-        return NUM_ITER - getNSwap();
     }
 
     /**

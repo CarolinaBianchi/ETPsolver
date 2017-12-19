@@ -38,7 +38,6 @@ public class DeepDiveAnnealing extends SingleSolutionMetaheuristic {
 
     public DeepDiveAnnealing(Optimizer optimizer, Schedule initSolution) {
         super(optimizer, initSolution);
-        initSolution.optimizeTimeslotOrder();
         checkObjFun = initSolution.getCost();
         currentBest = checkObjFun;
         overallBest = checkObjFun;
