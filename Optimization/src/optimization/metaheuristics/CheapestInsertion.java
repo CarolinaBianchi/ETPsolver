@@ -42,7 +42,7 @@ public class CheapestInsertion extends SingleSolutionMetaheuristic {
      */
     private void optimizeTimeslotOrder() {
         initSolution.setTimeslots(optimizeTimeslotOrder(initSolution.getTimeslots()));
-        initSolution.setCost(CostFunction.getCost(initSolution.getTimeslots(), costMap));
+        initSolution.computeCost(costMap);
     }
 
     /**

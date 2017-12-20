@@ -13,10 +13,6 @@ import optimization.domain.Exam;
 import optimization.domain.Schedule;
 import optimization.domain.Timeslot;
 
-/**
- *
- * @author Carolina Bianchi
- */
 public class DeepDiveAnnealing extends SingleSolutionMetaheuristic {
 
     private final double initTemperature;
