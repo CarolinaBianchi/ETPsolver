@@ -59,14 +59,12 @@ public class SimulatedAnnealing extends SingleSolutionMetaheuristic {
         tmax = initSolution.getTmax();
         NUM_ITER = tmax / 2;
         ITER_PER_TEMPERATURE = tmax / 2;//tmax;
-        System.out.println("Initial cost" + checkObjFun);
     }
 
     @Override
     void improveInitialSol() {
         long startTime = System.currentTimeMillis();
         long maxMillis = MINUTES * 60 * 1000;
-        System.out.println("SA.initialCost: "+initSolution.getCost());
         while (elapsedTime < maxMillis) {
             for (int i = 0; i < ITER_PER_TEMPERATURE; i++) {
                 optimizeTimeslotOrder();

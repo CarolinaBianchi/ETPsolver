@@ -6,8 +6,12 @@
 package optimization.initialization;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.*;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
 import optimization.domain.Exam;
 import optimization.Optimizer;
 import optimization.domain.Schedule;
@@ -18,7 +22,6 @@ import optimization.domain.Schedule;
  */
 public class BucketInitializer extends AbstractInitializer {
 
-    private final double INITIAL_PERC = 2.0 / 3.0;  //...
     private final int STUCK = 2; //..
     private int THRESHOLD;
     private final int MOVE_TRIES;
@@ -29,11 +32,12 @@ public class BucketInitializer extends AbstractInitializer {
     private List<Exam> notYetPlaced;
     private List<Integer>[] buckets;
     int tmax;
+    private Random rg = new Random();
 
     public BucketInitializer(List<Exam> exams, int tmax, Optimizer opt, int numStudents) {
         super(exams, tmax, opt, numStudents);
         this.tmax = tmax;
-        Collections.sort(exams);
+        organizeExams();
         this.notYetPlaced = new ArrayList<>(exams);
         this.alreadyPlaced = new ArrayList<>();
         this.MOVE_TRIES = 2 * tmax;
@@ -210,5 +214,60 @@ public class BucketInitializer extends AbstractInitializer {
             System.out.print("-" + iter.next());
         }
         System.out.println("");
+    }
+
+    /**
+     * Sorts exams based on their number of conflicts, but it adds some noise.
+     * Instead of having a perfectly ordered list of exams, we shuffle groups of
+     * 5 exams.
+     */
+    private void organizeExams() {
+        Collections.sort(exams);
+        int nExams = exams.size();
+        Exam[] randomized = new Exam[nExams];
+        int[] newIndexes = getRandomSequence(nExams, 5);
+        for (int i = 0; i < nExams; i++) {
+            randomized[newIndexes[i]] = exams.get(i);
+        }
+        this.exams = new ArrayList<>(Arrays.asList(randomized));
+    }
+
+    /**
+     * Retuns an array of number from 0 (inclusive) to <code>size</code>
+     * (exclusive), in a "slightly random" order. i.e. groups of size
+     * <code>shuffleSize</code> are shuffled.
+     *
+     * @param size
+     * @return
+     */
+    private int[] getRandomSequence(int size, int shuffleSize) {
+        int j, k, tmp;
+        int[] seq = getOrderedSequence(size);
+        for (int h = 0; shuffleSize * (h + 1) < size; h++) {
+            int offset = h * shuffleSize;
+            for (int i = 0; i < shuffleSize / 2 + 1; i++) {
+                j = rg.nextInt(shuffleSize) + offset;
+                k = rg.nextInt(shuffleSize) + offset;
+                tmp = seq[j];
+                seq[j] = seq[k];
+                seq[k] = tmp;
+            }
+        }
+        return seq;
+    }
+
+    /**
+     * Returns an array containing an ordered sequence of numbers from 0
+     * (inclusive) to <code>size</code> (exclusive).
+     *
+     * @param size
+     * @return
+     */
+    private int[] getOrderedSequence(int size) {
+        int[] seq = new int[size];
+        for (int i = 0; i < size; i++) {
+            seq[i] = i;
+        }
+        return seq;
     }
 }
