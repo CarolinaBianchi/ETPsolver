@@ -6,6 +6,7 @@
 package optimization.domain;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -729,6 +730,13 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
      */
     public void computeCost() {
         this.cost = CostFunction.getCost(timeslots);
+    }
+    
+    /**
+     * Computes the cost of this schedule.
+     */
+    public void computeCost(Map<String, Integer> costMap) {
+        this.cost = CostFunction.getCost(timeslots, costMap);
     }
 
 }

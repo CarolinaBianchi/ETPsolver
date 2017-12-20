@@ -11,41 +11,53 @@ import optimization.Optimizer;
 import optimization.domain.CostFunction;
 import optimization.domain.Exam;
 import optimization.domain.Schedule;
-import optimization.domain.Timeslot;
 
-public class DeepDiveAnnealing extends SingleSolutionMetaheuristic {
+/**
+ * 
+ * @author Flavio Lorenzo
+ */
+public class DeepDiveAnnealingv2 extends SingleSolutionMetaheuristic {
 
+    private final int MINUTES = 2;
+    private final int MAX_MILLIS = MINUTES * 60 * 1000;
+    private long startTime, elapsedTime, lastResetTime;
+    private int checkObjFun;    // The objFun last time i check
+    private Random rg = new Random();
+    private int tmax;
+    private int currentBest, overallBest;
+    
+    // Simulated annealing parameters and variables
     private final double initTemperature;
     private double temperature;
     private final int ITER_PER_TEMPERATURE;
     private final int NUM_ITER; // number of moves per iter
-    private final int MINUTES = 1;
-    private final int MAX_MILLIS = MINUTES * 60 * 1000;
-    private long startTime, elapsedTime, lastResetTime;
-    /*
-    In the second part of the available time, I check every few seconds if there has been an acceptable improvement.
-     */
-    private int checkObjFun;    // The objFun last time i check
-    private Random rg = new Random();
-    private int tmax;
     private int plateauCounter;
-    private int currentBest, overallBest;
     private double k;
+    
+    // Tabu Search parameters and variables
+    private TabuList tabuList;
+    private final int TABU_START_SIZE = 10;
+    private final int MAX_MOVES = 5;
+    private int NUM_MOVES = 1;
 
-    public DeepDiveAnnealing(Optimizer optimizer, Schedule initSolution) {
+
+    public DeepDiveAnnealingv2(Optimizer optimizer, Schedule initSolution) {
         super(optimizer, initSolution);
         checkObjFun = initSolution.getCost();
         currentBest = checkObjFun;
         overallBest = checkObjFun;
         tmax = initSolution.getTmax();
+        
+        // Settings for tabu search
+        this.tabuList = new TabuList(TABU_START_SIZE);
+        
+        // Settings for simulated annealing
         initTemperature = checkObjFun/tmax;
         temperature = initTemperature;
         NUM_ITER = tmax;
         ITER_PER_TEMPERATURE = tmax/2;//tmax;
         plateauCounter = 0;
-        k = 0.998;
-        System.out.println("Real initial obj fun:" + checkObjFun);
-        
+        k = 0.998;        
     }
 
     @Override
@@ -56,8 +68,8 @@ public class DeepDiveAnnealing extends SingleSolutionMetaheuristic {
 
         while (elapsedTime < MAX_MILLIS) {
             for (int i = 0; i < ITER_PER_TEMPERATURE; i++) {
-                optimizeTimeslotOrder();
                 optimizeExamPosition();
+                optimizeTimeslotOrder();
             }
             elapsedTime = System.currentTimeMillis() - startTime;
             checkPlateau();
@@ -74,18 +86,8 @@ public class DeepDiveAnnealing extends SingleSolutionMetaheuristic {
      * current temperature.
      */
     private void optimizeExamPosition() {
-        int sourceI, destI;
-        Exam exam;
-        int delta;
         for (int iter = 0; iter < NUM_ITER; iter++) {
-            sourceI = rg.nextInt(tmax);
-            destI = rg.nextInt(tmax);
-            exam = initSolution.getTimeslot(sourceI).getRandomExam();
-            delta = CostFunction.getExamMovePenalty(exam, sourceI, destI, initSolution);
-            // If I accept the difference in the new and old obj function, I move the exam.
-            if (accept(delta)) {
-                initSolution.move(exam, sourceI, destI);
-            }
+            tabuMove();
         }
     }
     
@@ -102,60 +104,10 @@ public class DeepDiveAnnealing extends SingleSolutionMetaheuristic {
         delta = CostFunction.getTimeslotSwapPenalty(i, j, initSolution);
         if (accept(delta)) {
             initSolution.swapTimeslots(i, j);
-        }
-
-    }
-
-    /**
-     * Decides whether to accept the current change.
-     *
-     * @param delta
-     * @return
-     */
-    private boolean accept(int delta) {        
-        if (delta < 0) {
             checkIfBest();
-            return true;
         }
-        
-        return Math.exp(-delta / temperature) > rg.nextDouble();
     }
 
-    /**
-     * Updates the temperature according to an anti logarithmic decay.
-     *
-     * @param maxMillis
-     * @param elapsedTime
-     */
-    private void updateTemperature() {
-        temperature = Math.max(temperature*k, 1);
-    }
-
-    /**
-     * Checks if I'm in a plateau. When <code>checkIntervalLength</code> time
-     * has passed from the last time I checked, I check if the improvement of
-     * the obj function is satisfying (&lt-1%...), if it's not, the temperature
-     * is increased back to the initial temperature (may be too much).
-     */
-    private void checkPlateau() {
-        int actualObjFun = initSolution.getCost();
-
-        double delta = (double) checkObjFun/actualObjFun;
-        if ( getTimeFromReset() > 1 && delta < 1.001 && delta > 0.999 ) {
-            plateauCounter++;
-            if (plateauCounter == 100) {
-                plateauCounter = 0;
-                temperature *= 500*rg.nextDouble(); //100 current best
-                currentBest = -1;
-                System.out.println("Breathing... New dive!");
-                lastResetTime = System.currentTimeMillis() - startTime;
-            }
-        } else {
-            plateauCounter = 0;
-        }
-        
-        checkObjFun = actualObjFun;
-    }
 
     /**
      * Checks if the new solution is better than the best found sofar.
@@ -183,5 +135,108 @@ public class DeepDiveAnnealing extends SingleSolutionMetaheuristic {
      */
     private long getTimeFromReset() {
         return ( elapsedTime - lastResetTime ) / 1000;
+    }
+    
+    //******METHODS FOR SIMULATED ANNEALING******************
+    
+    
+    /**
+     * Decides whether to accept the current change.
+     *
+     * @param delta
+     * @return
+     */
+    private boolean accept(int delta) {        
+        if (delta < 0) {
+            return true;
+        }
+        
+        return Math.exp(-delta / temperature) > rg.nextDouble();
+    }
+    
+    /**
+     * Updates the temperature according to an anti logarithmic decay.
+     *
+     * @param maxMillis
+     * @param elapsedTime
+     */
+    private void updateTemperature() {
+        temperature = Math.max(temperature*k, 1);
+    }
+
+    /**
+     * Checks if I'm in a plateau. When <code>checkIntervalLength</code> time
+     * has passed from the last time I checked, I check if the improvement of
+     * the obj function is satisfying (&lt-1%...), if it's not, the temperature
+     * is increased back to the initial temperature (may be too much).
+     */
+    private void checkPlateau() {
+        int actualObjFun = initSolution.getCost();
+
+        double delta = (double) checkObjFun/actualObjFun;
+        if ( getTimeFromReset() > 1 && delta < 1.001 && delta > 0.999 ) {
+            plateauCounter++;
+            if (plateauCounter == 100) {
+                plateauCounter = 0;
+                temperature *= 1000*rg.nextDouble(); //100 current best
+                currentBest = -1;
+                System.out.println("Breathing... New dive!");
+                lastResetTime = System.currentTimeMillis() - startTime;
+                if(NUM_MOVES<MAX_MOVES) NUM_MOVES++;
+            }
+        } else {
+            plateauCounter = 0;
+        }
+        
+        checkObjFun = actualObjFun;
+    }
+    
+    
+    //******METHODS FOR TABU LIST LOGIC******************
+   
+    private void tabuMove() {
+        Exam ex, bestEx;
+        int sourceIndex, destIndex, bestSourceIndex, bestDestIndex;
+        int penalty, bestPenalty;
+        boolean allowMove = true;
+        bestPenalty = Integer.MAX_VALUE;
+        bestEx = null;
+        bestSourceIndex = 0;
+        bestDestIndex = 0;
+
+        for( int i = 0; i<NUM_MOVES; i++) {
+            sourceIndex = rg.nextInt(tmax);
+            destIndex = rg.nextInt(tmax);
+            ex = initSolution.getTimeslot(sourceIndex).getRandomExam();
+
+            penalty = CostFunction.getExamMovePenalty(ex, sourceIndex, destIndex, initSolution);
+            
+            if (!accept(penalty) || !initSolution.isFeasibleMove(ex, destIndex) || ( tabuList.moveIsTabu(ex, sourceIndex, destIndex) && (this.checkObjFun+penalty >= currentBest) )) {
+                allowMove = false;
+            }
+            
+            if( allowMove && penalty<bestPenalty) {
+                //System.out.println("Accept: " + penalty);
+                bestPenalty = penalty;
+                bestSourceIndex = sourceIndex;
+                bestDestIndex = destIndex;
+                bestEx = ex;
+            }
+
+            allowMove = true;
+        }
+
+        if(bestEx != null) {
+            //System.out.println("Executing");
+            executeBestMove(bestEx, bestSourceIndex, bestDestIndex);
+        }
+
+    }
+    
+    private void executeBestMove(Exam e, int src, int dest) {
+        initSolution.move(e, src, dest);
+        tabuList.updateTabuList(e, dest, src);
+        
+        checkIfBest();
     }
 }   
