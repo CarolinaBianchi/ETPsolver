@@ -25,7 +25,7 @@ public class TabuList {
     }
     
     /**
-     * Check the presence of the move in the tabu list.
+     * Check the presence of the exam move in the tabu list.
      * !!! ACHTUNG !!! - It does not check that the move is the best possible one. 
      * @param e The exam to move
      * @param src The source timeslot id
@@ -34,6 +34,17 @@ public class TabuList {
      */
     public boolean moveIsTabu(Exam e, int src, int dest) {
         return tabuList.contains( this.getMoveHash(e, src, dest));
+    }
+    
+    /**
+     * Check the presence of the timeslot move in the tabu list.
+     * !!! ACHTUNG !!! - It does not check that the move is the best possible one. 
+     * @param first The first timeslot id
+     * @param second The second timeslot id
+     * @return True - If the move is allowed, False - Otherwise
+     */
+    public boolean moveIsTabu(int first, int second) {
+        return tabuList.contains( this.getMoveHash(first, second));
     }
     
     /**
@@ -49,6 +60,20 @@ public class TabuList {
     public String getMoveHash(Exam ex, int sourceIndex, int destIndex ) {
         return sourceIndex + "-" + destIndex + "-" + ex;
     }
+    
+    /**
+     * Returns a string representing the move of exam ex from timeslot
+     *
+     * @sourceIndex to timeslot @destIndex.
+     *
+     * @param first
+     * @param second
+     * @param ex
+     * @return
+     */
+    public String getMoveHash(int first, int second ) {
+        return first + "-" + second;
+    }
 
     /**
      * Updates the tabu list. It inserts the current move at the top of the tabu
@@ -61,6 +86,32 @@ public class TabuList {
      */
     public void updateTabuList(Exam e, int src, int dest) {
         String moveHash = getMoveHash(e, src, dest);
+        
+        if (tabuList.size() < tabuListSize) {
+            if (!tabuList.contains(moveHash)) {
+                /**
+                 * I insert in the tabuList a String containing information
+                 * about the move I have to prevent
+                 */
+                tabuList.addFirst(moveHash);
+            }
+        } else if (!tabuList.contains(moveHash)) {
+            tabuList.removeLast();
+            tabuList.addFirst(moveHash);
+        }
+    }
+    
+    /**
+     * Updates the tabu list. It inserts the current move at the top of the tabu
+     * list and removes the first one if the size of the list exceeds its
+     * maximum.
+     * 
+     * @param e
+     * @param src
+     * @param dest 
+     */
+    public void updateTabuList(int first, int second) {
+        String moveHash = getMoveHash(first, second);
         
         if (tabuList.size() < tabuListSize) {
             if (!tabuList.contains(moveHash)) {

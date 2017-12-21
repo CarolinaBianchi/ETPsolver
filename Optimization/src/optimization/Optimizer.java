@@ -80,7 +80,7 @@ public class Optimizer {
      * Creates the set of metaheuristics.
      */
     private void initMetaheuristics() {
-        ssMetaheuristics.add(DeepDiveAnnealingv2.class);
+        ssMetaheuristics.add(DeepDiveAnnealingV2.class);
         // we add every class that extends SingleSolutionMetaheuristic
         //pMetaheuristics.add(GeneticAlgorithm.class);
         // we add every class that extends SingleSolutionMetaheuristic
