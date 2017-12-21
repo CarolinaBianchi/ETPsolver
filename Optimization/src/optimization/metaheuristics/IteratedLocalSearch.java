@@ -20,104 +20,114 @@ import optimization.domain.Timeslot;
  * @author roby
  */
 public class IteratedLocalSearch extends SingleSolutionMetaheuristic {
-    
-    private Optimizer   optimizer;
-    private Schedule    initSolution;
-    private Schedule    currentSolution;
-    private Schedule    currentBestSolution;
-    private double      initCost;
-    private double      currentBestCost;
-    private int         numIteration = 1000;
-    private long        elapsedTime;
-    private final long  MINUTES = 2;
-    private final long  MAX_MILLIS = MINUTES * 60 * 1000;
-    private Random      random = new Random();
-    private int         tmax;
-    
+
+    private Optimizer optimizer;
+    private Schedule initSolution;
+    private Schedule currentSolution;
+    private Schedule currentBestSolution;
+    private int initCost;
+    private int currentBestCost;
+    private int checkObjFun;
+    private int numIteration = 1;
+    private long elapsedTime;
+    private final long MINUTES = 2;
+    private final long MAX_MILLIS = MINUTES * 60 * 1000;
+    private Random random = new Random();
+    private int tmax;
+
     public IteratedLocalSearch(Optimizer optimizer, Schedule initSolution) {
         super(optimizer, initSolution);
         this.optimizer = optimizer;
         this.initSolution = Cloner.clone(initSolution);
         this.currentSolution = initSolution;
-        this.currentBestSolution = currentSolution;
-        this.initCost =  CostFunction.getCost(initSolution);
+        this.currentBestSolution = Cloner.clone(currentSolution);
+        this.initCost = CostFunction.getCost(initSolution);
+        this.checkObjFun = this.initCost;
         this.currentBestCost = this.initCost;
         this.tmax = initSolution.getTmax();
     }
-    
+
     @Override
     void improveInitialSol() {
-        
+
         long startTime = System.currentTimeMillis();
-        
-        localSearch();
+
         while (elapsedTime < MAX_MILLIS) {
-            disturbance();
+            localSearch();
             elapsedTime = System.currentTimeMillis() - startTime;
         }
-        
+
         mySolution = currentBestSolution;
-        System.out.println("IteratedLocalSearch:" + (int)currentBestSolution.getCost() + "\t");
+        System.out.println("IteratedLocalSearch:" + (int) currentBestSolution.getCost() + "\t");
     }
-    
+
     public void localSearch() {
-        
-        int sourceTimeslot, numExams, examMovePenalty;
-        boolean first, last, bestFound;
+
+        int sourceTimeslot, destTimeslot, numExams, examMovePenalty;
         Exam exam;
-        
-        first = last = bestFound = false;
-        
-        for (int i=0; (i<tmax) && (!bestFound); i++) {
-            
+
+        for (int i = 0; i < tmax; i++) {
+
             sourceTimeslot = random.nextInt(tmax); //***
             if (!currentSolution.getTimeslot(sourceTimeslot).isFree()) {
-                if (sourceTimeslot == 0)         
-                    first = true; 
-                else if (sourceTimeslot == tmax-1)  
-                    last = true; 
-                
+
                 numExams = currentSolution.getTimeslot(sourceTimeslot).getNExams();
-                
-                for (int j=0; (j<numExams) && (!bestFound); j++) {
-                    
+
+                for (int j = 0; (j < numExams); j++) {
+
                     exam = currentSolution.getTimeslot(sourceTimeslot).getRandomExam(); //***
-                    
-                    if (!last) {
-                        examMovePenalty = CostFunction.getExamMovePenalty(exam, sourceTimeslot, sourceTimeslot+1, currentSolution);
-                        if (examMovePenalty < 0) {
-                            currentSolution.move(exam, sourceTimeslot, sourceTimeslot+1);
-                            if (currentSolution.getCost() < currentBestSolution.getCost()) {
-                                currentBestSolution = Cloner.clone(currentSolution);
-                                bestFound = true;
-                                System.out.println("New currentSolution cost:" + (int)currentBestSolution.getCost() + "\t");
-                                break;
-                            }
+                    destTimeslot = getDestTimeslot(sourceTimeslot, tmax);
+                    examMovePenalty = CostFunction.getExamMovePenalty(exam, sourceTimeslot, destTimeslot, currentSolution);
+
+                    if (examMovePenalty < 0 && currentSolution.move(exam, sourceTimeslot, destTimeslot)) {
+
+                        if (currentSolution.getCost() < currentBestSolution.getCost()) {
+                            currentBestSolution = Cloner.clone(currentSolution);
+                            System.out.println("-b \t" + currentBestSolution.getCost() + "\t");
                         }
+                        System.out.println("-c \t" + currentSolution.getCost());
+                        return;
                     }
-                    if (!first) {
-                        examMovePenalty = CostFunction.getExamMovePenalty(exam, sourceTimeslot, sourceTimeslot-1, currentSolution);
-                        if (examMovePenalty < 0) {
-                            currentSolution.move(exam, sourceTimeslot, sourceTimeslot-1);
-                            if (currentSolution.getCost() < currentBestSolution.getCost()) {
-                                currentBestSolution = Cloner.clone(currentSolution);
-                                bestFound = true; 
-                                System.out.println("New currentSolution cost:" + (int)currentBestSolution.getCost() + "\t");
-                                break;
-                            }
-                        }
-                    }
-                } 
+                }
             }
         }
+        // If i get here, it means that I have found no improving moves.
+        disturbance();
     }
-    
-    public void disturbance() {
-        for (int i=0; i<numIteration; i++) {
-            currentSolution.randomMove();
-            currentSolution.randomSwap();
+
+    /**
+     * Returns the destination timeslot for this move. The destination is
+     * adjacent to the source, hence if the source is the first timeslot, the
+     * destination will be the second one, while if the source is the last
+     * timeslot, the destination will be the penultimate one. Otherwise the
+     * destination is either one timeslot befor/after the source.
+     *
+     * @param sourceTimeslot
+     * @param tmax
+     * @return
+     */
+    private int getDestTimeslot(int sourceTimeslot, int tmax) {
+        // If it is the first timeslot, the destination timeslot will be the second one
+        if (sourceTimeslot == 0) {
+            return 1;
+
+            // If the source is the last timeslot, the dest will be the penultimate one
+        } else if (sourceTimeslot == tmax - 1) {
+            return sourceTimeslot - 1;
         }
-        localSearch();
+
+        // Otherwise it will be a random timeslot right before or after the source.
+        return (random.nextBoolean()) ? sourceTimeslot + 1 : sourceTimeslot - 1;
     }
-    
+
+    /**
+     * Adds some noise to the solution.
+     */
+    public void disturbance() {
+        for (int i = 0; i < numIteration; i++) {
+            currentSolution.randomMove();
+            //currentSolution.randomSwap();
+        }
+    }
+
 }
