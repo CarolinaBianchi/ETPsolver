@@ -80,7 +80,7 @@ public class Optimizer {
      * Creates the set of metaheuristics.
      */
     private void initMetaheuristics() {
-        ssMetaheuristics.add(IteratedLocalSearch.class);
+        ssMetaheuristics.add(DeepDiveAnnealingV2.class);
         // we add every class that extends SingleSolutionMetaheuristic
         //pMetaheuristics.add(GeneticAlgorithm.class);
         // we add every class that extends SingleSolutionMetaheuristic
@@ -311,11 +311,15 @@ public class Optimizer {
         }
 
         sw.start();
+        printResult();
+        AbsoluteBestChecker.checkIfBestEver(bestSchedule);
+    }
+    
+    private void printResult(){
         int benchmark = Optimization.getBenchmark();
         DecimalFormat df = new DecimalFormat("##.00");
         double gap = 100 * ((bestSchedule.getCost() * 1.0 - benchmark * 1.0) / benchmark * 1.0);
         System.out.println("OurSolution:" + bestSchedule.getCost() + "\tBenchmark:" + benchmark + "\t gap:" + df.format(gap) + "%");
-
     }
 
 }
