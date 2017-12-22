@@ -36,7 +36,7 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
     private int plateauCounter; // The reset counter
     private double k; // The coefficient for which the temperature is multiplied 
     // (hence, decreased) after ITER_PER_TEMPERATURE iterations.
-    private final int ENHANCEMENT_LIMIT = 1000; // The limit of the temperature
+    private final int ENHANCEMENT_LIMIT = 750; // The limit of the temperature
     // enhancement performed at each reset
     private final double DELTA_RANGE = 0.001; // The range of obj funct variations
     // that increment the plateauCounter
@@ -73,7 +73,7 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         this.timeslotTabuList = new TabuList(TABU_TIMESLOT_START_SIZE);
 
         // Settings for simulated annealing
-        initTemperature = checkObjFun / tmax;
+        initTemperature = checkObjFun / (tmax*4);
         temperature = initTemperature;
         NUM_ITER = tmax;
         ITER_PER_TEMPERATURE = tmax / 2;//tmax;
