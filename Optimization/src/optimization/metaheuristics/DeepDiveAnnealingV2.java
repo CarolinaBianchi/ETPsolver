@@ -35,32 +35,30 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
     private final int NUM_ITER; // number of moves per iter
     private int plateauCounter; // The reset counter
     private double k; // The coefficient for which the temperature is multiplied 
-                      // (hence, decreased) after ITER_PER_TEMPERATURE iterations.
+    // (hence, decreased) after ITER_PER_TEMPERATURE iterations.
     private final int ENHANCEMENT_LIMIT = 1000; // The limit of the temperature
-                      // enhancement performed at each reset
+    // enhancement performed at each reset
     private final double DELTA_RANGE = 0.001; // The range of obj funct variations
-                      // that increment the plateauCounter
+    // that increment the plateauCounter
 
-    
     // Tabu Search parameters and variables
     private TabuList examTabuList, timeslotTabuList;
     private final int TABU_EXAM_START_SIZE = 10; // The starting size for the
-                           // exam tabu list
+    // exam tabu list
     private final int TABU_TIMESLOT_START_SIZE = 5; // The starting size for the
-                           // timeslot tabu list
+    // timeslot tabu list
     private final int MAX_MOVES = 5; // Maximum number of exam moves allowed 
-                            // before choosing the best one (if any).
+    // before choosing the best one (if any).
     private final int MAX_SWAPS = 3; // Maximum number of timeslot swaps allowed 
-                            //before choosing the best one (if any).
+    //before choosing the best one (if any).
     private int num_moves = 2; // Initial number of exam moves before choosing 
-                            // the best one
+    // the best one
     private int num_swaps = 1; // Initial number of timeslot swaps before choosing 
-                            // the best one
-    
+    // the best one
+
     // Iterated Local Search parameters and variables
     final private int NUM_DISTURBANCE_ITERATIONS = 50; // Number of disturbance
-                            // moves performed
-
+    // moves performed
 
     public DeepDiveAnnealingV2(Optimizer optimizer, Schedule initSolution) {
         super(optimizer, initSolution);
@@ -122,18 +120,6 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
      */
     private void optimizeTimeslotOrder() {
         tabuTSwap();
-
-        /* Regular function mode
-        
-        int delta, i, j;
-        
-        i = rg.nextInt(tmax);
-        j = rg.nextInt(tmax);
-        delta = CostFunction.getTimeslotSwapPenalty(i, j, initSolution);
-        if (accept(delta)) {
-            initSolution.swapTimeslots(i, j);
-            checkIfBest();
-        }*/
         actualObjFun = initSolution.getCost();
     }
 
@@ -155,6 +141,7 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
             currentBest = cost;
             System.out.println("New Best! c: " + currentBest + " - a: " + overallBest + " -t: " + (int) temperature);
         }
+        //System.out.println((int) temperature + "\t" + initSolution.getCost() + "\t" + overallBest);
     }
 
     /**
@@ -174,11 +161,7 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
      * @return
      */
     private boolean accept(int delta) {
-        if (delta < 0) {
-            return true;
-        }
-
-        return Math.exp(-delta / temperature) > rg.nextDouble();
+        return delta < 0 || Math.exp(-delta / temperature) > rg.nextDouble();
     }
 
     /**
@@ -208,23 +191,18 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         double delta = (double) checkObjFun / actualObjFun;
 
         // If the variation isn't significant, update the counter.
-        if ( getTimeFromReset() > 1 && delta > 1-DELTA_RANGE && delta < 1+DELTA_RANGE ) {
+        if (getTimeFromReset() > 1 && delta > 1 - DELTA_RANGE && delta < 1 + DELTA_RANGE) {
             plateauCounter++;
-
-            // If counter reached the threshold, reset the temperature.
-            if (plateauCounter == 100) {
-                plateauCounter = 0; // Reset the counter
-                temperature *= ENHANCEMENT_LIMIT*rg.nextDouble(); // Enhance temperature
+            // If I haven't improved much in the last 100 iterations, I turn up the temperature
+            if (plateauCounter % 100 == 0) {
+                temperature *= ENHANCEMENT_LIMIT * rg.nextDouble(); // Enhance temperature
                 currentBest = -1; // Reset the current best
-                System.out.println("Breathing... New dive!"); // Notify the new "dive"
+                //System.out.println("Breathing... New dive!"); // Notify the new "dive"
                 lastResetTime = System.currentTimeMillis() - startTime; // Keep track of last reset time
+
                 // If allowed, update the number of moves and swaps performed in the tabu search algorithm.
-                if (num_moves < MAX_MOVES) {
-                    num_moves++;
-                }
-                if (num_swaps < MAX_SWAPS) {
-                    num_swaps++;
-                }
+                num_moves = Math.min(num_moves + 1, MAX_MOVES);
+                num_swaps = Math.min(num_swaps + 1, MAX_SWAPS);
 
                 // Create some disturbance
                 //disturbance();
@@ -237,10 +215,12 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
     }
 
     /**
-     * Updates the time elapsed from the start of the algorithm.
+     * Returns the milliseconds elapsed from the beginning of the algorithm.
+     *
+     * @return
      */
     private void updateElapsedTime() {
-        elapsedTime = System.currentTimeMillis() - startTime;
+        this.elapsedTime = System.currentTimeMillis() - startTime;
     }
 
     //******METHODS FOR TABU LIST LOGIC******************
@@ -271,10 +251,10 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         int[] bestIndexes = {tmax, tmax, tmax};
         for (int i = 0; i < num_moves; i++) {
             srcIndex = rg.nextInt(tmax);
-            if(initSolution.getTimeslot(srcIndex).isFree()){
+            destIndex = rg.nextInt(tmax);
+            if (initSolution.getTimeslot(srcIndex).isFree() || srcIndex == destIndex) {
                 break;
             }
-            destIndex = rg.nextInt(tmax);
             examIndex = rg.nextInt(initSolution.getTimeslot(srcIndex).getNExams());
             exam = initSolution.getTimeslot(srcIndex).getExam(examIndex);
 
@@ -287,7 +267,6 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
                 bestIndexes[1] = srcIndex;
                 bestIndexes[2] = destIndex;
             }
-
         }
         return bestIndexes;
     }
@@ -314,7 +293,7 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         boolean notTabuORBest = !examTabuList.moveIsTabu(exam, srcIndex, destIndex) || (this.actualObjFun + penalty < currentBest);
         return acceptANDFeasible && notTabuORBest;
     }
-    
+
     /**
      * Executes the best move found and updates the tabu list.
      *
@@ -325,7 +304,6 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         Exam e = initSolution.getTimeslot(src).getExam(examIndex);
         initSolution.move(e, src, dest);
         examTabuList.updateTabuList(e, dest, src);
-
         checkIfBest();
     }
 
