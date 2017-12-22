@@ -20,6 +20,8 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
 
     private final int MINUTES = 3;
     private final int MAX_MILLIS = MINUTES * 60 * 1000;
+    // Respectively, the time the metaheuristic starts, the elapsed time since 
+    // the metaheuristic start and how much time has passed since the last reset
     private long startTime, elapsedTime, lastResetTime;
     private int actualObjFun, checkObjFun;    // The objFun last time i check
     private Random rg = new Random();
@@ -27,24 +29,38 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
     private int currentBest, overallBest;
 
     // Simulated annealing parameters and variables
-    private final double initTemperature;
-    private double temperature;
-    private final int ITER_PER_TEMPERATURE;
+    private final double initTemperature; // The initial temperature
+    private double temperature; // The current temperature
+    private final int ITER_PER_TEMPERATURE; // Just as the name says
     private final int NUM_ITER; // number of moves per iter
-    private int plateauCounter;
-    private double k;
+    private int plateauCounter; // The reset counter
+    private double k; // The coefficient for which the temperature is multiplied 
+                      // (hence, decreased) after ITER_PER_TEMPERATURE iterations.
+    private final int ENHANCEMENT_LIMIT = 1000; // The limit of the temperature
+                      // enhancement performed at each reset
+    private final double DELTA_RANGE = 0.001; // The range of obj funct variations
+                      // that increment the plateauCounter
 
+    
     // Tabu Search parameters and variables
     private TabuList examTabuList, timeslotTabuList;
-    private final int TABU_EXAM_START_SIZE = 10;
-    private final int TABU_TIMESLOT_START_SIZE = 5;
-    private final int MAX_MOVES = 5;
-    private final int MAX_SWAPS = 3;
-    private int num_moves = 2;
-    private int num_swaps = 1;
-
+    private final int TABU_EXAM_START_SIZE = 10; // The starting size for the
+                           // exam tabu list
+    private final int TABU_TIMESLOT_START_SIZE = 5; // The starting size for the
+                           // timeslot tabu list
+    private final int MAX_MOVES = 5; // Maximum number of exam moves allowed 
+                            // before choosing the best one (if any).
+    private final int MAX_SWAPS = 3; // Maximum number of timeslot swaps allowed 
+                            //before choosing the best one (if any).
+    private int num_moves = 2; // Initial number of exam moves before choosing 
+                            // the best one
+    private int num_swaps = 1; // Initial number of timeslot swaps before choosing 
+                            // the best one
+    
     // Iterated Local Search parameters and variables
-    final private int NUM_DISTURBANCE_ITERATIONS = 50;
+    final private int NUM_DISTURBANCE_ITERATIONS = 50; // Number of disturbance
+                            // moves performed
+
 
     public DeepDiveAnnealingV2(Optimizer optimizer, Schedule initSolution) {
         super(optimizer, initSolution);
@@ -192,13 +208,13 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         double delta = (double) checkObjFun / actualObjFun;
 
         // If the variation isn't significant, update the counter.
-        if (getTimeFromReset() > 1 && delta < 1.001 && delta > 0.999) {
+        if ( getTimeFromReset() > 1 && delta > 1-DELTA_RANGE && delta < 1+DELTA_RANGE ) {
             plateauCounter++;
 
             // If counter reached the threshold, reset the temperature.
             if (plateauCounter == 100) {
                 plateauCounter = 0; // Reset the counter
-                temperature *= 1000 * rg.nextDouble(); // Enhance temperature
+                temperature *= ENHANCEMENT_LIMIT*rg.nextDouble(); // Enhance temperature
                 currentBest = -1; // Reset the current best
                 System.out.println("Breathing... New dive!"); // Notify the new "dive"
                 lastResetTime = System.currentTimeMillis() - startTime; // Keep track of last reset time
@@ -255,6 +271,9 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         int[] bestIndexes = {tmax, tmax, tmax};
         for (int i = 0; i < num_moves; i++) {
             srcIndex = rg.nextInt(tmax);
+            if(initSolution.getTimeslot(srcIndex).isFree()){
+                break;
+            }
             destIndex = rg.nextInt(tmax);
             examIndex = rg.nextInt(initSolution.getTimeslot(srcIndex).getNExams());
             exam = initSolution.getTimeslot(srcIndex).getExam(examIndex);
