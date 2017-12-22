@@ -18,7 +18,7 @@ import optimization.domain.Schedule;
  */
 public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
 
-    private final int MINUTES = 2;
+    private final int MINUTES = 3;
     private final int MAX_MILLIS = MINUTES * 60 * 1000;
     private long startTime, elapsedTime, lastResetTime;
     private int actualObjFun, checkObjFun;    // The objFun last time i check
@@ -36,11 +36,15 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
     
     // Tabu Search parameters and variables
     private TabuList examTabuList, timeslotTabuList;
-    private final int TABU_START_SIZE = 10;
+    private final int TABU_EXAM_START_SIZE = 10;
+    private final int TABU_TIMESLOT_START_SIZE = 5;
     private final int MAX_MOVES = 5;
     private final int MAX_SWAPS = 3;
     private int num_moves = 2;
     private int num_swaps = 1;
+    
+    // Iterated Local Search parameters and variables
+    final private int NUM_DISTURBANCE_ITERATIONS = 50;
 
 
     public DeepDiveAnnealingV2(Optimizer optimizer, Schedule initSolution) {
@@ -52,8 +56,8 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         tmax = initSolution.getTmax();
         
         // Settings for tabu search
-        this.examTabuList = new TabuList(TABU_START_SIZE);
-        this.timeslotTabuList = new TabuList(TABU_START_SIZE);
+        this.examTabuList = new TabuList(TABU_EXAM_START_SIZE);
+        this.timeslotTabuList = new TabuList(TABU_TIMESLOT_START_SIZE);
         
         // Settings for simulated annealing
         initTemperature = checkObjFun/tmax;
@@ -207,6 +211,9 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
                 // If allowed, update the number of moves and swaps performed in the tabu search algorithm.
                 if(num_moves<MAX_MOVES) num_moves++;
                 if(num_swaps<MAX_SWAPS) num_swaps++;
+                
+                // Create some disturbance
+                //disturbance();
             }
         } else {
             plateauCounter = 0;
@@ -303,5 +310,18 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         timeslotTabuList.updateTabuList(dest, src);
 
         checkIfBest();
+    }
+    
+    //******METHODS FOR ITERATED LOCAL SEARCH LOGIC******************
+    
+    /**
+     * Adds some noise to the solution.
+     */
+    public void disturbance() {
+        for (int i = 0; i < NUM_DISTURBANCE_ITERATIONS; i++) {
+            initSolution.randomMove();
+        }
+        
+        this.checkIfBest();
     }
 }   

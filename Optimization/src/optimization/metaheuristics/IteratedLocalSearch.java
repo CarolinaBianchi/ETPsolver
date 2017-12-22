@@ -28,7 +28,7 @@ public class IteratedLocalSearch extends SingleSolutionMetaheuristic {
     private int initCost;
     private int currentBestCost;
     private int checkObjFun;
-    private int numIteration = 1;
+    private int numIteration = 5;
     private long elapsedTime;
     private final long MINUTES = 2;
     private final long MAX_MILLIS = MINUTES * 60 * 1000;
@@ -76,15 +76,12 @@ public class IteratedLocalSearch extends SingleSolutionMetaheuristic {
                 for (int j = 0; (j < numExams); j++) {
 
                     exam = currentSolution.getTimeslot(sourceTimeslot).getRandomExam(); //***
-                    destTimeslot = getDestTimeslot(sourceTimeslot, tmax);
+                    destTimeslot = random.nextInt(tmax); //getDestTimeslot(sourceTimeslot, tmax);
                     examMovePenalty = CostFunction.getExamMovePenalty(exam, sourceTimeslot, destTimeslot, currentSolution);
 
                     if (examMovePenalty < 0 && currentSolution.move(exam, sourceTimeslot, destTimeslot)) {
-
-                        if (currentSolution.getCost() < currentBestSolution.getCost()) {
-                            currentBestSolution = Cloner.clone(currentSolution);
-                            System.out.println("-b \t" + currentBestSolution.getCost() + "\t");
-                        }
+                        checkIfBest();
+                        
                         System.out.println("-c \t" + currentSolution.getCost());
                         return;
                     }
@@ -128,6 +125,29 @@ public class IteratedLocalSearch extends SingleSolutionMetaheuristic {
             currentSolution.randomMove();
             //currentSolution.randomSwap();
         }
+        
+        //timeslotSwap();
     }
+    
+    public void timeslotSwap() {
+        int delta, i, j;
+        
+        i = random.nextInt(tmax);
+        j = random.nextInt(tmax);
+        delta = CostFunction.getTimeslotSwapPenalty(i, j, initSolution);
+        if (delta<0) {
+            initSolution.swapTimeslots(i, j);
+            checkIfBest();
+        }
+    }
+
+    private void checkIfBest() {
+        if (currentSolution.getCost() < currentBestSolution.getCost()) {
+            currentBestSolution = Cloner.clone(currentSolution);
+            System.out.println("-b \t" + currentBestSolution.getCost() + "\t");
+        }    
+    }
+    
+    
 
 }
