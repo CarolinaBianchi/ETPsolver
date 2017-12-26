@@ -13,10 +13,6 @@ import optimization.domain.Exam;
 import optimization.domain.Schedule;
 import optimization.domain.Timeslot;
 
-/**
- *
- * @author Carolina Bianchi
- */
 public class DeepDiveAnnealing extends SingleSolutionMetaheuristic {
 
     private final double initTemperature;
@@ -38,7 +34,6 @@ public class DeepDiveAnnealing extends SingleSolutionMetaheuristic {
 
     public DeepDiveAnnealing(Optimizer optimizer, Schedule initSolution) {
         super(optimizer, initSolution);
-        initSolution.optimizeTimeslotOrder();
         checkObjFun = initSolution.getCost();
         currentBest = checkObjFun;
         overallBest = checkObjFun;

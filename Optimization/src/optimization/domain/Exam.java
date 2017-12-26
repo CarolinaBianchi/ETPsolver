@@ -121,6 +121,9 @@ public class Exam implements Comparable<Exam>, Cloneable {
         return clone;
     }
 
+    public int conflictingExamsSize(){
+        return this.conflictingExams.size();
+    }
     @Override
     public int compareTo(Exam o) {
         return -(this.conflictingExams.size() - o.getConflictingExams().size());

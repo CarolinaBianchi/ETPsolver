@@ -8,6 +8,7 @@ package optimization.domain;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 
 /**
@@ -16,6 +17,7 @@ import java.util.Random;
  * @author Carolina Bianchi
  */
 public class Timeslot implements Cloneable {
+
     private List<Exam> exams;
     private int numCollisions;
     private int timeslotID;
@@ -28,7 +30,7 @@ public class Timeslot implements Cloneable {
     public List<Exam> getExams() {
         return this.exams;
     }
-    
+
     public int getTimeslotID() {
         return this.timeslotID;
     }
@@ -40,8 +42,8 @@ public class Timeslot implements Cloneable {
     public void setCollisions(int n) {
         this.numCollisions = n;
     }
-    
-    public void setTimeslotID( int tID) {
+
+    public void setTimeslotID(int tID) {
         this.timeslotID = tID;
     }
 
@@ -91,7 +93,7 @@ public class Timeslot implements Cloneable {
      * @return
      */
     public boolean isCompatible(Exam e) {
-        if(isFree()){
+        if (isFree()) {
             return true;
         }
         boolean compatible = true;
@@ -131,13 +133,46 @@ public class Timeslot implements Cloneable {
         }
         return count;
     }
-    
+
     /**
      * Returns the number of exams in the timeslot.
-     * @return 
+     *
+     * @return
      */
-    public int getNExams(){
+    public int getNExams() {
         return this.exams.size();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Timeslot other = (Timeslot) obj;
+        if (!Objects.equals(this.exams, other.exams)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Because an exam is in one and only one timeslot, the timeslot can be
+     * identified by the id of its first exam univocally.
+     *
+     * @return
+     */
+    @Override
+    public int hashCode() {
+        if (this.exams.isEmpty()) {
+            return 0;
+        }
+        return this.exams.get(0).getId() + 1;
     }
 
     @Override
