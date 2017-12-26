@@ -36,8 +36,8 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
         System.out.println("Genetic Algorithm");
 
         calcObjFunctions();
-        //invertTimeslots();
-        startAlgorithm();
+        multipleSwap();
+        //startAlgorithm();
         mySolution = findBestSchedule();
         System.out.println("OBJfunction value: " + mySolution.getCost());
     }
@@ -169,5 +169,13 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
             parent1.tryCrossover(parent2.getRandomTimeslot().getExams());
         }
         //System.out.println("DoCrossover "+ (oldCost!=parent1.getCost())+ "| "+oldCost+" - "+ parent1.getCost());
+    }
+    
+    /**
+     * Takes a random schedule and it tries to do a random number of swaps among 
+     * conflicting exams in that schedule.     * 
+     */
+    private void multipleSwap(){
+        getRandomSchedule().multipleSwaps(1+rnd.nextInt(4));
     }
 }

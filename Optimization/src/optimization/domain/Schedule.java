@@ -5,8 +5,15 @@
  */
 package optimization.domain;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Class that represents a Schedule.
@@ -147,6 +154,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
      * @param ex
      * @param source
      * @param dest
+     * @return
      */
     public boolean move(Exam ex, Timeslot source, Timeslot dest) {
         if (dest.isCompatible(ex)) {
@@ -163,8 +171,9 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
      * Moves an exam from a source time slot to a destination.
      *
      * @param ex
-     * @param source
-     * @param dest
+     * @param sourceI
+     * @param destI
+     * @return
      */
     public boolean move(Exam ex, int sourceI, int destI) {
         return move(ex, timeslots[sourceI], timeslots[destI]);
@@ -332,7 +341,6 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         ex1 = tj.getRandomExam();
         ex2 = tk.getRandomExam();
         if (checkFeasibleSwap(tj, ex1, tk, ex2)) {
-            //System.out.println("Successful swap");
             swap(tj, ex1, tk, ex2);
             return true;
         }
@@ -381,6 +389,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
 
     /**
      * Returns true if the Exam <code>exam</code> can be moved to the Timeslot
+     *
      * @<code>destIndex</code>.
      *
      * @param exam
@@ -515,7 +524,6 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         return s;
     }
 
-    //------------------------------------ Genetic algorithm-------------------------------------
     /**
      * Schedules with lower value of the objective function are put firsts
      *
@@ -766,6 +774,209 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
      */
     public void computeCost() {
         this.cost = CostFunction.getCost(timeslots);
+    }
+
+    /**
+     * Takes a random exam in a random timeslots and look for its conflicting
+     * exams. If there are conflicting exams, it selects a number of exams equal
+     * to the minimum between <code>nSwaps</code> and the number of conflicting
+     * exams. Builds swappingExams, an HashMap in which for each exam correspond
+     * its timeslot, and it finds out if it's possible to do the swap.
+     *
+     * @param nSwaps
+     */
+    public void multipleSwaps(int nSwaps) {
+        Timeslot candidateTimeslot = getRandomTimeslot();
+        Exam candidate = candidateTimeslot.getRandomExam();
+        Set<Integer> conflictingExams = candidate.getConflictingExams();
+        if (conflictingExams.isEmpty()) {
+            return;
+        }
+        nSwaps = Math.min(nSwaps, conflictingExams.size());
+        int[] swappingExamsIDs = getSwappingExamsIDs(conflictingExams, nSwaps);
+        Map<Exam, Timeslot> swappingExams = createSwappingExams(swappingExamsIDs, candidate, candidateTimeslot);
+        if (checkFeasibleSwaps(swappingExams)) {
+            doMultipleSwaps(swappingExams);
+        }
+
+    }
+
+    /**
+     * Retrieves <cide>nSwaps</code> IDs of exams among the ones in conflictinf
+     * exams.
+     *
+     * @param conflictingExams
+     * @param nSwaps
+     * @return
+     */
+    private int[] getSwappingExamsIDs(Set<Integer> conflictingExams, int nSwaps) {
+        Integer[] examPositions = getRandomPositions(nSwaps, conflictingExams.size());
+        int[] examsId = new int[nSwaps];
+        int currentPosition = 0;
+        int counter = 0;
+        for (Integer eId : conflictingExams) {
+            for (Integer ePosition : examPositions) {
+                if (ePosition == currentPosition) {
+                    examsId[counter] = eId;
+                    counter++;
+                    break;
+                }
+            }
+            currentPosition++;
+        }
+        return examsId;
+    }
+
+    /**
+     * Retrives an array of <code>nSwaps</code> differenr random positions
+     * between 0 and <code>length</code>
+     *
+     * @param nSwaps
+     * @param length
+     * @return
+     */
+    private Integer[] getRandomPositions(int nSwaps, int length) {
+        Random rnd = new Random();
+        Integer[] randomPositions = new Integer[nSwaps];
+        for (int i = 0; i < nSwaps; i++) {
+            randomPositions[i] = rnd.nextInt(length);
+            if (i != 0) {
+                checkPosition(randomPositions, i, length);
+            }
+
+        }
+        return randomPositions;
+    }
+
+    /**
+     * If the found position is already saved in <code>randomPosition</code> it
+     * changes it with a new different one.
+     *
+     * @param randomPositions
+     * @param index
+     * @param length
+     */
+    private void checkPosition(Integer[] randomPositions, int index, int length) {
+        Random rnd = new Random();
+        for (int j = 0; j < index; j++) {
+            if (index != j && Objects.equals(randomPositions[index], randomPositions[j])) {
+                randomPositions[index] = rnd.nextInt(length);
+                checkPosition(randomPositions, index, length);
+            }
+        }
+    }
+
+    /**
+     * Returns a Map in which for each exam there is the timeslot in which it is
+     * scheduled.
+     *
+     * @param eID
+     * @param candidate
+     * @param candidateTimeslot
+     * @return
+     */
+    private Map<Exam, Timeslot> createSwappingExams(int[] eID, Exam candidate, Timeslot candidateTimeslot) {
+        Map<Exam, Timeslot> swappingExams = new HashMap<>();
+        swappingExams.put(candidate, candidateTimeslot);
+        for (int i = 0; i < eID.length; i++) {
+            Timeslot t = getTimeslotByEID(eID[i]);
+            Exam e = t.getExamByID(eID[i]);
+            swappingExams.put(e, t);
+        }
+        return swappingExams;
+    }
+
+    /**
+     * Retrieves the timeslot in which there is the exam with ID
+     * <code>eId</code>
+     *
+     * @param eId
+     * @return
+     */
+    private Timeslot getTimeslotByEID(int eId) {
+        for (Timeslot t : timeslots) {
+            if (t.contains(eId)) {
+                return t;
+            }
+        }
+        return null;
+
+    }
+
+    /**
+     * Returns if multiple swaps are feasible and the improve the cost function.
+     *
+     * @param swappingExams
+     * @return
+     */
+    private boolean checkFeasibleSwaps(Map<Exam, Timeslot> swappingExams) {
+        List<Exam> exams = createExamList(swappingExams);
+        int counter = 0;
+        for (int i = 0; i < exams.size(); i++) {
+            Exam e1 = exams.get(i);
+            Exam e2 = (i == exams.size() - 1) ? exams.get(0) : exams.get(i + 1);
+            if (checkSwap(swappingExams.get(e2), e2, e1)) {
+                counter++;
+            }
+        }
+        return counter == exams.size();
+    }
+
+    /**
+     * Retrives a list of exams from a map in which for eaxh exam there is the
+     * correspondant timeslot.
+     *
+     * @param swappingExams
+     * @return
+     */
+    private List<Exam> createExamList(Map<Exam, Timeslot> swappingExams) {
+        List<Exam> exams = new ArrayList<>();
+        for (Exam e : swappingExams.keySet()) {
+            exams.add(e);
+        }
+        return exams;
+    }
+
+    /**
+     * Does multiple swaps among exams contained in <code>swappingExams</code>
+     * and it updates the value of the cost function.
+     *
+     * @param swappingExams
+     */
+    private void doMultipleSwaps(Map<Exam, Timeslot> swappingExams) {
+        List<Exam> exams = createExamList(swappingExams);
+        int penalty = 0;
+        for (int i = 0; i < exams.size(); i++) {
+            Exam e1 = exams.get(i);
+            Exam e2 = (i == exams.size() - 1) ? exams.get(0) : exams.get(i + 1);
+            Timeslot src = swappingExams.get(e1);
+            Timeslot dest = swappingExams.get(e2);
+            penalty += CostFunction.getExamMovePenalty(e1, src.getTimeslotID(), dest.getTimeslotID(), timeslots);
+            src.removeExam(e1);
+            dest.addExam(e1);
+        }
+        if (penalty < 0) {
+            updateCost(penalty);
+        }else{
+            undoSwaps(swappingExams);
+        }
+        
+    }
+    
+    /**
+     * It undoes the operation of previous multiple swaps done using the map swappingExams
+     * @param swappingExams 
+     */
+    private void undoSwaps(Map<Exam, Timeslot> swappingExams) {
+        List<Exam> exams = createExamList(swappingExams);        
+        for(int i=0; i<exams.size();i++){
+            Exam e1 = exams.get(i);
+            Exam e2 = (i == exams.size() - 1) ? exams.get(0) : exams.get(i + 1);
+            Timeslot dest = swappingExams.get(e1);
+            Timeslot src = swappingExams.get(e2);
+            src.removeExam(e1);
+            dest.addExam(e1);
+        }
     }
 
 }

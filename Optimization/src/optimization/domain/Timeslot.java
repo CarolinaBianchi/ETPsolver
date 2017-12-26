@@ -6,13 +6,9 @@
 package optimization.domain;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Class that represents a Timeslot.
@@ -122,6 +118,7 @@ public class Timeslot implements Cloneable {
      * conflicting exams (represented by the conflictWeights) and this timeslot.
      * [TO DO!!!!]
      *
+     * @param conflictWeights
      * @return
      */
     public int conflictWeight(Map<Integer, Integer> conflictWeights) {
@@ -153,7 +150,6 @@ public class Timeslot implements Cloneable {
         return t;
     }
 
-    //--------------------- Genetic algorithm----------------------------------
     /**
      * Returns true if the exam <code>e</code> is assigned to the timeslot
      *
@@ -162,6 +158,20 @@ public class Timeslot implements Cloneable {
      */
     public boolean contains(Exam e) {
         return this.exams.contains(e);
+    }
+    
+    /**
+     * Returns true if the exam  ID <code>eID</code> is assigned to the timeslot
+     * @param eID
+     * @return 
+     */
+    public boolean contains(int eID){
+       for(Exam e:exams){
+           if(e.getId()==eID){
+               return true;
+           }
+       }
+       return false;
     }
 
     /**
@@ -191,6 +201,13 @@ public class Timeslot implements Cloneable {
         addExams(newExams);
     }
     
+    /**
+     * For each exam in <code>toInsert</code>, if the timeslot doesn't contain it and 
+     * it is compatible with it, it assign the exam to the timeslot and it also add it
+     * to the list of positioned exams.
+     * @param toInsert
+     * @return 
+     */
     public List<Exam> tryInsertExams(List<Exam> toInsert){
         List<Exam> positioned=new ArrayList<>();
         for(Exam e:toInsert){
@@ -200,6 +217,20 @@ public class Timeslot implements Cloneable {
             }
         }
         return positioned;
+    }
+    
+    /**
+     * Returns the Exam with ID <code>eId</code> 
+     * @param eId
+     * @return 
+     */
+    public Exam getExamByID(int eId){
+        for(Exam e:exams){
+            if(e.getId()==eId){
+                return e;
+            }
+        }
+        return null;
     }
 
     @Override

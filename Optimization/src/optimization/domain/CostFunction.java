@@ -185,27 +185,30 @@ public interface CostFunction {
         }
         return penalty;
     }
-    
-    
+
     /**
-     * Returns the cost of inverting the order of timeslots between <code>startPoint</code> and 
-     * <code>endPoint</code> in schedule <code>s</code>.
+     * Returns the cost of inverting the order of timeslots between
+     * <code>startPoint</code> and <code>endPoint</code> in schedule
+     * <code>s</code>.
+     *
      * @param startPoint
      * @param endPoint
      * @param s
-     * @return 
+     * @return
      */
     static public int getInvertionTimeslotsPenalty(int startPoint, int endPoint, Schedule s) {
         return getInvertionTimeslotsPenalty(startPoint, endPoint, s.getTimeslots());
     }
 
     /**
-     * Returns the cost of inverting the order of timeslots between <code>startPoint</code> and 
-     * <code>endPoint</code> in the array of timeslots <code>timeslots</code>.
+     * Returns the cost of inverting the order of timeslots between
+     * <code>startPoint</code> and <code>endPoint</code> in the array of
+     * timeslots <code>timeslots</code>.
+     *
      * @param startPoint
      * @param endPoint
      * @param timeslots
-     * @return 
+     * @return
      */
     static public int getInvertionTimeslotsPenalty(int startPoint, int endPoint, Timeslot[] timeslots) {
         int penalty = 0;
@@ -221,18 +224,19 @@ public interface CostFunction {
         }
         return penalty;
     }
-    
-    
+
     /**
-     * Calculates the total penalty generated in case there is an inversion in <code>timeslots</code>
-     * between the points <code>startPoint</code> and <code>endPoint</code>. It consider the penalty of the timeslot
-     * and it virtually changed the order to simulate the inverted array of timeslots.
+     * Calculates the total penalty generated in case there is an inversion in
+     * <code>timeslots</code> between the points <code>startPoint</code> and
+     * <code>endPoint</code>. It consider the penalty of the timeslot and it
+     * virtually changed the order to simulate the inverted array of timeslots.
+     *
      * @param startPoint
      * @param endPoint
      * @param inversionIndex
      * @param index
      * @param timeslots
-     * @return 
+     * @return
      */
     static int calcRepositioningPenalty(int startPoint, int endPoint, int inversionIndex, int index, Timeslot[] timeslots) {
         int penalty = 0;

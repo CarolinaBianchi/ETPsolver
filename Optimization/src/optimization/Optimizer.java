@@ -82,9 +82,9 @@ public class Optimizer {
      * Creates the set of metaheuristics.
      */
     private void initMetaheuristics() {
-        ssMetaheuristics.add(TabuSearchAlgorithm.class);
+        //ssMetaheuristics.add(TabuSearchAlgorithm.class);
         // we add every class that extends SingleSolutionMetaheuristic
-        //pMetaheuristics.add(GeneticAlgorithm.class);
+        pMetaheuristics.add(GeneticAlgorithm.class);
         // we add every class that extends SingleSolutionMetaheuristic
          //ssMetaheuristics.add(SimulatedAnnealing.class);
     }
@@ -192,9 +192,9 @@ public class Optimizer {
      * reset and the initializers are run again.
      */
     private void checkAllPMetaheuristics() {
-        if (this.initialSchedules.size() < PopulationMetaheuristic.INITIAL_POP_SIZE) {
-            return;
-        }
+//        if (this.initialSchedules.size() < PopulationMetaheuristic.INITIAL_POP_SIZE) {
+//            return;
+//        }
         Set<Thread> threadPool = new HashSet<>(3);
         /* Each time the minumum number of initial solutions is reached, 3 
         (random number) instances for each population metaheuristic that we have
