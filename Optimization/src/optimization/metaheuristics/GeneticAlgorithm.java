@@ -22,7 +22,7 @@ import optimization.domain.Schedule;
 public class GeneticAlgorithm extends PopulationMetaheuristic {
 
     private List<Schedule> population;
-    private static final int MINUTES = 3;
+    private static final int MINUTES = 2;
     private static Random rnd;
 
     public GeneticAlgorithm(Optimizer optimizer, List<Schedule> initialPopulation) {
@@ -34,12 +34,8 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
     @Override
     void improveInitialSol() {
         System.out.println("Genetic Algorithm");
-
-        calcObjFunctions();
-        multipleSwap();
-        //startAlgorithm();
+        startAlgorithm();
         mySolution = findBestSchedule();
-        System.out.println("OBJfunction value: " + mySolution.getCost());
     }
 
     /**
@@ -50,7 +46,9 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
         long elapsedTime = 0;
         long totalTime = MINUTES * 60 * 1000;
         while (elapsedTime < totalTime) {
-            switch (rnd.nextInt(4)) {
+            multipleSwaps();
+            crossover();
+            switch (rnd.nextInt(3)) {
                 case 0:
                     mutateExams();
                     break;
@@ -60,23 +58,10 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
                 case 2:
                     invertTimeslots();
                     break;
-                case 3:
-                    doCrossover();
-                    break;
             }
 
             elapsedTime = System.currentTimeMillis() - startTime;
 
-        }
-    }
-
-    /**
-     * Calculates the value of the objective function for each schedule in the
-     * <code>population</code>
-     */
-    private void calcObjFunctions() {
-        for (Schedule s : population) {
-            s.setCost(CostFunction.getCost(s));
         }
     }
 
@@ -87,11 +72,8 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
      *
      * @return
      */
-    private void mutateExams() {
-        Schedule s = getRandomSchedule();
-        int oldCost=s.getCost();
-        s.mutateExams();
-        //System.out.println("MutateExams "+ (oldCost!=s.getCost())+ "| "+oldCost+" - "+ s.getCost());
+    private void mutateExams() {       
+        getRandomSchedule().mutateExams();
     }
 
     /**
@@ -99,10 +81,7 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
      * reduces the penalty.
      */
     private void mutateTimeslots() {
-        Schedule s = getRandomSchedule();
-        int oldCost=s.getCost();
-        s.tryMutateTimeslots();
-        //System.out.println("MutateTimeslots "+ (oldCost!=s.getCost())+ "| "+oldCost+" - "+ s.getCost());
+        getRandomSchedule().tryMutateTimeslots();
     }
 
     /**
@@ -120,12 +99,10 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
      */
     private void invertTimeslots() {
         Schedule s = getRandomSchedule();
-        int oldCost=s.getCost();
         int[] cutPoints = getRandomCutPoints(s.getTmax());
         if ((cutPoints[1] - cutPoints[0]) > 1) {
             s.tryInvertTimeslots(cutPoints);
         }
-        //System.out.println("InvertTimeslots "+ (oldCost!=s.getCost())+ "| "+oldCost+" - "+ s.getCost());
     }
 
     /**
@@ -161,21 +138,19 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
      * position of this exam in <code>parent1</code> and tries to add there the
      * other exams previously found.
      */
-    private void doCrossover() {
+    private void crossover() {
         Schedule parent1 = getRandomSchedule();
-        int oldCost=parent1.getCost();
         Schedule parent2 = getRandomSchedule();
         if (parent1 != parent2) {
             parent1.tryCrossover(parent2.getRandomTimeslot().getExams());
         }
-        //System.out.println("DoCrossover "+ (oldCost!=parent1.getCost())+ "| "+oldCost+" - "+ parent1.getCost());
     }
     
     /**
      * Takes a random schedule and it tries to do a random number of swaps among 
      * conflicting exams in that schedule.     * 
      */
-    private void multipleSwap(){
+    private void multipleSwaps(){
         getRandomSchedule().multipleSwaps(1+rnd.nextInt(4));
     }
 }

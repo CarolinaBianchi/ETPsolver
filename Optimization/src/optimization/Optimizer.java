@@ -68,9 +68,9 @@ public class Optimizer {
      * thread.
      */
     private void initInitializers() {
-        //for (int i = 0; i < 10; i++) {
-        initializers.add(new BucketInitializer(Cloner.clone(exams), tmax, this, this.students.size()));
-        //}
+        for (int i = 0; i < 10; i++) {
+            initializers.add(new BucketInitializer(Cloner.clone(exams), tmax, this, this.students.size()));
+        }
         joinThreads(initializers);
 
     }
@@ -81,9 +81,9 @@ public class Optimizer {
     private void initMetaheuristics() {
         //ssMetaheuristics.add(TabuSearchAlgorithm.class);
         // we add every class that extends SingleSolutionMetaheuristic
-        //pMetaheuristics.add(GeneticAlgorithm.class);
+        pMetaheuristics.add(GeneticAlgorithm.class);
         // we add every class that extends SingleSolutionMetaheuristic
-        ssMetaheuristics.add(SimulatedAnnealing.class);
+        ssMetaheuristics.add(DeepDiveAnnealingV2.class);
     }
 
     /**
@@ -192,9 +192,9 @@ public class Optimizer {
      * reset and the initializers are run again.
      */
     private void checkAllPMetaheuristics() {
-//        if (this.initialSchedules.size() < PopulationMetaheuristic.INITIAL_POP_SIZE) {
-//            return;
-//        }
+        if (this.initialSchedules.size() < PopulationMetaheuristic.INITIAL_POP_SIZE) {
+            return;
+        }
         Set<Thread> threadPool = new HashSet<>(3);
         /* Each time the minumum number of initial solutions is reached, 3 
         (random number) instances for each population metaheuristic that we have
@@ -212,9 +212,9 @@ public class Optimizer {
         }
         //}
         joinThreads(threadPool);
-        synchronized (initialSchedules) {
-            this.initialSchedules = new ArrayList<>();
-        }
+//        synchronized (initialSchedules) {
+//            this.initialSchedules = new ArrayList<>();
+//        }
         //run(); to run again the initializers
     }
 
@@ -236,14 +236,25 @@ public class Optimizer {
         if (mySolution.isPreprocessed()) {
             mySolution.setPreprocessed(false);
             startMetaheuristics(mySolution);
-            bestSchedule = mySolution;
+            if (bestSchedule == null || mySolution.getCost() < bestSchedule.getCost()) {
+                bestSchedule = mySolution;
+            }
             /*
-            Case 2: The solution comes from a metaheuristic.
+            Case 2: The solution comes from a SMetaheuristic.
              */
-        } else if (bestSchedule.getCost() == 0 || mySolution.getCost() < bestSchedule.getCost()) {
+        } else if (mySolution.isSSProcessed()) {
+            mySolution.setSSProcessed(false);
+            synchronized (initialSchedules) {
+                this.initialSchedules.add(mySolution);
+            }
+            checkAllPMetaheuristics();
+
+        }
+        if (mySolution.getCost() < bestSchedule.getCost()) {
             bestSchedule = mySolution;
             writeSolution();
         }
+
     }
 
     /**
@@ -256,12 +267,12 @@ public class Optimizer {
      */
     private void startMetaheuristics(Schedule mySolution) {
 
-        synchronized (initialSchedules) {
-            this.initialSchedules.add(mySolution);
-        }
+//        synchronized (initialSchedules) {
+//            this.initialSchedules.add(mySolution);
+//        }
         bestSchedule = mySolution;
         runAllSSMetaheuristics(mySolution);
-        checkAllPMetaheuristics();
+        //checkAllPMetaheuristics();
     }
 
     /**
@@ -313,8 +324,8 @@ public class Optimizer {
         printResult();
         AbsoluteBestChecker.checkIfBestEver(bestSchedule);
     }
-    
-    private void printResult(){
+
+    private void printResult() {
         int benchmark = Optimization.getBenchmark();
         DecimalFormat df = new DecimalFormat("##.00");
         double gap = 100 * ((bestSchedule.getCost() * 1.0 - benchmark * 1.0) / benchmark * 1.0);

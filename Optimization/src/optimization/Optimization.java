@@ -68,7 +68,7 @@ public class Optimization {
         BENCHMARKS.put("instance07", 28372); 
     }
 
-    static int getBenchmark() {
+    static int getBenchmark() {        
         return BENCHMARKS.get(instance);
     }
 }

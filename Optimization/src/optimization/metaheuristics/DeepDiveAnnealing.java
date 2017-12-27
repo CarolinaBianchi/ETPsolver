@@ -165,6 +165,7 @@ public class DeepDiveAnnealing extends SingleSolutionMetaheuristic {
         boolean isBest = false;
         if ( cost < overallBest) {
             mySolution = Cloner.clone(initSolution);
+            mySolution.setSSProcessed(true);
             overallBest = cost;
             isBest = true;
         } else if( ( currentBest < 0 || cost < currentBest ) && getTimeFromReset()>0.5 ) {

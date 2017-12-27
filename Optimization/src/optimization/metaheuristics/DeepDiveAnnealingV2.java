@@ -131,6 +131,7 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         boolean isBest = false;
         if (cost < overallBest) {
             mySolution = Cloner.clone(initSolution);
+            mySolution.setSSProcessed(true);
             overallBest = cost;
             isBest = true;
         } else if ((currentBest < 0 || cost < currentBest) && getTimeFromReset() > 0.5) {
@@ -139,7 +140,7 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         if (isBest) {
             plateauCounter = 0;
             currentBest = cost;
-            System.out.println("New Best! c: " + currentBest + " - a: " + overallBest + " -t: " + (int) temperature);
+            //System.out.println("New Best! c: " + currentBest + " - a: " + overallBest + " -t: " + (int) temperature);
         }
         //System.out.println((int) temperature + "\t" + initSolution.getCost() + "\t" + overallBest);
     }

@@ -6,9 +6,7 @@
 package optimization.domain;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,7 +25,8 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     private int cost;
     private int numStudents;
     private boolean cheapestInsPreproc = false; // Says if this schedule has undergone the cheapest insertion preprocessing.
-
+    private boolean SSProcessed=false;
+       
     public Schedule(int tmax, int numStudents) {
         timeslots = new Timeslot[tmax];
         this.numStudents = numStudents;
@@ -946,6 +945,14 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
             src.removeExam(e1);
             dest.addExam(e1);
         }
+    }
+
+    public boolean isSSProcessed() {
+        return SSProcessed;
+    }
+
+    public void setSSProcessed(boolean SSProcessed) {
+        this.SSProcessed=SSProcessed;
     }
 
 }

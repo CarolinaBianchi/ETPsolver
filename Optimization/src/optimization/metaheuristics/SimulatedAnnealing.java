@@ -72,11 +72,11 @@ public class SimulatedAnnealing extends SingleSolutionMetaheuristic {
                 elapsedTime = System.currentTimeMillis() - startTime;
             }
             updateTemperature();
-            System.out.println((int) this.temperature + "\t" + initSolution.getCost() + "\t");
+            //System.out.println((int) this.temperature + "\t" + initSolution.getCost() + "\t");
 
             //System.out.println("temperature : " + (int) this.temperature + "\t current:" + initSolution.getCost() + "\t best:" + mySolution.getCost());
         }
-
+        
     }
 
     /**
@@ -187,6 +187,7 @@ public class SimulatedAnnealing extends SingleSolutionMetaheuristic {
     private synchronized void checkIfBest() {
         if (initSolution.getCost() < mySolution.getCost()) {
             mySolution = Cloner.clone(initSolution);
+            mySolution.setSSProcessed(true);
         }
     }
 }
