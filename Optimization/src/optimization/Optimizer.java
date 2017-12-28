@@ -68,7 +68,7 @@ public class Optimizer {
      * thread.
      */
     private void initInitializers() {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < PopulationMetaheuristic.INITIAL_POP_SIZE; i++) {
             initializers.add(new BucketInitializer(Cloner.clone(exams), tmax, this, this.students.size()));
         }
         joinThreads(initializers);
@@ -229,6 +229,7 @@ public class Optimizer {
      * @param mySolution
      */
     public void updateOnNewSolution(Schedule mySolution) {
+        printResult(mySolution);
         /*
         * Case 1: the solution has undergone ONLY the preprocessing phase 
         * (e.g. its timeslot order has been optimized with the CheapestInsertion)
@@ -249,12 +250,10 @@ public class Optimizer {
             }
             checkAllPMetaheuristics();
 
-        }
-        if (mySolution.getCost() < bestSchedule.getCost()) {
+        } else if (mySolution.getCost() < bestSchedule.getCost()) {
             bestSchedule = mySolution;
             writeSolution();
         }
-
     }
 
     /**
@@ -300,7 +299,10 @@ public class Optimizer {
     public void run() {
         try {
             for (AbstractInitializer in : this.initializers) {
-                in.start();
+                synchronized (this) {
+                    this.wait(10);
+                    in.start();
+                }
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -326,10 +328,14 @@ public class Optimizer {
     }
 
     private void printResult() {
+        printResult(bestSchedule);
+    }
+
+    private void printResult(Schedule mySchedule) {
         int benchmark = Optimization.getBenchmark();
         DecimalFormat df = new DecimalFormat("##.00");
-        double gap = 100 * ((bestSchedule.getCost() * 1.0 - benchmark * 1.0) / benchmark * 1.0);
-        System.out.println("OurSolution:" + bestSchedule.getCost() + "\tBenchmark:" + benchmark + "\t gap:" + df.format(gap) + "%");
+        double gap = 100 * ((mySchedule.getCost() * 1.0 - benchmark * 1.0) / benchmark * 1.0);
+        System.out.println("OurSolution:" + mySchedule.getCost() + "\tBenchmark:" + benchmark + "\t gap:" + df.format(gap) + "%");
     }
 
 }

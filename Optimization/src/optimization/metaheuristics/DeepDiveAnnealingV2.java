@@ -24,7 +24,7 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
     // the metaheuristic start and how much time has passed since the last reset
     private long startTime, elapsedTime, lastResetTime;
     private int actualObjFun, checkObjFun;    // The objFun last time i check
-    private Random rg = new Random();
+    private Random rg = new Random(System.currentTimeMillis());
     private int tmax;
     private int currentBest, overallBest;
 
@@ -305,6 +305,7 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         Exam e = initSolution.getTimeslot(src).getExam(examIndex);
         initSolution.move(e, src, dest);
         examTabuList.updateTabuList(e, dest, src);
+        examTabuList.updateTabuList(e, src, dest);
         checkIfBest();
     }
 

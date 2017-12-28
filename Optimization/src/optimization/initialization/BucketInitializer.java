@@ -32,7 +32,7 @@ public class BucketInitializer extends AbstractInitializer {
     private List<Exam> notYetPlaced;
     private List<Integer>[] buckets;
     int tmax;
-    private Random rg = new Random();
+    private Random rg = new Random(System.currentTimeMillis());
 
     public BucketInitializer(List<Exam> exams, int tmax, Optimizer opt, int numStudents) {
         super(exams, tmax, opt, numStudents);

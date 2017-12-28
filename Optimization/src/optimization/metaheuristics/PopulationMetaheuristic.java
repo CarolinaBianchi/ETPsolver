@@ -23,7 +23,7 @@ import optimization.domain.Schedule;
 public abstract class PopulationMetaheuristic extends Metaheuristic {
 
     protected Collection<Schedule> initialPopulation;
-    public static int INITIAL_POP_SIZE = 10; //?? dont know
+    public static int INITIAL_POP_SIZE = 4; //?? dont know
 
     public PopulationMetaheuristic(Optimizer optimizer, List<Schedule> initialPopulation) {
         super(optimizer);

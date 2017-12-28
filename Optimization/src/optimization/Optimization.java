@@ -22,7 +22,7 @@ public class Optimization {
     When calling the program from command line, you have to move the "files" 
     folder in the same folder of the jar.
      */
-    public static String instance = "instance04";
+    public static String instance = "instance06";
     public static Map<String, Integer> BENCHMARKS;
 
     /**
@@ -68,7 +68,7 @@ public class Optimization {
         BENCHMARKS.put("instance07", 28372); 
     }
 
-    static int getBenchmark() {        
+    static int getBenchmark() {  
         return BENCHMARKS.get(instance);
     }
 }
