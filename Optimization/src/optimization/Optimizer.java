@@ -39,11 +39,9 @@ public class Optimizer {
     private Set<Class<? extends SingleSolutionMetaheuristic>> ssMetaheuristics = new HashSet<>();
     private Set<Class<? extends PopulationMetaheuristic>> pMetaheuristics = new HashSet<>();
     private int tmax;
-    private int[][] numberOfStudent;    //numberOfStudent[i][j] number of student enrolled in both exams i and j
-
+    
     public Optimizer(String instanceName) throws IOException {
         init(instanceName);
-        numberOfStudent = new int[this.exams.size() + 1][this.exams.size() + 1];
         buildStudentListInEx();
         buildConflictingExamsLists();
         initInitializers();
@@ -119,13 +117,6 @@ public class Optimizer {
                     e2 = sExams.get(j);
                     e1.addConflictingExam(e2.getId());
                     e2.addConflictingExam(e1.getId());
-
-                    // Used for adding the conflicts to the exam conflict map.
-                    e1.addConflictingExam2(e2.getId());
-                    e2.addConflictingExam2(e1.getId());
-
-                    numberOfStudent[e1.getId()][e2.getId()]++;
-                    numberOfStudent[e2.getId()][e1.getId()]++;
                 }
             }
         }

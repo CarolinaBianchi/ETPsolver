@@ -28,7 +28,7 @@ public interface CostFunction {
         for (int i = 1; i <= 5; i++) {
             for (int t = 0; t < timeslots.length - i; t++) {
                 for (Exam e : timeslots[t].getExams()) {
-                    penalty += timeslots[t + i].conflictWeight(e.getConflictingExams2()) * COST[i];
+                    penalty += timeslots[t + i].conflictWeight(e.getConflictingExams()) * COST[i];
                 }
             }
         }
@@ -64,7 +64,7 @@ public interface CostFunction {
         for (int i = rangeI[0]; i <= rangeI[1]; i++) {
             if (i != src) {
                 int distance = src - i;
-                penalty += timeslots[i].conflictWeight(e.getConflictingExams2()) * COST[Math.abs(distance)];
+                penalty += timeslots[i].conflictWeight(e.getConflictingExams()) * COST[Math.abs(distance)];
             }
         }
         return penalty;
@@ -84,7 +84,7 @@ public interface CostFunction {
         for (int i = range[0]; i <= range[1]; i++) {
             int distance = index - i;
             for (Exam e : timeslots[index].getExams()) {
-                cost += timeslots[i].conflictWeight(e.getConflictingExams2()) * COST[Math.abs(distance)];
+                cost += timeslots[i].conflictWeight(e.getConflictingExams()) * COST[Math.abs(distance)];
             }
         }
         return cost;
@@ -178,10 +178,10 @@ public interface CostFunction {
             if (i != currentIndex && i != otherIndex) {
                 int distance = currentIndex - i;
                 for (Exam e : timeslots[currentIndex].getExams()) {
-                    penalty -= timeslots[i].conflictWeight(e.getConflictingExams2()) * COST[Math.abs(distance)];
+                    penalty -= timeslots[i].conflictWeight(e.getConflictingExams()) * COST[Math.abs(distance)];
                 }
                 for (Exam e : timeslots[otherIndex].getExams()) {
-                    penalty += timeslots[i].conflictWeight(e.getConflictingExams2()) * COST[Math.abs(distance)];
+                    penalty += timeslots[i].conflictWeight(e.getConflictingExams()) * COST[Math.abs(distance)];
                 }
             }
         }
@@ -252,7 +252,7 @@ public interface CostFunction {
                     t = timeslots[endPoint - (j - startPoint) - 1];
                 }
                 for (Exam e : timeslots[index].getExams()) {
-                    penalty += t.conflictWeight(e.getConflictingExams2()) * COST[Math.abs(distance)];
+                    penalty += t.conflictWeight(e.getConflictingExams()) * COST[Math.abs(distance)];
                 }
             }
         }

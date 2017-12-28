@@ -756,7 +756,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     public void multipleSwaps(int nSwaps) {
         Timeslot candidateTimeslot = getRandomTimeslot();
         Exam candidate = candidateTimeslot.getRandomExam();
-        Set<Integer> conflictingExams = candidate.getConflictingExams();
+        Set<Integer> conflictingExams = candidate.getConflictingExams().keySet();
         if (conflictingExams.isEmpty()) {
             return;
         }
