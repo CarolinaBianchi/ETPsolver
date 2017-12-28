@@ -28,10 +28,11 @@ public abstract class Metaheuristic extends Thread {
         notifyNewSolution();
     }
 
-    abstract void improveInitialSol();
+    public abstract void improveInitialSol();
 
-    private void notifyNewSolution() {
+    abstract void notifyNewSolution();
+    /*private void notifyNewSolution() {
         optimizer.updateOnNewSolution(mySolution);
-    }
+    }*/
 
 }

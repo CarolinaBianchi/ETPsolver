@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package optimization.metaheuristics;
+package optimization.metaheuristics.preprocessing;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,22 +17,21 @@ import optimization.domain.Timeslot;
  *
  * @author Carolina Bianchi
  */
-public class CheapestInsertion extends SingleSolutionMetaheuristic {
+public class CheapestInsertion extends PreprocessingMetaheuristic {
 
     private Map<String, Integer> costMap;
     private Random rg;
 
     public CheapestInsertion(Optimizer optimizer, Schedule initSolution) {
         super(optimizer, initSolution);
-        rg = new Random();
+        rg = new Random(System.currentTimeMillis());
         computeCostMap();
     }
 
     @Override
-    void improveInitialSol() {
+    void preprocess() {
         optimizeTimeslotOrder();
         trySomeSwap();
-        initSolution.setPreprocessed(true);
         mySolution = initSolution;
     }
 

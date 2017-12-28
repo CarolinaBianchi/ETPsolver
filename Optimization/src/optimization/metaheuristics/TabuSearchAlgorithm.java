@@ -55,7 +55,7 @@ public class TabuSearchAlgorithm extends SingleSolutionMetaheuristic {
     }
 
     @Override
-    void improveInitialSol() {
+    public void improveInitialSol() {
         mySolution = algorithm1();
     }
 

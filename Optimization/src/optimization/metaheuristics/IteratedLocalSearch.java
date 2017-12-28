@@ -48,7 +48,7 @@ public class IteratedLocalSearch extends SingleSolutionMetaheuristic {
     }
 
     @Override
-    void improveInitialSol() {
+    public void improveInitialSol() {
 
         long startTime = System.currentTimeMillis();
 

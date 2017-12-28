@@ -32,7 +32,7 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
     }
 
     @Override
-    void improveInitialSol() {
+    public void improveInitialSol() {
         System.out.println("Genetic Algorithm");
         startAlgorithm();
         mySolution = findBestSchedule();

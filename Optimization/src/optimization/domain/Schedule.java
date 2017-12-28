@@ -24,8 +24,6 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     private Timeslot[] timeslots;
     private int cost;
     private int numStudents;
-    private boolean cheapestInsPreproc = false; // Says if this schedule has undergone the cheapest insertion preprocessing.
-    private boolean SSProcessed=false;
        
     public Schedule(int tmax, int numStudents) {
         timeslots = new Timeslot[tmax];
@@ -80,14 +78,6 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
      */
     public int getCost() {
         return this.cost;
-    }
-
-    public void setPreprocessed(boolean preprocessed) {
-        this.cheapestInsPreproc = preprocessed;
-    }
-
-    public boolean isPreprocessed() {
-        return this.cheapestInsPreproc;
     }
 
     public int getTotalCollisions() {
@@ -466,7 +456,6 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     public Schedule clone() {
         int tmax = this.getTmax();
         Schedule s = new Schedule(tmax, numStudents);
-        s.cheapestInsPreproc=this.cheapestInsPreproc;
         s.setCost(this.cost);
         Timeslot[] tclone = new Timeslot[tmax];
         for (int i = 0; i < tmax; i++) {
@@ -945,14 +934,6 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
             src.removeExam(e1);
             dest.addExam(e1);
         }
-    }
-
-    public boolean isSSProcessed() {
-        return SSProcessed;
-    }
-
-    public void setSSProcessed(boolean SSProcessed) {
-        this.SSProcessed=SSProcessed;
     }
 
 }

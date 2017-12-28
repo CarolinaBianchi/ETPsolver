@@ -28,5 +28,10 @@ public abstract class SingleSolutionMetaheuristic extends Metaheuristic {
         this.mySolution = initSolution;
         this.initSolution = Cloner.clone(initSolution);
     }
+    
+    @Override
+    public void notifyNewSolution(){
+        optimizer.updateOnNewSolution(mySolution);
+    }
 
 }

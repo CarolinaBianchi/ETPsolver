@@ -82,7 +82,7 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
     }
 
     @Override
-    void improveInitialSol() {
+    public void improveInitialSol() {
 
         System.out.println("Beginning the deep dive annealing!");
         startTime = System.currentTimeMillis();
@@ -131,7 +131,6 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         boolean isBest = false;
         if (cost < overallBest) {
             mySolution = Cloner.clone(initSolution);
-            mySolution.setSSProcessed(true);
             overallBest = cost;
             isBest = true;
         } else if ((currentBest < 0 || cost < currentBest) && getTimeFromReset() > 0.5) {

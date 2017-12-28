@@ -30,4 +30,8 @@ public abstract class PopulationMetaheuristic extends Metaheuristic {
         this.initialPopulation = initialPopulation;
     }
 
+    public void notifyNewSolution() {
+        optimizer.updateOnFinalSolution(mySolution);
+    }
+
 }
