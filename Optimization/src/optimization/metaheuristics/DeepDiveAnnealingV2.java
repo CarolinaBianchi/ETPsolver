@@ -18,8 +18,7 @@ import optimization.domain.Schedule;
  */
 public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
 
-    private final int MINUTES = 3;
-    private final int MAX_MILLIS = MINUTES * 60 * 1000;
+    //private final int MINUTES = 3;
     // Respectively, the time the metaheuristic starts, the elapsed time since 
     // the metaheuristic start and how much time has passed since the last reset
     private long startTime, elapsedTime, lastResetTime;
@@ -60,8 +59,8 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
     final private int NUM_DISTURBANCE_ITERATIONS = 50; // Number of disturbance
     // moves performed
 
-    public DeepDiveAnnealingV2(Optimizer optimizer, Schedule initSolution) {
-        super(optimizer, initSolution);
+    public DeepDiveAnnealingV2(Optimizer optimizer, Schedule initSolution, long MAX_MILLIS) {
+        super(optimizer, initSolution, MAX_MILLIS);
         actualObjFun = initSolution.getCost();
         checkObjFun = actualObjFun;
         currentBest = actualObjFun;

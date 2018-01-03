@@ -22,8 +22,8 @@ public class CheapestInsertion extends PreprocessingMetaheuristic {
     private Map<String, Integer> costMap;
     private Random rg;
 
-    public CheapestInsertion(Optimizer optimizer, Schedule initSolution) {
-        super(optimizer, initSolution);
+    public CheapestInsertion(Optimizer optimizer, Schedule initSolution, int MAX_MILLIS) {
+        super(optimizer, initSolution, MAX_MILLIS);
         rg = new Random(System.currentTimeMillis());
         computeCostMap();
     }

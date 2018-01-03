@@ -27,7 +27,7 @@ public class Cloner {
      * @param obj the object that has to be cloned
      * @return the clone
      */
-    static public <T extends Cloneable> T clone(T obj) {
+    static public synchronized <T extends Cloneable> T clone(T obj) {
 
         try {
             return (T) obj.getClass().getMethod("clone").invoke(obj);
@@ -43,7 +43,7 @@ public class Cloner {
      * @param objs the collection that has to be cloned
      * @return a clone of that collection
      */
-    static public <T extends Cloneable> List<T> clone(Collection<T> objs) {
+    static public synchronized <T extends Cloneable> List<T> clone(Collection<T> objs) {
         List<T> newList = new ArrayList<>(objs.size());
         for(Cloneable obj : objs){
             newList.add((T) clone(obj));

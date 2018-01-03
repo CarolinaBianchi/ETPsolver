@@ -46,7 +46,7 @@ public class AbsoluteBestChecker {
             System.out.println("You found the best solution ever found for this instance! \n (Old best:" + currentBest.get(Optimization.instance) + ")");
             currentBest.put(Optimization.instance, myCost);
             Optimization.instance = "best/" + Optimization.instance; // Dirty fix but anyways
-            (new SolutionWriter(mySolution)).start();
+            (new SolutionWriter(mySolution)).writeSolution();
             updateCurrentBestFile();
 
         }

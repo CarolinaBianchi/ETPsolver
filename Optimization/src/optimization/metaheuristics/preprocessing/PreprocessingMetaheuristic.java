@@ -15,8 +15,8 @@ import optimization.metaheuristics.SingleSolutionMetaheuristic;
  */
 public abstract class PreprocessingMetaheuristic extends SingleSolutionMetaheuristic {
 
-    public PreprocessingMetaheuristic(Optimizer optimizer, Schedule initSolution) {
-        super(optimizer, initSolution);
+    public PreprocessingMetaheuristic(Optimizer optimizer, Schedule initSolution, int MAX_MILLIS) {
+        super(optimizer, initSolution, MAX_MILLIS);
     }
 
     @Override

@@ -17,9 +17,11 @@ public abstract class Metaheuristic extends Thread {
 
     protected Optimizer optimizer;
     protected Schedule mySolution;
+    protected long MAX_MILLIS;
 
-    public Metaheuristic(Optimizer optimizer) {
+    public Metaheuristic(Optimizer optimizer, long MAX_MILLIS) {
         this.optimizer = optimizer;
+        this.MAX_MILLIS = MAX_MILLIS;
     }
 
     @Override

@@ -34,7 +34,7 @@ public class Optimization {
         //checkArgs(args);  this has to be uncommented when running the program from command line.
         try {
             // TODO code application logic here
-            Optimizer optimizer = new Optimizer(instance);
+            Optimizer optimizer = new Optimizer(instance, 5*60);
             optimizer.run();
 
         } catch (IOException ex) {

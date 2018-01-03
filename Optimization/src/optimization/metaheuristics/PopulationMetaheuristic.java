@@ -21,17 +21,18 @@ import optimization.domain.Schedule;
  * @author Carolina Bianchi
  */
 public abstract class PopulationMetaheuristic extends Metaheuristic {
-
+    
     protected Collection<Schedule> initialPopulation;
     public static int INITIAL_POP_SIZE = 4; //?? dont know
 
-    public PopulationMetaheuristic(Optimizer optimizer, List<Schedule> initialPopulation) {
-        super(optimizer);
+    public PopulationMetaheuristic(Optimizer optimizer, List<Schedule> initialPopulation, long MAX_MILLIS) {
+        super(optimizer, MAX_MILLIS);
         this.initialPopulation = initialPopulation;
     }
-
+    
     public void notifyNewSolution() {
-        optimizer.updateOnFinalSolution(mySolution);
+        //optimizer.updateOnFinalSolution(mySolution);
+        optimizer.updateOnPopulationSolution((List<Schedule>) initialPopulation);
     }
-
+    
 }

@@ -39,8 +39,8 @@ public class TabuSearchAlgorithm extends SingleSolutionMetaheuristic {
     private double currentBestCost;
     private int tmax;
 
-    public TabuSearchAlgorithm(Optimizer optimizer, Schedule initialSchedule) {
-        super(optimizer, initialSchedule);
+    public TabuSearchAlgorithm(Optimizer optimizer, Schedule initialSchedule, int MAX_MILLIS) {
+        super(optimizer, initialSchedule, MAX_MILLIS);
         //this.mySchedule=mySchedule;
         this.tabuList = new LinkedList<>();
         this.optimizer = optimizer;

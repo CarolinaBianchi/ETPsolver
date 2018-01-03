@@ -15,10 +15,12 @@ import optimization.initialization.*;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,15 +42,40 @@ public class Optimizer {
     private Set<Class<? extends SingleSolutionMetaheuristic>> ssMetaheuristics = new HashSet<>();
     private Set<Class<? extends PopulationMetaheuristic>> pMetaheuristics = new HashSet<>();
     private int tmax;
+    private Timer timer;
 
-    public Optimizer(String instanceName) throws IOException {
+    public Optimizer(String instanceName, int tlim) throws IOException {
         init(instanceName);
         buildStudentListInEx();
         buildConflictingExamsLists();
         initInitializers();
         initMetaheuristics();
+        timer = new Timer(1000 * tlim, this);
     }
 
+    /**
+     * Returns the list of schedules.
+     *
+     * @return
+     */
+    public List<Schedule> getInitialSchedules() {
+        return this.initialSchedules;
+    }
+
+    /**
+     * Adds a new schedule to the set of initial schedules.
+     *
+     * @param schedule
+     */
+    private void addSchedule(Schedule schedule) {
+        synchronized (initialSchedules) {
+            if (!initialSchedules.contains(schedule)) {
+                initialSchedules.add(schedule);
+            }
+        }
+    }
+
+    /*-------------------------- INITIALIZATION -----------------------------*/
     /**
      * Builds the attributes exams, students and tmax exploiting FileManager's
      * methods. HINT: We could run these 3 methods on 3 different threads.
@@ -60,29 +87,6 @@ public class Optimizer {
         buildEIdExam();
         this.students = FileManager.readStudents(instanceName);
         this.tmax = FileManager.readTimeslots(instanceName);
-    }
-
-    /**
-     * Creates the set of initializers and joins their threads to the main
-     * thread.
-     */
-    private void initInitializers() {
-        for (int i = 0; i < PopulationMetaheuristic.INITIAL_POP_SIZE; i++) {
-            initializers.add(new BucketInitializer(Cloner.clone(exams), tmax, this, this.students.size()));
-        }
-        joinThreads(initializers);
-
-    }
-
-    /**
-     * Creates the set of metaheuristics.
-     */
-    private void initMetaheuristics() {
-        //ssMetaheuristics.add(TabuSearchAlgorithm.class);
-        // we add every class that extends SingleSolutionMetaheuristic
-        pMetaheuristics.add(GeneticAlgorithm.class);
-        // we add every class that extends SingleSolutionMetaheuristic
-        ssMetaheuristics.add(DeepDiveAnnealingV2.class);
     }
 
     /**
@@ -132,30 +136,90 @@ public class Optimizer {
         }
     }
 
+    /*------------------------------ initialization end-----------------------*/
     /**
-     * Runs every implementation of a SingleSolutoinMetaheuristics with the new
-     * initial solution.
-     *
-     * @param newInitialSol
+     * Creates the set of initializers and joins their threads to the main
+     * thread.
      */
-    private void runAllSSMetaheuristics(Schedule newInitialSol) {
+    protected void initInitializers() {
+        initInitializers(PopulationMetaheuristic.INITIAL_POP_SIZE);
+    }
+
+    /**
+     * Creates the set of initializers and joins their threads to the main
+     * thread.
+     *
+     * @param nInit number of initializers
+     */
+    protected void initInitializers(int nInit) {
+        initializers = new HashSet<>();
+        for (int i = 0; i < nInit; i++) {
+            initializers.add(new BucketInitializer(Cloner.clone(exams), tmax, this, this.students.size()));
+        }
+        joinThreads(initializers);
+    }
+
+    /**
+     * Creates the set of metaheuristics.
+     */
+    private void initMetaheuristics() {
+        //ssMetaheuristics.add(TabuSearchAlgorithm.class);
+        // we add every class that extends SingleSolutionMetaheuristic
+        pMetaheuristics.add(GeneticAlgorithm.class);
+        // we add every class that extends SingleSolutionMetaheuristic
+        ssMetaheuristics.add(DeepDiveAnnealingV2.class);
+    }
+
+    /**
+     * Runs every implementation of a SingleSolutoinMetaheuristics having as
+     * initial solution <code>schedule</code>.
+     *
+     * @param schedule
+     */
+    protected void runAllSSMetaheuristics(Schedule schedule) {
 
         Set<Thread> threadPool = new HashSet<>(3);
-        // For each new initial solution 3 (random number) single solution metaheuristics 
-        //of each type start working on it.
-        //for (int i = 0; i < 3; i++) {
+        // For each new initial solution a single solution metaheuristic starts working on it.
         for (Class<? extends SingleSolutionMetaheuristic> clazz : this.ssMetaheuristics) {
             try {
-                Metaheuristic m = (clazz.getConstructor(Optimizer.class, Schedule.class))
-                        .newInstance(this, Cloner.clone(newInitialSol));
+                Metaheuristic m = (clazz.getConstructor(Optimizer.class, Schedule.class, long.class))
+                        .newInstance(this, Cloner.clone(schedule), Timer.INIT_SOL_TIME);
                 threadPool.add(m);
                 m.start();
             } catch (Exception ex) {
                 Logger.getLogger(Optimizer.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        //}
         joinThreads(threadPool);
+    }
+
+    /**
+     * Runs every implementation of a SingleSolutoinMetaheuristics having as
+     * initial solution the last solution added to the set of initial schedules.
+     *
+     * @param schedule
+     */
+    protected void runAllSSMetaheuristics() {
+        runAllSSMetaheuristics(this.initialSchedules.get(initialSchedules.size() - 1));
+    }
+
+    /**
+     * Runs every implementation of a SingleSolutoinMetaheuristics having as
+     * initial solution the first <code> number</code> solutions added to
+     * <code>initialSchedules</code>.
+     *
+     * @param schedule
+     */
+    private void runAllSSMetaheuristics(int number) {
+        synchronized (initialSchedules) {
+            List<Schedule> initialSchedules = Cloner.clone(this.initialSchedules);
+        }
+        Collections.sort(initialSchedules);
+        for (int i = 0; i < number; i++) {
+            Schedule newInitialSol = initialSchedules.get(i);
+            runAllSSMetaheuristics(newInitialSol);
+        }
+
     }
 
     /**
@@ -163,7 +227,7 @@ public class Optimizer {
      * initializers, they're are created and started. The initial schedules are
      * reset and the initializers are run again.
      */
-    private void checkAllPMetaheuristics() {
+    public void checkAllPMetaheuristics() {
         if (this.initialSchedules.size() < PopulationMetaheuristic.INITIAL_POP_SIZE) {
             return;
         }
@@ -172,22 +236,19 @@ public class Optimizer {
         (random number) instances for each population metaheuristic that we have
         start working on them
          */
-        //for (int i = 0; i < 3; i++) {
-        for (Class<? extends PopulationMetaheuristic> clazz : this.pMetaheuristics) {
-            try {
-                PopulationMetaheuristic m = (clazz.getConstructor(Optimizer.class, List.class)).newInstance(this, Cloner.clone(initialSchedules));
-                threadPool.add(m);
-                m.start();
-            } catch (Exception ex) {
-                Logger.getLogger(Optimizer.class.getName()).log(Level.SEVERE, null, ex);
+        synchronized (initialSchedules) {
+            for (Class<? extends PopulationMetaheuristic> clazz : this.pMetaheuristics) {
+                try {
+                    PopulationMetaheuristic m = (clazz.getConstructor(Optimizer.class, List.class, long.class)).newInstance(this, Cloner.clone(initialSchedules), Timer.METAHEURISTICS_TIME);
+                    threadPool.add(m);
+                    m.start();
+                } catch (Exception ex) {
+                    Logger.getLogger(Optimizer.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
-        //}
+        this.runAllSSMetaheuristics(Timer.MAX_THREADS - Timer.POP_THREADS);
         joinThreads(threadPool);
-//        synchronized (initialSchedules) {
-//            this.initialSchedules = new ArrayList<>();
-//        }
-        //run(); to run again the initializers
     }
 
     /**
@@ -198,8 +259,11 @@ public class Optimizer {
      */
     public void updateOnNewInitialSolution(Schedule newInitialSol) {
         System.out.println("Initial");
-        printResult(newInitialSol);
-        (new CheapestInsertion(this, newInitialSol)).run();
+        addSchedule(newInitialSol);
+        //printResult(newInitialSol);
+        checkBest(newInitialSol);
+        printResult();
+        (new CheapestInsertion(this, newInitialSol, 10000)).run();
 
     }
 
@@ -211,11 +275,11 @@ public class Optimizer {
      */
     public void updateOnNewPreprocessedSolution(Schedule preprocessed) {
         System.out.println("After preprocessing");
-        printResult(preprocessed);
-        runAllSSMetaheuristics(preprocessed);
-        if (bestSchedule == null || preprocessed.getCost() < bestSchedule.getCost()) {
-            bestSchedule = preprocessed;
-        }
+        addSchedule(preprocessed);
+        checkBest(preprocessed);
+        printResult();
+        //runAllSSMetaheuristics(preprocessed);
+        timer.checkTime();
     }
 
     /**
@@ -227,29 +291,41 @@ public class Optimizer {
      */
     public void updateOnNewSolution(Schedule mySolution) {
         System.out.println("After single solution");
-        printResult(mySolution);
-
-        synchronized (initialSchedules) {
-            this.initialSchedules.add(mySolution);
-        }
-        if (mySolution.getCost() < bestSchedule.getCost()) {
-            bestSchedule = mySolution;
-        }
-        checkAllPMetaheuristics();
+        addSchedule(mySolution);
+        checkBest(mySolution);
+        printResult();
+        timer.checkTime();
+        //checkAllPMetaheuristics();
 
     }
 
     /**
-     * As a new final solution is generated, the best solution is picked and
-     * printed.
      *
-     * @param mySolution
+     * @param schedules
      */
-    public void updateOnFinalSolution(Schedule mySolution) {
-        if (mySolution.getCost() < bestSchedule.getCost()) {
-            bestSchedule = mySolution;
+    public void updateOnPopulationSolution(List<Schedule> schedules) {
+        for (Schedule schedule : schedules) {
+            addSchedule(schedule);
+            checkBest(schedule);
+            printResult();
+            timer.checkTime();
         }
-        writeSolution();
+    }
+
+    /**
+     * Selects only the first <code>INIT_POP_SIZE</code> schedules considering
+     * their cost.
+     */
+    protected void naturalSelection() {
+
+        synchronized (initialSchedules) {
+            Collections.sort(initialSchedules);
+            while (initialSchedules.size() > PopulationMetaheuristic.INITIAL_POP_SIZE) {
+                if (probability90()) {
+                    initialSchedules.remove(initialSchedules.size() - 1);
+                }
+            }
+        }
     }
 
     /**
@@ -290,30 +366,54 @@ public class Optimizer {
     /**
      * When a new best solution is found it writes it.
      */
-    private void writeSolution() {
+    protected synchronized void writeSolution() {
 
         SolutionWriter sw = new SolutionWriter(bestSchedule);
-
-        try {
-            sw.join();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Optimizer.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        sw.start();
+        System.out.println("Final solution");
         printResult();
+        sw.writeSolution();
         AbsoluteBestChecker.checkIfBestEver(bestSchedule);
+
+        System.exit(0);
     }
 
+    /**
+     * Prints the result related to the current best schedule.
+     */
     private void printResult() {
         printResult(bestSchedule);
     }
 
+    /**
+     * Prints the result related to a schedule.
+     *
+     * @param mySchedule
+     */
     private void printResult(Schedule mySchedule) {
         int benchmark = Optimization.getBenchmark();
         DecimalFormat df = new DecimalFormat("##.00");
         double gap = 100 * ((mySchedule.getCost() * 1.0 - benchmark * 1.0) / benchmark * 1.0);
         System.out.println("OurSolution:" + mySchedule.getCost() + "\tBenchmark:" + benchmark + "\t gap:" + df.format(gap) + "%");
+    }
+
+    /**
+     * Returns true with a probability of 90%.
+     *
+     * @return
+     */
+    private boolean probability90() {
+        return (new Random()).nextDouble() < 0.8;
+    }
+
+    /**
+     * Checks if the solution is the best ever found.
+     *
+     * @param mySolution
+     */
+    private void checkBest(Schedule mySolution) {
+        if (bestSchedule == null || mySolution.getCost() < bestSchedule.getCost()) {
+            bestSchedule = mySolution;
+        }
     }
 
 }

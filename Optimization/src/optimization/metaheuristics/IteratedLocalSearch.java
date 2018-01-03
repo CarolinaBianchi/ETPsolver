@@ -35,8 +35,8 @@ public class IteratedLocalSearch extends SingleSolutionMetaheuristic {
     private Random random = new Random();
     private int tmax;
 
-    public IteratedLocalSearch(Optimizer optimizer, Schedule initSolution) {
-        super(optimizer, initSolution);
+    public IteratedLocalSearch(Optimizer optimizer, Schedule initSolution, int MAX_MILLIS) {
+        super(optimizer, initSolution, MAX_MILLIS);
         this.optimizer = optimizer;
         this.initSolution = Cloner.clone(initSolution);
         this.currentSolution = initSolution;

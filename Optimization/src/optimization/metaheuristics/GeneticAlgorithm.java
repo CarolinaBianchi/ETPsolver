@@ -22,11 +22,10 @@ import optimization.domain.Schedule;
 public class GeneticAlgorithm extends PopulationMetaheuristic {
 
     private List<Schedule> population;
-    private static final int MINUTES = 2;
     private static Random rnd;
 
-    public GeneticAlgorithm(Optimizer optimizer, List<Schedule> initialPopulation) {
-        super(optimizer, initialPopulation);
+    public GeneticAlgorithm(Optimizer optimizer, List<Schedule> initialPopulation, long MAX_MILLIS) {
+        super(optimizer, initialPopulation, MAX_MILLIS);
         population = initialPopulation;
         rnd = new Random();
     }
@@ -44,8 +43,7 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
     private void startAlgorithm() {
         long startTime = System.currentTimeMillis();
         long elapsedTime = 0;
-        long totalTime = MINUTES * 60 * 1000;
-        while (elapsedTime < totalTime) {
+        while (elapsedTime < MAX_MILLIS) {
             multipleSwaps();
             crossover();
             switch (rnd.nextInt(3)) {

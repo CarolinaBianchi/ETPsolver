@@ -23,8 +23,8 @@ public abstract class SingleSolutionMetaheuristic extends Metaheuristic {
 
     protected Schedule initSolution;
 
-    public SingleSolutionMetaheuristic(Optimizer optimizer, Schedule initSolution) {
-        super(optimizer);
+    public SingleSolutionMetaheuristic(Optimizer optimizer, Schedule initSolution, long MAX_MILLIS) {
+        super(optimizer, MAX_MILLIS);
         this.mySolution = initSolution;
         this.initSolution = Cloner.clone(initSolution);
     }

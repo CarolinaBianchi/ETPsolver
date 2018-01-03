@@ -24,7 +24,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     private Timeslot[] timeslots;
     private int cost;
     private int numStudents;
-       
+
     public Schedule(int tmax, int numStudents) {
         timeslots = new Timeslot[tmax];
         this.numStudents = numStudents;
@@ -485,6 +485,26 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         return this.getCost() - o.getCost();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (!Schedule.class.isAssignableFrom(obj.getClass())) {
+            return false;
+        }
+        final Schedule other = (Schedule) obj;
+
+        return this.compareTo(other) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 29 * hash + this.cost;
+        return hash;
+    }
+
     /**
      * Tries to swap two exams of two different timeslots
      *
@@ -725,7 +745,7 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
     public void computeCost() {
         this.cost = CostFunction.getCost(timeslots);
     }
-    
+
     /**
      * Computes the cost of this schedule.
      */
@@ -914,19 +934,21 @@ public class Schedule implements Cloneable, Comparable<Schedule> {
         }
         if (penalty < 0) {
             updateCost(penalty);
-        }else{
+        } else {
             undoSwaps(swappingExams);
         }
-        
+
     }
-    
+
     /**
-     * It undoes the operation of previous multiple swaps done using the map swappingExams
-     * @param swappingExams 
+     * It undoes the operation of previous multiple swaps done using the map
+     * swappingExams
+     *
+     * @param swappingExams
      */
     private void undoSwaps(Map<Exam, Timeslot> swappingExams) {
-        List<Exam> exams = createExamList(swappingExams);        
-        for(int i=0; i<exams.size();i++){
+        List<Exam> exams = createExamList(swappingExams);
+        for (int i = 0; i < exams.size(); i++) {
             Exam e1 = exams.get(i);
             Exam e2 = (i == exams.size() - 1) ? exams.get(0) : exams.get(i + 1);
             Timeslot dest = swappingExams.get(e1);

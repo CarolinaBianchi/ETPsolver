@@ -17,7 +17,7 @@ import optimization.domain.Timeslot;
  *
  * @author Carolina Bianchi
  */
-public class SolutionWriter extends Thread {
+public class SolutionWriter {
 
     private final Schedule schedule;
     
@@ -25,16 +25,11 @@ public class SolutionWriter extends Thread {
         this.schedule = schedule;
     }
 
-    @Override
-    public void run() {
-        writeSolution();
-    }
-
     /**
      * Writes the schedule in a file which path is files/instancename/.sol.
      *
      */
-    private void writeSolution() {
+    public void writeSolution() {
 
         try (PrintWriter writer = new PrintWriter(new FileWriter("files/" + Optimization.instance +".sol"))) {
             Timeslot[] timeslots = schedule.getTimeslots();
@@ -47,6 +42,5 @@ public class SolutionWriter extends Thread {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-
     }
 }

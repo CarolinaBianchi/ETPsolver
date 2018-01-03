@@ -18,8 +18,8 @@ public class DeepDiveAnnealing extends SingleSolutionMetaheuristic {
     private double temperature;
     private final int ITER_PER_TEMPERATURE;
     private final int NUM_ITER; // number of moves per iter
-    private final int MINUTES = 1;
-    private final int MAX_MILLIS = MINUTES * 60 * 1000;
+    //private final int MINUTES = 1;
+    //private final int MAX_MILLIS = MINUTES * 60 * 1000;
     private long startTime, elapsedTime, lastResetTime;
     /*
     In the second part of the available time, I check every few seconds if there has been an acceptable improvement.
@@ -31,8 +31,8 @@ public class DeepDiveAnnealing extends SingleSolutionMetaheuristic {
     private int currentBest, overallBest;
     private double k;
 
-    public DeepDiveAnnealing(Optimizer optimizer, Schedule initSolution) {
-        super(optimizer, initSolution);
+    public DeepDiveAnnealing(Optimizer optimizer, Schedule initSolution, int MAX_MILLIS) {
+        super(optimizer, initSolution, MAX_MILLIS);
         checkObjFun = initSolution.getCost();
         currentBest = checkObjFun;
         overallBest = checkObjFun;
