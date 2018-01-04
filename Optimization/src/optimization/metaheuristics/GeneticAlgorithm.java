@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import optimization.Optimizer;
-import optimization.domain.CostFunction;
 import optimization.domain.Schedule;
 
 /**
@@ -43,7 +42,7 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
     private void startAlgorithm() {
         long startTime = System.currentTimeMillis();
         long elapsedTime = 0;
-        while (elapsedTime < MAX_MILLIS) {
+        while (elapsedTime < MAX_MILLIS /*&& ! optimizer.endAll*/) {
             multipleSwaps();
             crossover();
             switch (rnd.nextInt(3)) {

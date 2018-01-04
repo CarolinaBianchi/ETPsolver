@@ -43,6 +43,7 @@ public class Optimizer {
     private Set<Class<? extends PopulationMetaheuristic>> pMetaheuristics = new HashSet<>();
     private int tmax;
     private Timer timer;
+    public boolean endAll;
 
     public Optimizer(String instanceName, int tlim) throws IOException {
         init(instanceName);
@@ -51,6 +52,7 @@ public class Optimizer {
         initInitializers();
         initMetaheuristics();
         timer = new Timer(1000 * tlim, this);
+        joinThread(timer);
     }
 
     /**
@@ -211,8 +213,9 @@ public class Optimizer {
      * @param schedule
      */
     private void runAllSSMetaheuristics(int number) {
-        synchronized (initialSchedules) {
-            List<Schedule> initialSchedules = Cloner.clone(this.initialSchedules);
+        List<Schedule> initialSchedules;
+        synchronized (this.initialSchedules) {
+            initialSchedules = Cloner.clone(this.initialSchedules);
         }
         Collections.sort(initialSchedules);
         for (int i = 0; i < number; i++) {
@@ -239,7 +242,8 @@ public class Optimizer {
         synchronized (initialSchedules) {
             for (Class<? extends PopulationMetaheuristic> clazz : this.pMetaheuristics) {
                 try {
-                    PopulationMetaheuristic m = (clazz.getConstructor(Optimizer.class, List.class, long.class)).newInstance(this, Cloner.clone(initialSchedules), Timer.METAHEURISTICS_TIME);
+                    PopulationMetaheuristic m = (clazz.getConstructor(Optimizer.class, List.class, long.class))
+                            .newInstance(this, Cloner.clone(initialSchedules), Timer.METAHEURISTICS_TIME);
                     threadPool.add(m);
                     m.start();
                 } catch (Exception ex) {
@@ -248,7 +252,7 @@ public class Optimizer {
             }
         }
         this.runAllSSMetaheuristics(Timer.MAX_THREADS - Timer.POP_THREADS);
-        joinThreads(threadPool);
+        //joinThreads(threadPool);
     }
 
     /**
@@ -308,7 +312,7 @@ public class Optimizer {
             addSchedule(schedule);
             checkBest(schedule);
             printResult();
-            timer.checkTime();
+            //timer.checkTime();
         }
     }
 
@@ -337,14 +341,24 @@ public class Optimizer {
      */
     private <T extends Thread> void joinThreads(Set<T> coll) {
 
+        //try {
+        for (Thread t : coll) {
+            joinThread(t);
+        }
+        //t.join();
+        //}
+        //} catch (InterruptedException ex) {
+        //    Logger.getLogger(Optimizer.class.getName()).log(Level.SEVERE, null, ex);
+        //}
+
+    }
+
+    private <T extends Thread> void joinThread(T thread) {
         try {
-            for (Thread t : coll) {
-                t.join();
-            }
+            thread.join();
         } catch (InterruptedException ex) {
             Logger.getLogger(Optimizer.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 
     /**
@@ -367,13 +381,15 @@ public class Optimizer {
      * When a new best solution is found it writes it.
      */
     protected synchronized void writeSolution() {
-
+        if(this.endAll){
+            return;
+        }
+        this.endAll=true;
         SolutionWriter sw = new SolutionWriter(bestSchedule);
         System.out.println("Final solution");
         printResult();
         sw.writeSolution();
         AbsoluteBestChecker.checkIfBestEver(bestSchedule);
-
         System.exit(0);
     }
 

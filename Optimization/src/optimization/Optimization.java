@@ -22,7 +22,8 @@ public class Optimization {
     When calling the program from command line, you have to move the "files" 
     folder in the same folder of the jar.
      */
-    public static String instance = "instance06";
+    public static String instance = "instance07";
+    public static int tlim=5*60; 
     public static Map<String, Integer> BENCHMARKS;
 
     /**
@@ -32,15 +33,14 @@ public class Optimization {
         System.out.println(instance);
         initBenchmarks();
         //checkArgs(args);  this has to be uncommented when running the program from command line.
+
         try {
             // TODO code application logic here
-            Optimizer optimizer = new Optimizer(instance, 5*60);
-            optimizer.run();
-
+                Optimizer optimizer = new Optimizer(instance, tlim);
+                optimizer.run();
         } catch (IOException ex) {
             Logger.getLogger(Optimization.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 
     /**
@@ -50,11 +50,12 @@ public class Optimization {
      * @param args
      */
     private static void checkArgs(String[] args) {
-        if (args.length != 1) {
-            System.out.println("Input argument error. You can launch the program by writing java -jar \"Optimization.jar\" instanceName");
+        if (args.length != 3) {
+            System.out.println("Input argument error. You can launch the program by writing java -jar \"Optimization.jar\" instanceName -t tlim");
             System.exit(0);
         }
         instance = args[0];
+        tlim = Integer.parseInt(args[2]);
     }
 
     private static void initBenchmarks() {
@@ -65,10 +66,10 @@ public class Optimization {
         BENCHMARKS.put("instance04", 33647);
         BENCHMARKS.put("instance05", 69008);
         BENCHMARKS.put("instance06", 64746);
-        BENCHMARKS.put("instance07", 28372); 
+        BENCHMARKS.put("instance07", 28372);
     }
 
-    static int getBenchmark() {  
+    static int getBenchmark() {
         return BENCHMARKS.get(instance);
     }
 }

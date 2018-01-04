@@ -33,7 +33,7 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
     private final int ITER_PER_TEMPERATURE; // Just as the name says
     private final int NUM_ITER; // number of moves per iter
     private int plateauCounter; // The reset counter
-    private double k; // The coefficient for which the temperature is multiplied 
+    private static double k; // The coefficient for which the temperature is multiplied 
     // (hence, decreased) after ITER_PER_TEMPERATURE iterations.
     private final int ENHANCEMENT_LIMIT = 750; // The limit of the temperature
     // enhancement performed at each reset
@@ -42,6 +42,8 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
 
     // Tabu Search parameters and variables
     private TabuList examTabuList, timeslotTabuList;
+    private final double TABU_TEMPERATURE_THREASHOLD=0.05; // The percentage of 
+    //the temperature that has to be reached to activate the tabu logic 
     private final int TABU_EXAM_START_SIZE = 10; // The starting size for the
     // exam tabu list
     private final int TABU_TIMESLOT_START_SIZE = 5; // The starting size for the
@@ -72,12 +74,16 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         this.timeslotTabuList = new TabuList(TABU_TIMESLOT_START_SIZE);
 
         // Settings for simulated annealing
-        initTemperature = checkObjFun / (tmax*4);
+        initTemperature = checkObjFun / (tmax * 4);
         temperature = initTemperature;
         NUM_ITER = tmax;
         ITER_PER_TEMPERATURE = tmax / 2;//tmax;
         plateauCounter = 0;
         k = 0.998;
+    }
+
+    public static void changeK(double newk) {
+        k = newk;
     }
 
     @Override
@@ -86,7 +92,7 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         System.out.println("Beginning the deep dive annealing!");
         startTime = System.currentTimeMillis();
 
-        while (elapsedTime < MAX_MILLIS) {
+        while (elapsedTime < MAX_MILLIS /*&& !optimizer.endAll*/) {
             for (int i = 0; i < ITER_PER_TEMPERATURE; i++) {
                 optimizeExamPosition();
                 optimizeTimeslotOrder();
@@ -276,7 +282,8 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
      * <pre>
      * <ul>
      *  <li>If the move is feasible and accepted by the logic of the simulated annealing algorithm AND</li>
-     *  <li>If it is not TABU, or it is TABU but leads to the best solution ever found.</li>
+     *  <li>the temperature is high OR </li>
+     *  <li>the temperature is low and it is not TABU, or it is TABU but leads to the best solution ever found.</li>
      * </ul>
      * </pre> I applied De Morgan's to the original formulation, which was:
      * <code>!(!accept(penalty) || !initSolution.isFeasibleMove(ex, destIndex) || (examTabuList.moveIsTabu(ex, sourceIndex, destIndex) && (this.actualObjFun + penalty >= currentBest)))</code>
@@ -289,6 +296,10 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
      */
     private boolean isAllowedEMove(Exam exam, int srcIndex, int destIndex, int penalty) {
         boolean acceptANDFeasible = accept(penalty) && initSolution.isFeasibleMove(exam, destIndex);
+        boolean highTemperature = temperature > TABU_TEMPERATURE_THREASHOLD * initTemperature;
+        if (acceptANDFeasible && highTemperature) {
+            return true;
+        }
         boolean notTabuORBest = !examTabuList.moveIsTabu(exam, srcIndex, destIndex) || (this.actualObjFun + penalty < currentBest);
         return acceptANDFeasible && notTabuORBest;
     }
@@ -348,12 +359,13 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
 
     /**
      * <pre>
-     * Says if this swap of 2 timeslots is allowed. i.e. (as far as I understood) if:
+     * Says if this swap of 2 timeslots is allowed. i.e. if:
      * <ul>
      *  <li> The penalty is accepted from the simulated annealing logic AND one of the
      *  following:</li>
-     *      <li> The move is not tabu</li>
-     *      <li>OR it is tabu but it leads to the best solution ever found.</li>
+     *      <li> The temperature is still high OR</li>
+     *      <li> The move is not tabu OR </li>
+     *      <li> it is tabu but it leads to the best solution ever found.</li>
      * </ul>
      * </pre> (I applied De Morgan's law to the original formulation of the
      * condition - to make it more readable, I hope- which was:      <code>!(!acceptPenalty || (timeslotTabuList.moveIsTabu(srcIndex,
@@ -365,7 +377,12 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
      * @return
      */
     private boolean isAllowedTSwap(int srcIndex, int destIndex, int penalty) {
-        return accept(penalty) && (!timeslotTabuList.moveIsTabu(srcIndex, destIndex) || (actualObjFun + penalty) < currentBest);
+        boolean highTemperature = temperature > TABU_TEMPERATURE_THREASHOLD * initTemperature;
+        boolean acceptPenalty = accept(penalty);
+        if (acceptPenalty && highTemperature) {
+            return true;
+        }
+        return acceptPenalty && (!timeslotTabuList.moveIsTabu(srcIndex, destIndex) || (actualObjFun + penalty) < currentBest);
 
     }
 
