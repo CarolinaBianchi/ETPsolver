@@ -389,7 +389,7 @@ public class Optimizer {
         System.out.println("Final solution");
         printResult();
         sw.writeSolution();
-        AbsoluteBestChecker.checkIfBestEver(bestSchedule);
+        //AbsoluteBestChecker.checkIfBestEver(bestSchedule);
         System.exit(0);
     }
 

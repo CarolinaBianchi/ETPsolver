@@ -43,7 +43,7 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
         long startTime = System.currentTimeMillis();
         long elapsedTime = 0;
         while (elapsedTime < MAX_MILLIS /*&& ! optimizer.endAll*/) {
-            multipleSwaps();
+            //multipleSwaps();
             crossover();
             switch (rnd.nextInt(3)) {
                 case 0:

@@ -22,8 +22,8 @@ public class Optimization {
     When calling the program from command line, you have to move the "files" 
     folder in the same folder of the jar.
      */
-    public static String instance = "instance07";
-    public static int tlim=5*60; 
+    public static String instance = "instance05";
+    public static int tlim=3*60; 
     public static Map<String, Integer> BENCHMARKS;
 
     /**

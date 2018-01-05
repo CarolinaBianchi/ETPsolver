@@ -35,14 +35,14 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
     private int plateauCounter; // The reset counter
     private static double k; // The coefficient for which the temperature is multiplied 
     // (hence, decreased) after ITER_PER_TEMPERATURE iterations.
-    private final int ENHANCEMENT_LIMIT = 750; // The limit of the temperature
+    private final int ENHANCEMENT_LIMIT = 500; // The limit of the temperature
     // enhancement performed at each reset
     private final double DELTA_RANGE = 0.001; // The range of obj funct variations
     // that increment the plateauCounter
 
     // Tabu Search parameters and variables
     private TabuList examTabuList, timeslotTabuList;
-    private final double TABU_TEMPERATURE_THREASHOLD=0.05; // The percentage of 
+    private final double TABU_TEMPERATURE_THREASHOLD=0.25; // The percentage of 
     //the temperature that has to be reached to activate the tabu logic 
     private final int TABU_EXAM_START_SIZE = 10; // The starting size for the
     // exam tabu list
@@ -50,7 +50,7 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
     // timeslot tabu list
     private final int MAX_MOVES = 5; // Maximum number of exam moves allowed 
     // before choosing the best one (if any).
-    private final int MAX_SWAPS = 3; // Maximum number of timeslot swaps allowed 
+    private final int MAX_SWAPS = 1; // Maximum number of timeslot swaps allowed 
     //before choosing the best one (if any).
     private int num_moves = 2; // Initial number of exam moves before choosing 
     // the best one
@@ -65,7 +65,7 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         super(optimizer, initSolution, MAX_MILLIS);
         actualObjFun = initSolution.getCost();
         checkObjFun = actualObjFun;
-        currentBest = actualObjFun;
+        currentBest = -1;
         overallBest = actualObjFun;
         tmax = initSolution.getTmax();
 
@@ -74,12 +74,12 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         this.timeslotTabuList = new TabuList(TABU_TIMESLOT_START_SIZE);
 
         // Settings for simulated annealing
-        initTemperature = checkObjFun / (tmax * 4);
+        initTemperature = checkObjFun / (tmax * 5);
         temperature = initTemperature;
         NUM_ITER = tmax;
-        ITER_PER_TEMPERATURE = tmax / 2;//tmax;
+        ITER_PER_TEMPERATURE = tmax/2;//tmax/2;
         plateauCounter = 0;
-        k = 0.998;
+        k = 0.9985;
     }
 
     public static void changeK(double newk) {
@@ -91,6 +91,7 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
 
         System.out.println("Beginning the deep dive annealing!");
         startTime = System.currentTimeMillis();
+        lastResetTime = System.currentTimeMillis() - startTime;
 
         while (elapsedTime < MAX_MILLIS /*&& !optimizer.endAll*/) {
             for (int i = 0; i < ITER_PER_TEMPERATURE; i++) {
@@ -138,13 +139,13 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
             mySolution = Cloner.clone(initSolution);
             overallBest = cost;
             isBest = true;
-        } else if ((currentBest < 0 || cost < currentBest) && getTimeFromReset() > 0.5) {
+        } /*else if ((currentBest < 0 || cost < currentBest) && getTimeFromReset() > 1) {
             isBest = true;
-        }
-        if (isBest) {
+        }*/
+        if ((currentBest < 0 || cost < currentBest) && getTimeFromReset() > 1) {
             plateauCounter = 0;
             currentBest = cost;
-            //System.out.println("New Best! c: " + currentBest + " - a: " + overallBest + " -t: " + (int) temperature);
+            System.out.println("New Best! c: " + currentBest + " - a: " + overallBest + " -t: " + (int) temperature);
         }
         //System.out.println((int) temperature + "\t" + initSolution.getCost() + "\t" + overallBest);
     }
@@ -200,7 +201,8 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
             plateauCounter++;
             // If I haven't improved much in the last 100 iterations, I turn up the temperature
             if (plateauCounter % 100 == 0) {
-                temperature *= ENHANCEMENT_LIMIT * rg.nextDouble(); // Enhance temperature
+                // Enhance temperature
+                temperature = Math.min( temperature * ENHANCEMENT_LIMIT * rg.nextDouble(), ENHANCEMENT_LIMIT);
                 currentBest = -1; // Reset the current best
                 //System.out.println("Breathing... New dive!"); // Notify the new "dive"
                 lastResetTime = System.currentTimeMillis() - startTime; // Keep track of last reset time

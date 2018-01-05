@@ -19,7 +19,7 @@ public class Timer extends Thread {
     private final long START_TIME; // Time at which the whole program started
     private final long TOT_TIME; // Total available time
     private static long TOT_SEARCH_TIME; // Time reserved to search the solution
-    public final long PRINT_TIME = 1000/*ms*/; //Time reserverd for printing the solution
+    public final long PRINT_TIME = 2000/*ms*/; //Time reserverd for printing the solution
     public static long INIT_SOL_TIME; //Fraction of time reserved to the production of the first generation of solutions
     public static long METAHEURISTICS_TIME; // Time reserved to run the metaheuristics
     public static final int MAX_THREADS = 2;
@@ -32,7 +32,7 @@ public class Timer extends Thread {
         this.TOT_TIME = totTime;
         this.TOT_SEARCH_TIME = TOT_TIME - PRINT_TIME;
         this.INIT_SOL_TIME = (long) ((4.0 / 10.0) * TOT_SEARCH_TIME);
-        this.METAHEURISTICS_TIME = (long) (1.0 / 20.0 * (TOT_SEARCH_TIME));
+        this.METAHEURISTICS_TIME = (long) (1.0 / 20.0 * (TOT_SEARCH_TIME)); 
     }
 
     @Override
@@ -54,7 +54,7 @@ public class Timer extends Thread {
         if (elapsedTime < (long) (INIT_SOL_TIME) && INIT_SOL_TIME != METAHEURISTICS_TIME) {
             optimizer.runAllSSMetaheuristics();
             this.INIT_SOL_TIME = METAHEURISTICS_TIME;
-            DeepDiveAnnealingV2.changeK(0.80); // After the initialization, the temperature dacay is speeded up
+            DeepDiveAnnealingV2.changeK(0.90); // After the initialization, the temperature dacay is speeded up
 
         } else if (elapsedTime > (long) (INIT_SOL_TIME)) {
             while (elapsedTime < TOT_SEARCH_TIME) {
