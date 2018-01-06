@@ -8,6 +8,8 @@ package optimization.metaheuristics;
 import java.util.Random;
 import optimization.Cloner;
 import optimization.Optimizer;
+import optimization.Timer;
+import static optimization.Timer.TOT_SEARCH_TIME;
 import optimization.domain.CostFunction;
 import optimization.domain.Exam;
 import optimization.domain.Schedule;
@@ -92,7 +94,9 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         System.out.println("Beginning the deep dive annealing!");
         startTime = System.currentTimeMillis();
         lastResetTime = System.currentTimeMillis() - startTime;
-
+        if(notEnoughTime()){
+            return;
+        }
         while (elapsedTime < MAX_MILLIS /*&& !optimizer.endAll*/) {
             for (int i = 0; i < ITER_PER_TEMPERATURE; i++) {
                 optimizeExamPosition();
@@ -104,7 +108,6 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
             //System.out.println("temperature : " + (int) this.temperature + " current:" + initSolution.getCost() + " best:" + mySolution.getCost());
             //System.out.println("Elapsed time: " + elapsedTime/1000 + " seconds.");
         }
-
     }
 
     /**
@@ -145,7 +148,7 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         if ((currentBest < 0 || cost < currentBest) && getTimeFromReset() > 1) {
             plateauCounter = 0;
             currentBest = cost;
-            System.out.println("New Best! c: " + currentBest + " - a: " + overallBest + " -t: " + (int) temperature);
+            //System.out.println("New Best! c: " + currentBest + " - a: " + overallBest + " -t: " + (int) temperature);
         }
         //System.out.println((int) temperature + "\t" + initSolution.getCost() + "\t" + overallBest);
     }
@@ -411,5 +414,9 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
         }
 
         this.checkIfBest();
+    }
+
+    private boolean notEnoughTime() {
+        return System.currentTimeMillis()+this.MAX_MILLIS>Timer.END_OPT_TIME;
     }
 }

@@ -381,10 +381,10 @@ public class Optimizer {
      * When a new best solution is found it writes it.
      */
     protected synchronized void writeSolution() {
-        if(this.endAll){
+        if (this.endAll) {
             return;
         }
-        this.endAll=true;
+        this.endAll = true;
         SolutionWriter sw = new SolutionWriter(bestSchedule);
         System.out.println("Final solution");
         printResult();

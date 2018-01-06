@@ -18,12 +18,13 @@ public class Timer extends Thread {
     private Optimizer optimizer;
     private final long START_TIME; // Time at which the whole program started
     private final long TOT_TIME; // Total available time
-    private static long TOT_SEARCH_TIME; // Time reserved to search the solution
+    public static long TOT_SEARCH_TIME; // Time reserved to search the solution
     public final long PRINT_TIME = 2000/*ms*/; //Time reserverd for printing the solution
     public static long INIT_SOL_TIME; //Fraction of time reserved to the production of the first generation of solutions
     public static long METAHEURISTICS_TIME; // Time reserved to run the metaheuristics
     public static final int MAX_THREADS = 2;
     public static final int POP_THREADS = 1;
+    public static long END_OPT_TIME;
     private int generation = 0;
 
     public Timer(long totTime, Optimizer optimizer) {
@@ -32,7 +33,8 @@ public class Timer extends Thread {
         this.TOT_TIME = totTime;
         this.TOT_SEARCH_TIME = TOT_TIME - PRINT_TIME;
         this.INIT_SOL_TIME = (long) ((4.0 / 10.0) * TOT_SEARCH_TIME);
-        this.METAHEURISTICS_TIME = (long) (1.0 / 20.0 * (TOT_SEARCH_TIME)); 
+        this.METAHEURISTICS_TIME = (long) (1.0 / 20.0 * (TOT_SEARCH_TIME));
+        this.END_OPT_TIME = START_TIME + TOT_TIME - 10 * 1000;
     }
 
     @Override
@@ -50,25 +52,43 @@ public class Timer extends Thread {
             printBestSolution();
         }
 
-        /*If we are in the first fraction of time, we run the methods to initialize the initial solutions. */
-        if (elapsedTime < (long) (INIT_SOL_TIME) && INIT_SOL_TIME != METAHEURISTICS_TIME) {
-            optimizer.runAllSSMetaheuristics();
-            this.INIT_SOL_TIME = METAHEURISTICS_TIME;
-            DeepDiveAnnealingV2.changeK(0.90); // After the initialization, the temperature dacay is speeded up
+        while (elapsedTime < TOT_SEARCH_TIME) {
+            if (elapsedTime < (long) (INIT_SOL_TIME) && INIT_SOL_TIME != METAHEURISTICS_TIME) {
+                optimizer.runAllSSMetaheuristics();
+                this.INIT_SOL_TIME = METAHEURISTICS_TIME;
+                //DeepDiveAnnealingV2.changeK(0.90); // After the initialization, the temperature dacay is speeded up
 
-        } else if (elapsedTime > (long) (INIT_SOL_TIME)) {
-            while (elapsedTime < TOT_SEARCH_TIME) {
+            } else if (elapsedTime > (long) (INIT_SOL_TIME)) {
+                updateInitSolTime();
                 if (isTimeForANewGeneration()) {
                     this.INIT_SOL_TIME = Math.min(TOT_SEARCH_TIME - getElapsedTime(), INIT_SOL_TIME);
                     generation++;
                     startNewGeneration();
                 }
-                wait500ms();
-                elapsedTime = getElapsedTime();
             }
-            printBestSolution();
+            wait500ms();
+            elapsedTime = getElapsedTime();
         }
-        wait500ms();
+        /*If we are in the first fraction of time, we run the methods to initialize the initial solutions. */
+ /*if (elapsedTime < (long) (INIT_SOL_TIME) && INIT_SOL_TIME != METAHEURISTICS_TIME) {
+                optimizer.runAllSSMetaheuristics();
+                this.INIT_SOL_TIME = METAHEURISTICS_TIME;
+                //DeepDiveAnnealingV2.changeK(0.90); // After the initialization, the temperature dacay is speeded up
+
+            } else if (elapsedTime > (long) (INIT_SOL_TIME)) {
+                updateInitSolTime();
+                while (elapsedTime < TOT_SEARCH_TIME) {
+                    if (isTimeForANewGeneration()) {
+                        this.INIT_SOL_TIME = Math.min(TOT_SEARCH_TIME - getElapsedTime(), INIT_SOL_TIME);
+                        generation++;
+                        startNewGeneration();
+                    }
+                    wait500ms();
+                    elapsedTime = getElapsedTime();
+                }
+                printBestSolution();
+            }
+            wait500ms();*/
     }
 
     /**
@@ -107,8 +127,13 @@ public class Timer extends Thread {
      * Starts a new generation.
      */
     private void startNewGeneration() {
-        optimizer.naturalSelection();
-        optimizer.checkAllPMetaheuristics();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                optimizer.naturalSelection();
+                optimizer.checkAllPMetaheuristics();
+            }
+        }).start();
     }
 
     /**
@@ -129,5 +154,15 @@ public class Timer extends Thread {
                 Logger.getLogger(Timer.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+
+    private void updateInitSolTime() {
+        if (this.INIT_SOL_TIME == (4.0 / 10.0) * TOT_SEARCH_TIME) {
+            if (System.currentTimeMillis() + this.INIT_SOL_TIME > this.END_OPT_TIME) {
+                this.INIT_SOL_TIME = METAHEURISTICS_TIME;
+                //DeepDiveAnnealingV2.changeK(0.99); // After the initialization, the temperature dacay is speeded up
+            }
+        }
+
     }
 }
