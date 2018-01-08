@@ -23,7 +23,7 @@ public class FileManager {
     private static final String EXAM_SUFFIX = ".exm";
     private static final String STUDENT_SUFFIX = ".stu";
     private static final String TIMESLOT_SUFFIX = ".slo";
-    private static final String FILES_PATH = "files/";
+    private static final String FILES_PATH = "";
 
     /**
      * Reads the exam file and builds the list of exams.

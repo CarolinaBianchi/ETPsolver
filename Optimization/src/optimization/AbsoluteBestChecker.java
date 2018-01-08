@@ -22,7 +22,9 @@ import optimization.domain.Schedule;
  * folder ("best") inside the files folder is created, where the current best
  * solutions are saved. NB these solution are not committed, so each of us will
  * have a .sol in this folder only if <b>he</b> found that solution. DO NOT
- * THROW THEM AWAY!).
+ * THROW THEM AWAY!). !!!!!!!!!!!! NB!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! (This
+ * functionality can be used only on the public instances, to use it uncomment
+ * the benchmarks in the main)
  *
  * @author Carolina Bianchi
  */
@@ -39,7 +41,7 @@ public class AbsoluteBestChecker {
      * @param mySolution
      */
     public static void checkIfBestEver(Schedule mySolution) {
-        loadCurrentBest();
+        /*loadCurrentBest();
         int myCost = mySolution.getCost();
         if (currentBest.get(Optimization.instance) == null || myCost < currentBest.get(Optimization.instance)) {
             dreamBig(mySolution);
@@ -49,7 +51,7 @@ public class AbsoluteBestChecker {
             (new SolutionWriter(mySolution)).writeSolution();
             updateCurrentBestFile();
 
-        }
+        }*/
     }
 
     /**
@@ -58,7 +60,7 @@ public class AbsoluteBestChecker {
      * should be in the format instanceName \t currentBestObjFun).
      */
     private static void loadCurrentBest() {
-        try (BufferedReader in = new BufferedReader(new FileReader(BEST_PATH))) {
+        /*try (BufferedReader in = new BufferedReader(new FileReader(BEST_PATH))) {
             String line;
             String[] tokens;
             currentBest = new HashMap<>();
@@ -68,7 +70,7 @@ public class AbsoluteBestChecker {
             }
         } catch (IOException ex) {
             Logger.getLogger(AbsoluteBestChecker.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
     }
 
     /**
@@ -76,7 +78,7 @@ public class AbsoluteBestChecker {
      * instance.
      */
     private static void updateCurrentBestFile() {
-        String line;
+        /*String line;
         int benchmark;
         double gap;
         try (PrintWriter writer = new PrintWriter(new FileWriter(BEST_PATH))) {
@@ -89,7 +91,7 @@ public class AbsoluteBestChecker {
             }
         } catch (IOException ex) {
             Logger.getLogger(AbsoluteBestChecker.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
     }
 
     /**
@@ -99,11 +101,11 @@ public class AbsoluteBestChecker {
      * @param mySolution
      */
     private static void dreamBig(Schedule mySolution) {
-        if (Optimization.BENCHMARKS.get(Optimization.instance) == null) {
+        /*if (Optimization.BENCHMARKS.get(Optimization.instance) == null) {
             System.out.println("Sorry we don't have a benchmark for this instance");
         } else if (mySolution.getCost() < Optimization.BENCHMARKS.get(Optimization.instance)) {
             System.out.println("BIG MONEY!!!! WE HAVE A CAREER IN SCHEDULING WOW BETTER THAN THE BENCHMARKS!");
-        }
+        }*/
     }
 
 }

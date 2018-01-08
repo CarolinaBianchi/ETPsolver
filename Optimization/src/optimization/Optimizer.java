@@ -262,7 +262,7 @@ public class Optimizer {
      * @param newInitialSol
      */
     public void updateOnNewInitialSolution(Schedule newInitialSol) {
-        System.out.println("Initial");
+        //System.out.println("Initial");
         addSchedule(newInitialSol);
         //printResult(newInitialSol);
         checkBest(newInitialSol);
@@ -278,7 +278,7 @@ public class Optimizer {
      * @param preprocessed
      */
     public void updateOnNewPreprocessedSolution(Schedule preprocessed) {
-        System.out.println("After preprocessing");
+        //System.out.println("After preprocessing");
         addSchedule(preprocessed);
         checkBest(preprocessed);
         printResult();
@@ -294,7 +294,7 @@ public class Optimizer {
      * @param mySolution
      */
     public void updateOnNewSolution(Schedule mySolution) {
-        System.out.println("After single solution");
+        //System.out.println("After single solution");
         addSchedule(mySolution);
         checkBest(mySolution);
         printResult();
@@ -325,7 +325,7 @@ public class Optimizer {
         synchronized (initialSchedules) {
             Collections.sort(initialSchedules);
             while (initialSchedules.size() > PopulationMetaheuristic.INITIAL_POP_SIZE) {
-                if (probability90()) {
+                if (probability80()) {
                     initialSchedules.remove(initialSchedules.size() - 1);
                 }
             }
@@ -386,7 +386,7 @@ public class Optimizer {
         }
         this.endAll = true;
         SolutionWriter sw = new SolutionWriter(bestSchedule);
-        System.out.println("Final solution");
+        //System.out.println("Final solution");
         printResult();
         sw.writeSolution();
         //AbsoluteBestChecker.checkIfBestEver(bestSchedule);
@@ -406,10 +406,11 @@ public class Optimizer {
      * @param mySchedule
      */
     private void printResult(Schedule mySchedule) {
-        int benchmark = Optimization.getBenchmark();
+        //int benchmark = Optimization.getBenchmark();
         DecimalFormat df = new DecimalFormat("##.00");
-        double gap = 100 * ((mySchedule.getCost() * 1.0 - benchmark * 1.0) / benchmark * 1.0);
-        System.out.println("OurSolution:" + mySchedule.getCost() + "\tBenchmark:" + benchmark + "\t gap:" + df.format(gap) + "%");
+        //double gap = 100 * ((mySchedule.getCost() * 1.0 - benchmark * 1.0) / benchmark * 1.0);
+        //System.out.println("OurSolution:" + mySchedule.getCost() + "\tBenchmark:" + benchmark + "\t gap:" + df.format(gap) + "%");
+        System.out.println("Best: "+mySchedule.getCost());
     }
 
     /**
@@ -417,7 +418,7 @@ public class Optimizer {
      *
      * @return
      */
-    private boolean probability90() {
+    private boolean probability80() {
         return (new Random()).nextDouble() < 0.8;
     }
 

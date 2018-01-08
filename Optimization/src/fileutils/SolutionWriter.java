@@ -11,9 +11,6 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import optimization.domain.Exam;
 import optimization.Optimization;
 import optimization.domain.Schedule;
@@ -37,8 +34,8 @@ public class SolutionWriter {
      *
      */
     public void writeSolution() {
-        saveStat();
-        try (PrintWriter writer = new PrintWriter(new FileWriter("files/" + Optimization.instance + ".sol"))) {
+        //saveStat();   //Uncomment if you want to save the statistics
+        try (PrintWriter writer = new PrintWriter(new FileWriter("" + Optimization.instance + ".sol"))) {
             Timeslot[] timeslots = schedule.getTimeslots();
             for (int i = 1; i < timeslots.length + 1; i++) {
                 Timeslot t = timeslots[i - 1];
@@ -55,14 +52,15 @@ public class SolutionWriter {
      * Logs the gap of the current solution in a file.
      */
     private void saveStat() {
-        try {
+        //Uncomment if you want to save the statistics. you also have to uncomment the benchmarks in the main
+        /*try {
             int benchmark = Optimization.BENCHMARKS.get(Optimization.instance);
             double gap = 100 * ((schedule.getCost() * 1.0 - benchmark * 1.0) / benchmark * 1.0);
             String line = "\n" + gap;
             Files.write(Paths.get("files/" + Optimization.instance + "Stats.txt"), line.getBytes(), StandardOpenOption.APPEND);
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
 
     }
 }

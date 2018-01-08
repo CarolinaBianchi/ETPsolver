@@ -20,7 +20,6 @@ import optimization.domain.Schedule;
  */
 public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
 
-    //private final int MINUTES = 3;
     // Respectively, the time the metaheuristic starts, the elapsed time since 
     // the metaheuristic start and how much time has passed since the last reset
     private long startTime, elapsedTime, lastResetTime;
@@ -91,7 +90,7 @@ public class DeepDiveAnnealingV2 extends SingleSolutionMetaheuristic {
     @Override
     public void improveInitialSol() {
 
-        System.out.println("Beginning the deep dive annealing!");
+        //System.out.println("Beginning the deep dive annealing!");
         startTime = System.currentTimeMillis();
         lastResetTime = System.currentTimeMillis() - startTime;
         if(notEnoughTime()){

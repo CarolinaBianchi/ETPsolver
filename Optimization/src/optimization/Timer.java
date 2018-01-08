@@ -7,7 +7,6 @@ package optimization;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import optimization.metaheuristics.DeepDiveAnnealingV2;
 
 /**
  *
@@ -48,9 +47,6 @@ public class Timer extends Thread {
      */
     private void manageTime() {
         long elapsedTime = getElapsedTime();
-        if (elapsedTime > TOT_SEARCH_TIME) {
-            printBestSolution();
-        }
 
         while (elapsedTime < TOT_SEARCH_TIME) {
             if (elapsedTime < (long) (INIT_SOL_TIME) && INIT_SOL_TIME != METAHEURISTICS_TIME) {
@@ -69,26 +65,9 @@ public class Timer extends Thread {
             wait500ms();
             elapsedTime = getElapsedTime();
         }
-        /*If we are in the first fraction of time, we run the methods to initialize the initial solutions. */
- /*if (elapsedTime < (long) (INIT_SOL_TIME) && INIT_SOL_TIME != METAHEURISTICS_TIME) {
-                optimizer.runAllSSMetaheuristics();
-                this.INIT_SOL_TIME = METAHEURISTICS_TIME;
-                //DeepDiveAnnealingV2.changeK(0.90); // After the initialization, the temperature dacay is speeded up
-
-            } else if (elapsedTime > (long) (INIT_SOL_TIME)) {
-                updateInitSolTime();
-                while (elapsedTime < TOT_SEARCH_TIME) {
-                    if (isTimeForANewGeneration()) {
-                        this.INIT_SOL_TIME = Math.min(TOT_SEARCH_TIME - getElapsedTime(), INIT_SOL_TIME);
-                        generation++;
-                        startNewGeneration();
-                    }
-                    wait500ms();
-                    elapsedTime = getElapsedTime();
-                }
-                printBestSolution();
-            }
-            wait500ms();*/
+        if (elapsedTime > TOT_SEARCH_TIME) {
+            printBestSolution();
+        }
     }
 
     /**

@@ -31,7 +31,7 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
 
     @Override
     public void improveInitialSol() {
-        System.out.println("Genetic Algorithm");
+        //System.out.println("Genetic Algorithm");
         startAlgorithm();
         mySolution = findBestSchedule();
     }
@@ -43,7 +43,6 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
         long startTime = System.currentTimeMillis();
         long elapsedTime = 0;
         while (elapsedTime < MAX_MILLIS /*&& ! optimizer.endAll*/) {
-            //multipleSwaps();
             crossover();
             switch (rnd.nextInt(3)) {
                 case 0:
@@ -141,13 +140,5 @@ public class GeneticAlgorithm extends PopulationMetaheuristic {
         if (parent1 != parent2) {
             parent1.tryCrossover(parent2.getRandomTimeslot().getExams());
         }
-    }
-    
-    /**
-     * Takes a random schedule and it tries to do a random number of swaps among 
-     * conflicting exams in that schedule.     * 
-     */
-    private void multipleSwaps(){
-        getRandomSchedule().multipleSwaps(1+rnd.nextInt(4));
     }
 }

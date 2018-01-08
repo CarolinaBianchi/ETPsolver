@@ -22,22 +22,22 @@ public class Optimization {
     When calling the program from command line, you have to move the "files" 
     folder in the same folder of the jar.
      */
-    public static String instance = "instance04";
-    public static int tlim=5*60; 
-    public static Map<String, Integer> BENCHMARKS;
+    public static String instance /*="instance04"*/;
+    public static int tlim/*=300*/;
+    //public static Map<String, Integer> BENCHMARKS;
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        checkArgs(args);  
         System.out.println(instance);
-        initBenchmarks();
-        //checkArgs(args);  this has to be uncommented when running the program from command line.
+        //initBenchmarks();
 
         try {
             // TODO code application logic here
-                Optimizer optimizer = new Optimizer(instance, tlim);
-                optimizer.run();
+            Optimizer optimizer = new Optimizer(instance, tlim);
+            optimizer.run();
         } catch (IOException ex) {
             Logger.getLogger(Optimization.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -51,14 +51,14 @@ public class Optimization {
      */
     private static void checkArgs(String[] args) {
         if (args.length != 3) {
-            System.out.println("Input argument error. You can launch the program by writing java -jar \"Optimization.jar\" instanceName -t tlim");
+            System.out.println("Input argument error. You can launch the program by writing java -jar \"ETPsolver_OMAAL_group11.jar\" instanceName -t tlim");
             System.exit(0);
         }
         instance = args[0];
         tlim = Integer.parseInt(args[2]);
     }
 
-    private static void initBenchmarks() {
+    /*private static void initBenchmarks() {
         BENCHMARKS = new HashMap<>();
         BENCHMARKS.put("instance01", 95947);
         BENCHMARKS.put("instance02", 32661);
@@ -71,5 +71,5 @@ public class Optimization {
 
     static int getBenchmark() {
         return BENCHMARKS.get(instance);
-    }
+    }*/
 }
