@@ -1,4 +1,3 @@
-# Exam timetabling problem
 <h1> Examination Timetabling Problem </h1>
 <br>
 In order to solve the Examination Timetabling Problem, we decided to split it into three subproblems: 
